@@ -1,0 +1,102 @@
+# Title you want to give the experiment. 48 char max length please.
+title: Eyetracking
+
+# The experiment code to use. Max 8 chars please. FIELD REQUIRED.
+code: logs
+
+# A version string to associate with the experiment. Max 6 chars please.
+version: '0.1'
+
+# The experiment description, in 256 characters or less. ;)
+description: Test of using ioHub for gathering all the data we need.
+
+# When using the ioHubExperimentRuntime class to create your experiment, do you want
+# the read-only experiment Info dialog to appear at the start of the experiment?
+display_experiment_dialog: False
+
+# When using the ioHubExperimentRuntime class to create your experiment, do you want
+# the Session Info dialog to appear at the start of the experiment? 
+display_session_dialog: True
+
+session_defaults:
+    name: Session Name
+    code: E1S01
+    comments: None
+
+session_variable_order: [ name, code, comments]
+
+event_buffer_length: 1048
+
+process_affinity: []
+remaining_processes_affinity: []
+
+ioHub:
+    process_affinity: []
+    config: ..\iohub_config.yaml
+
+################# ETS Screen Streaming Application Specific ####################
+    
+screen_capture:
+    screen_index: 0
+    screen_resolution: [1280,1024]
+
+    ffmpeg:
+        path: '..\..\..\bin\ffmpegwin32\bin\'
+        exe: ffmpeg.exe
+        stdout_file: ffmpeg_stdout
+        stderr_file: ffmpeg_stderr
+        
+    dshow_filters:
+        video: screen-capture-recorder
+        audio: virtual-audio-capturer
+        ffmpeg_settings:
+            #  real time buffer size (in K)
+            rtbufsize: 702000 # 2097152 K
+            
+    # params related to saving the screen stream to file
+    media_file:
+        name: screen_capture
+        extension: mkv
+        ffmpeg_settings:
+            codec: libx264
+            pix_fmt: yuv420p
+            crf: 18.0
+            preset: medium
+            g: 250
+            threads: 0
+            
+    #params related to the realtime stream to the experimenter app. 
+    #
+    http_stream:
+        host: 192.168.1.10
+        write_port: 8082
+        read_port: 8084
+        uri: screenstream
+        ffmpeg_settings:
+            scale: 0.5
+            threads: 0
+            # frame rate
+            r: 30
+            # bitrates (in K)
+            b:
+                # video
+                v: 800
+            
+################# ETS Experimenter Control & Monitoring Server #################
+
+experimenter_server:
+    address: 192.168.1.10
+    port: 8888
+    
+    #streaming iohub events to experiment app server
+    event_streaming:
+        rest_uri: events
+        filter: []
+        stream_interval: 0.05
+
+manual_termination:
+    keyboard:
+        key: c
+        modifier: CONTROL_LEFT
+        
+event_loop_rate: 0.005
