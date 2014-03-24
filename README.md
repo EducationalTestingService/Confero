@@ -38,7 +38,7 @@ Python Package Dependancies
 The following python packages must be installed in the python distribution being used to run UserMonitor applications. All packages must be for Python 2.7 32-bit (even if Windows is 64bit)
 
 * All dependancies needed for PsychoPy http://www.psychopy.org/installation.html#dependencies
-* All dependancies needed for ioHub http://www.psychopy.org/installation.html#dependencies
+* All dependancies needed for ioHub http://www.isolver-solutions.com/iohubdocs/iohub/installation.html#python-2-7-package-list-with-urls
 * PsychoPy 1.80.01 package itself http://sourceforge.net/projects/psychpy/files/
 * Tornado 3.2 http://www.lfd.uci.edu/~gohlke/pythonlibs/#tornado
 * Websocket-client https://pypi.python.org/pypi/websocket-client/
@@ -63,6 +63,8 @@ Follow these steps to setup UserMonitor for the first time:
 4. Unpack the bin.zip file into the current directory. After unpacking bin.zip, there should be a bin folder in the top level UserMonitor directory.
 5. Install the dshow filters used for screen capturing by running the Setup Screen Capturer Recorder v0.10.0.exe installer found in the UserMonitor/ dependancies folder.
 6. Configure the Screen Capturer Recorder filter by running: Start->All Programs->Screen Capturer Recorder->configure by setting specific screen capture numbers. For each question asked, remove any text in the textbox field and continue, other than for the capture width and height settings, which should equal the pixel resolution of the monitor that will be used for screen capturing.
+7. Edit the <Path_to_UserMonitor_root_folder>/source/usermonitor/iohub_config.yaml as necessary.
+8. Edit the <Path_to_UserMonitor_root_folder>/source/usermonitor/app_config.yaml as necessary.
 
 Usage
 ======
