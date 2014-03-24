@@ -93,3 +93,8 @@ Collecting Data
 ----------------
 
 To learn how to use the User Monitor Feedback and Control Application GUI to control the Data Collection application, including openning and closing participant sessions and starting / stopping recording of data, please see the Help documentation available via the User Monitor Feedback and Control Application GUI.
+
+License
+========
+
+GNU General Public License (GPL version 3 or any later version)
