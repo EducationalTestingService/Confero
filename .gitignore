@@ -218,4 +218,6 @@ pip-log.txt
 *.avi
 *.log
 .idea
-datacollection/ideas/
+source/usermonitor/datacollection/ideas/
+source/usermonitor/webserver/static/temp_tests/
+source/usermonitor/webserver/static/assets
