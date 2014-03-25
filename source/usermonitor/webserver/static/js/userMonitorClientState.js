@@ -63,14 +63,16 @@ function onDecodeWsVideoFrame(jsmpg_obj,video_canvas){
             if (drawGaze){
                 var gp=umf_state.monitored_devices.eyetracker.gaze_position[0];
                 if (gp){
-                    var gx=gp[0]+dres[0]/2.0;
-                    var gy=dres[1]-(gp[1]+dres[1]/2.0);
-                    var cx = gx*x_scale;
-                    var cy = gy*y_scale;
-                    var cradius = 20.0*x_scale;
-                    var ccolor = "rgba(0,255,0,0.5)";
-                    drawCanvasCircle(video_canvas, cx, cy, cradius, ccolor, 0);
-                    console.log('draw gaze_position:',cx,cy);
+                    if (gp[0] > -1000){
+                        var gx=gp[0]+dres[0]/2.0;
+                        var gy=dres[1]-(gp[1]+dres[1]/2.0);
+                        var cx = gx*x_scale;
+                        var cy = gy*y_scale;
+                        var cradius = 20.0*x_scale;
+                        var ccolor = "rgba(0,255,0,0.5)";
+                        drawCanvasCircle(video_canvas, cx, cy, cradius, ccolor, 0);
+                        console.log('draw gaze_position:',cx,cy);
+                       }
                 }
             }
             if (drawTime){

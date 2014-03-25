@@ -28,7 +28,9 @@ experiment_session = {
     "start_time": [None,'sec'],
     "duration": [0.0,'sec'],
     "recording": [False,''],
-    "recording_counter": [0,'']
+    "recording_counter": [0,''],
+    "recording_start_time":[0.0,'sec'],
+    "current_time":[0.0,'sec']
 }
 
 # Device dicts to add to DataCollection msg when app starts up.

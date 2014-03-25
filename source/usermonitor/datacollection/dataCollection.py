@@ -12,7 +12,7 @@ from psychopy.clock import CountdownTimer
 from psychopy.iohub.client import ioHubExperimentRuntime
 from psychopy.iohub import EventConstants, MouseConstants, Computer
 from psychopy.iohub.util import NumPyRingBuffer
-
+getTime=core.getTime
 from util import PriorityQueue, createPath
 import messages
 
@@ -115,7 +115,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if self.eyetracker:
             print(" TODO: Finish updateEyetrackerMsgInfo function")
             self.recording_devices['eyetracker']=[self.eyetracker, tracker_info]
-#            self.device_monitor_countdowns['eyetracker'] = CountdownTimer(messages.eyetracker.get('countdown_time', [0.01,''])[0])
             self.device_info_update_funcs['eyetracker'] = self.updateEyetrackerMsgInfo
             tracker_info['gaze_position'][1] = display_unit_type
 
@@ -332,9 +331,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         dev_data["duration"][0] = self.device_info_stats['experiment_session']['duration'][0]
         gp=self.eyetracker.getLastGazePosition()
         if gp:
-            print('gp:',gp)
+            pass#print('gp:',gp)
         else:
-            gp = [0.0,0.0]
+            gp = [-1000,-1000]
         dev_data["gaze_position"][0] = gp
         new_events = self.eyetracker.getEvents(asType='dict')
         new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
@@ -398,7 +397,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         data_collection = messages.DataCollection
         data_collection.clear()
         data_collection['msg_type'] = 'DataCollection'
-        self.device_info_stats['experiment_session']['duration'][0]= core.getTime() - self.device_info_stats['experiment_session']['start_time'][0]
+        ctime=core.getTime()
+        self.device_info_stats['experiment_session']['current_time'][0]= ctime
+        self.device_info_stats['experiment_session']['duration'][0]= ctime - self.device_info_stats['experiment_session']['start_time'][0]
         for device_label,device_timer in self.device_monitor_countdowns.iteritems():
             if device_timer.getTime() <= 0.0:
                 # timer expired for given device reporting interval, so send
@@ -501,6 +502,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(True)
                 self.device_monitor_countdowns[device_label] = CountdownTimer(device_msg_dict.get('countdown_time', [0.01,''])[0])
+            session_info['recording_start_time'][0] =getTime()
 
             self.beginScreenCaptureStream()
 
@@ -511,7 +513,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def stopDeviceRecording(self):
         session_info=self.device_info_stats['experiment_session']
-        if session_info['recording'][0]  is True:
+        if session_info['recording'][0] is True:
             print ("** TODO: RESET DEVICE INFO AT END OF RECORDING **")
             session_info['recording'][0] =False
             self.stats_info_updates['experiment_session'] = session_info
@@ -521,7 +523,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(False)
                 del self.device_monitor_countdowns[device_label]
-
+            session_info['recording_start_time'][0] = 0.0
+            session_info['recording'][0] =False
             self.runVisualSyncProcedure(3)
             # try to ensure frames with visual sync stim have been written
             # to video file
