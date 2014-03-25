@@ -329,9 +329,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         dev_data["time"][0] = self.eyetracker.trackerSec()
         dev_data["model"][0] = "Unknown Model"
         dev_data["duration"][0] = self.device_info_stats['experiment_session']['duration'][0]
+
         gp=self.eyetracker.getLastGazePosition()
         if gp:
-            pass#print('gp:',gp)
+            gp = int(gp[0]), int(gp[1])
         else:
             gp = [-1000,-1000]
             
@@ -369,10 +370,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 print('!! TODO: Correct for delay in feedback app experiment_message:', msg)
             elif msg.get('type') == 'START_EXP_SESSION':
                 self.stopDeviceRecording()
-                print("MSG RX: ",msg)
+                #print("MSG RX: ",msg)
                 return 'START_EXP_SESSION'
             elif msg.get('type') == "CLOSE_EXP_SESSION":
-                print("MSG RX: ",msg)
+                #print("MSG RX: ",msg)
                 self.stopDeviceRecording()
                 self.createDeviceStatsMessageDicts()
                 self.handleMsgTx()
@@ -502,7 +503,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         session_info=self.device_info_stats['experiment_session']
 
         if session_info['recording'][0] is False:
-            print ("** TODO: RESET DEVICE INFO AT START OF RECORDING **")
+            #print ("** TODO: RESET DEVICE INFO AT START OF RECORDING **")
             self.stats_info_updates['experiment_session'] = session_info
             session_info['recording'][0] =True
             session_info['recording_counter'][0]+=1
@@ -598,7 +599,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
 
         self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-        print("STARTING FFMPEG:",ffmpeg,cli)
+        #print("STARTING FFMPEG:",ffmpeg,cli)
         p = self.startSubProcess(ffmpeg, cli, 
                                     stdout_file=stdout_file, 
                                     stderr_file=stderr_file)
