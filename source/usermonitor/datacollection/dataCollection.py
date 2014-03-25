@@ -334,12 +334,16 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             pass#print('gp:',gp)
         else:
             gp = [-1000,-1000]
-        dev_data["gaze_position"][0] = gp
+            
+        dev_data_update=False        
+        if dev_data["gaze_position"][0] != gp:            
+            dev_data["gaze_position"][0] = gp
+            dev_data_update=True
+            
         new_events = self.eyetracker.getEvents(asType='dict')
         new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
 
         self.updateLocalEventsCache(new_events)
-
 
         if dev_data["events"][0] is None and (new_events is None or len(new_events) == 0):
             dev_data["type"][0] = "N/A"
@@ -351,6 +355,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             mevent = dev_data["events"][0][-1]
             dev_data['last_event_time'][0] = mevent['time']
             dev_data["type"] = EventConstants.getName(mevent["type"])
+            return dev_data
+            
+        if dev_data_update:
             return dev_data
 
     def handleMsgRx(self):
