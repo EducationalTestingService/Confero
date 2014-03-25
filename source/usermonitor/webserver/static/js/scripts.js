@@ -104,6 +104,10 @@ function createWebSocket(client_obj,video_server_host){
           }
           //console.log('----');
        }
+       else if (msg.msg_type === 'UI_GROWL'){
+            $.bootstrapGrowl(msg.text,{type:msg.type});
+            //ui_server_websocket.send(ujson.encode([{'msg_type':'UI_GROWL','type':'info','text':'Data Collection Service Connected.'},]))
+        }
        else{
           console.log("!! RX Unknown Msg:",msg);
        }

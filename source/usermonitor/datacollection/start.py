@@ -25,6 +25,7 @@ def createWebsocketInterface(appcfg):
     ws_url = "ws://{0}:{1}/data_websocket".format(address, port)
     ui_server_websocket =create_connection(ws_url, None, sockopt=sockopt)
     ui_server_websocket.settimeout(0)
+    ui_server_websocket.send(ujson.encode([{'msg_type':'UI_GROWL','type':'success','text':'Data Collection Service Connected.'},]))
     #print("Websocket created: {0}.".format(ws_url), 'data_monitoring')
     return ui_server_websocket
 

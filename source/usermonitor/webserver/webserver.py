@@ -138,6 +138,10 @@ class WebSocket(websocket.WebSocketHandler):
 class UIWebSocket(WebSocket):
     ws_key="WEB_UI"
 
+    def open(self):
+        WebSocket.open(self)
+        self.write_message(ujson.encode([{'msg_type':'UI_GROWL','type':'info','text':'No Data Collection Service Connected.'},]))
+
     def on_message(self, message):
         msg_dict= ujson.loads(message)
         print("{0} TO HANDLE: ".format(self.__class__.__name__),msg_dict)
