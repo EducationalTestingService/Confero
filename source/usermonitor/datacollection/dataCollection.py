@@ -377,9 +377,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             elif msg.get('type') == 'START_EYETRACKER_CALIBRATION':
                 self.startEyeTrackerCalibration()
             elif msg.get('type') == 'START_EYETRACKER_VALIDATION':
-                self.startEyeTrackerCalibration()
+                self.startEyeTrackerValidation()
             elif msg.get('type') == 'START_EYETRACKER_DRIFT_CORRECTION':
-                self.startEyeTrackerCalibration()
+                self.startEyeTrackerDriftCorrection()
             else:
                 print('!!Unhandled Server Message:', msg)
 
@@ -387,7 +387,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             if e.errno == 10035:
                 pass
             else:
-                print("Exception:", e)
+                print("**handleMsgRx Exception:", e)
                 return 'EXIT_PROGRAM'
         except WebSocketConnectionClosedException, wse:
             print("WebSocketConnectionClosedException:", wse)
@@ -469,20 +469,22 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         return psutil.Process(p.pid)
 
     def startEyeTrackerCalibration(self):
-        print('STARTING CAL...')
+        self.hub.sendMessageEvent("CALIBRATION STARTING. Enabling keyboard events.")
         et = self.eyetracker
-        print('et',et)
+        kb=self.keyboard
         if et:
-            isrecording=et.isRecordingEnabled()
-            print('isrecording:',isrecording)
-            if isrecording:
+            kbisrecording=kb.isReportingEvents()
+            etisrecording=et.isRecordingEnabled()
+            if not kbisrecording:
+                kb.enableEventReporting(True)
+            if etisrecording:
                 et.setRecordingState(False)
-            print('Starting runSetupProcedure')
             et.runSetupProcedure()
-            print('Done runSetupProcedure')
-            if isrecording:
+            if not kbisrecording:
+                kb.enableEventReporting(False)
+            if etisrecording:
                 et.setRecordingState(True)
-            print('END CAL')
+        self.hub.sendMessageEvent("CALIBRATION COMPLETE. Disabling keyboard events.")
 
     def startEyeTrackerValidation(self):
         print("SHOULD BE STARTING EYE TRACKER *VALIDATION* PROCESS....TBC")
