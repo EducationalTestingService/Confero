@@ -551,11 +551,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         sess_results_dir=self._session_results_folder
         pjoin=os.path.join
         dshow_v=scParam('dshow_filters','video')
-        dshow_a=scParam('dshow_filters','audio')
+#        dshow_a=scParam('dshow_filters','audio')
         rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
-        cli='-f dshow -rtbufsize {0}k -i video="{1}":audio="{2}" '.format(
+        cli='-f dshow -rtbufsize {0}k -i video="{1}" '.format(  #:audio="{2}"
                                                             rtbufsize, dshow_v,
-                                                            dshow_a
+                                                            #dshow_a
                                                             )
         
         threads=scParam('http_stream','ffmpeg_settings','threads')
@@ -600,7 +600,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
 
         self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-        #print("STARTING FFMPEG:",ffmpeg,cli)
+        print("STARTING FFMPEG:",ffmpeg,cli)
         p = self.startSubProcess(ffmpeg, cli, 
                                     stdout_file=stdout_file, 
                                     stderr_file=stderr_file)
@@ -609,13 +609,79 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.hub.sendMessageEvent("sleep(1.0) complete.", "ffmpeg_init")
 
         return p
+
+#    def startScreenCaptureStream(self):
+#        appcfg=self.getConfiguration()
+#        scParam=partial(self.keyChainValue,appcfg,'screen_capture')
+#        sess_results_dir=self._session_results_folder
+#        pjoin=os.path.join
+#        dshow_v=scParam('dshow_filters','video')
+#        dshow_a=scParam('dshow_filters','audio')
+#        rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
+#        cli='-f dshow -rtbufsize {0}k -i video="{1}":audio="{2}" '.format(
+#                                                            rtbufsize, dshow_v,
+#                                                            dshow_a
+#                                                            )
+#        
+#        threads=scParam('http_stream','ffmpeg_settings','threads')
+#        scale=scParam('http_stream','ffmpeg_settings','scale')
+#        px,py=self.display.getPixelResolution()
+#        stream_width=int(px*scale)
+#        stream_height=int(py*scale)
+#        rate=scParam('http_stream','ffmpeg_settings','r')
+#        bv=scParam('http_stream','ffmpeg_settings','b','v')        
+#        cli+='-threads {0} -s {1}x{2} -f mpeg1video -b:v {3}k -r {4} '.format(
+#                                                        threads,stream_width,
+#                                                        stream_height,bv,rate
+#                                                        )
+#
+#        host=scParam('http_stream','host')
+#        write_port=scParam('http_stream','write_port')
+#        uri=scParam('http_stream','uri')
+#        cli+='http://{0}:{1}/{2}/{3}/{4}/ '.format(host, write_port, uri,
+#                                                stream_width, stream_height
+#                                                )
+#
+#        avFile=scParam('media_file','name')
+#        avExtension=scParam('media_file','extension')
+#        codec=scParam('media_file','ffmpeg_settings','codec')
+#        crf=scParam('media_file','ffmpeg_settings','crf')
+#        pix_fmt=scParam('media_file','ffmpeg_settings','pix_fmt')
+#        preset=scParam('media_file','ffmpeg_settings','preset')
+#        g=scParam('media_file','ffmpeg_settings','g')
+#        threads=scParam('media_file','ffmpeg_settings','threads')
+#        rec_count=self.device_info_stats['experiment_session']['recording_counter'][0]
+#        cli+='-vcodec {0} -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
+#                                        codec, crf, preset, threads,
+#                                        pjoin(sess_results_dir,avFile+"_%d."%(rec_count)+avExtension),
+#                                        pix_fmt,g
+#                                        )
+#
+#        fmpPath=scParam('ffmpeg','path')       
+#        if not os.path.isabs(fmpPath):
+#            fmpPath=pjoin(self.script_dir,fmpPath)
+#        ffmpeg=os.path.abspath(pjoin(fmpPath,scParam('ffmpeg','exe')))
+#        stdout_file=pjoin(sess_results_dir, scParam('ffmpeg','stdout_file')+"_%d"%(rec_count)+".txt")
+#        stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
+#
+#        self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
+#        print("STARTING FFMPEG:",ffmpeg,cli)
+#        p = self.startSubProcess(ffmpeg, cli, 
+#                                    stdout_file=stdout_file, 
+#                                    stderr_file=stderr_file)
+#        self.hub.sendMessageEvent("Subprocess call returned...sleep(1.0)...", "ffmpeg_init")
+#        core.wait(1.0,.2)
+#        self.hub.sendMessageEvent("sleep(1.0) complete.", "ffmpeg_init")
+#
+#        return p
         
     def quiteSubprocs(self,procs):
         import psutil
         def on_terminate(proc):
             if self.hub:
                 try:
-                    self.hub.sendMessageEvent("Process {} Terminated OK.".format(proc), "close_subproc")
+                    print("Process {0} Terminated OK.".format(proc))
+                    self.hub.sendMessageEvent("Process {0} Terminated OK.".format(proc), "close_subproc")
                 except:
                     pass
 
@@ -628,8 +694,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         for p in alive:
                 try:
                     p.kill()
+                    print("Process {0} had to be KILLED.".format(proc))
                     if self.hub:
-                        self.hub.sendMessageEvent("Process {} had to be KILLED.".format(p), "close_subproc")
+                        self.hub.sendMessageEvent("Process {0} had to be KILLED.".format(p), "close_subproc")
                 except Exception, e:
                     print ('Error2 during quiteSubprocs:',e)
 

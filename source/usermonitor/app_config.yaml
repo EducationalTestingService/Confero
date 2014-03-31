@@ -53,7 +53,7 @@ screen_capture:
         
     dshow_filters:
         video: screen-capture-recorder
-        audio: virtual-audio-capturer
+#        audio: virtual-audio-capturer
         ffmpeg_settings:
             #  real time buffer size (in K)
             rtbufsize: 702000 # 2097152 K
@@ -66,7 +66,7 @@ screen_capture:
             codec: libx264
             pix_fmt: yuv420p
             crf: 18.0
-            preset: medium
+            preset: veryfast
             g: 250
             threads: 0
             
