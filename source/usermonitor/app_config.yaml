@@ -16,7 +16,7 @@ display_experiment_dialog: False
 
 # When using the ioHubExperimentRuntime class to create your experiment, do you want
 # the Session Info dialog to appear at the start of the experiment? 
-display_session_dialog: True
+display_session_dialog: False
 
 session_defaults:
     name: Session Name
@@ -35,7 +35,12 @@ ioHub:
     config: ..\iohub_config.yaml
 
 ################# ETS Screen Streaming Application Specific ####################
-    
+
+results_root_folder: .\results
+experiment_inactive_token:
+
+auto_launch_webapp:
+
 screen_capture:
     screen_index: 0
     screen_resolution: [1280,1024]

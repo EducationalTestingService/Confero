@@ -19,7 +19,7 @@ import messages
 
 class DataCollectionRuntime(ioHubExperimentRuntime):
     script_dir=os.path.dirname(__file__)
-    OTHER_RESULTS_DIR=os.path.abspath(os.path.join(script_dir, '.\\results'))
+    results_root_folder = None
     cpu_usage_buffer = NumPyRingBuffer(30)
     def run(self, *args, **kwargs):
         appcfg=self.getConfiguration()
@@ -49,18 +49,13 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.eyetracker = self.hub.getDevice('tracker')
         #--
 
-#        config_info = dict()        auto_report_events: False
-#        config_info['app_config_yaml']=self.getConfiguration()
-#        config_info['screen_capture_display_resolution'] = self.display.getPixelResolution()
-#        self.ui_server_websocket.send(ujson.encode([{'msg_type':'APP_CONFIG_INFO', 'data': config_info},]))
-
         self.createDeviceStatsMessageDicts()
 
         # Create folder that will hold data and log files for the current
         # session. 
         # Note: This does not include the ioHub Data Store hdf5 file, which
         # is saved in the same directory as this script.
-        if not self.createResultsFolder():
+        if not self.createSessionResultsFolder():
             self.close()
             return
         #--
@@ -152,6 +147,14 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             task,args=self.command_queue.pop()
             task(*args)
 
+    @classmethod
+    def getActiveExperimentNames(cls):
+        inactiveexptoken=self.getConfiguration().get("experiment_inactive_token")
+        _, exp_dirs, _ = next(os.walk(cls.results_root_folder))
+        if inactiveexptoken:
+            return [d for d in exp_dirs if d.find(inactiveexptoken) == -1]
+        return [d for d in exp_dirs]
+
     # Start the ffmpeg screen capturing sub process
     def beginScreenCaptureStream(self):
         try:
@@ -162,13 +165,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.close()
             return False
 
-    def createResultsFolder(self):
+    def createSessionResultsFolder(self):
         # Create folder for saved video file(s), etc.
         session_code=self.device_info_stats['experiment_session']['code'][0]
-            
         try:
-            self._session_results_folder=os.path.join(self.OTHER_RESULTS_DIR,
-                                                      session_code)
+            self._session_results_folder=os.path.join(self.results_root_folder,session_code)
             createPath(self._session_results_folder)
         except Exception, e:
             print('ERROR: Folder creation failed [{0}]. Exiting App.'.format(

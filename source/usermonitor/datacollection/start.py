@@ -52,10 +52,16 @@ def handleMsgRx(ws):
 
 def main(configurationDirectory):
     import os
-
+    import util
     app_conf=load(file(os.path.join(configurationDirectory,
                                     "..\\app_config.yaml"), u'r'),
                                     Loader=Loader)
+
+    # Create Root Results Folder for all Experiments; if needed
+    DataCollectionRuntime.results_root_folder=app_conf.get('results_root_folder')
+    if not os.path.exists(DataCollectionRuntime.results_root_folder) or not os.path.isdir(DataCollectionRuntime.results_root_folder):
+        DataCollectionRuntime.results_root_folder = os.path.abspath(os.path.join(DataCollectionRuntime.script_dir, DataCollectionRuntime.results_root_folder))
+    util.createPath(DataCollectionRuntime.results_root_folder)
 
     try:
         ws = createWebsocketInterface(app_conf)

@@ -17,7 +17,7 @@ from proc_util import startSubProcess,startNodeWebStreamer,quiteSubprocs
 import timeit,time
 IOLoop.time=timeit.default_timer
 
-from webbrowser import open_new_tab
+import webbrowser
 import string,  Queue
 import random
 import os
@@ -252,7 +252,17 @@ class ControlFeedbackServer(object):
         server_port = keyChainValue(appconfig,
                                'experimenter_server',
                                'port')
-        open_new_tab('http://%s:%d/'%(server_ip,server_port))
+        autolaunch=keyChainValue(appconfig,'auto_launch_webapp')
+        if autolaunch:
+            if autolaunch.lower() == 'default':
+                webbrowser.open_new_tab('http://%s:%d/'%(server_ip,server_port))
+            else:
+                try:
+                    webbrowser.get(autolaunch).open('http://%s:%d/'%(server_ip, server_port))
+                except:
+                    import traceback
+                    print("Error while starting webbrowser.get() with value of", autolaunch)
+                    traceback.print_exc()
 
     @staticmethod
     def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
