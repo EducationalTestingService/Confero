@@ -20,7 +20,7 @@ import messages
 class DataCollectionRuntime(ioHubExperimentRuntime):
     script_dir=os.path.dirname(__file__)
     results_root_folder = None
-    cpu_usage_buffer = NumPyRingBuffer(30)
+    cpu_usage_buffer = NumPyRingBuffer(3)
     def run(self, *args, **kwargs):
         appcfg=self.getConfiguration()
         self.command_queue=PriorityQueue()
