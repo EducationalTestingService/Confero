@@ -168,7 +168,7 @@
 
                             <div class="btn-group" data-toggle="buttons">
                               <label class="btn btn-default navbar-btn" id="startCalibrationButton">
-                                <input type="radio" name="options">
+                                <input type="checkbox" name="options">
                                 <span id="startCalibrationSpan"
                                       data-toggle="tooltip"
                                       data-placement="bottom"
@@ -177,17 +177,17 @@
                                       class="glyphicon glyphicon-screenshot">
                                 </span>
                               </label>
-                              <label class="btn btn-default navbar-btn active disabled" id="startValidationButton">
-                                <input type="radio" name="options">
+                              <label class="btn btn-default navbar-btn" id="startValidationButton">
+                                <input type="checkbox" name="options">
                                 <span  id=startValidationSpan"
                                       data-toggle="tooltip"
                                       data-placement="bottom"
                                       data-original-title="Tooltip on bottom"
                                       title="Start Eye Tracker Validation"
-                                      class="glyphicon glyphicon-screenshot">
+                                      class="glyphicon glyphicon-plus-sign">
                                       </span>
                               </label>
-                              <label class="btn btn-default navbar-btn active disabled" id="startDriftCorrectButton">
+<!--                              <label class="btn btn-default navbar-btn active disabled" id="startDriftCorrectButton">
                                 <input type="radio" name="options">
                                 <span  id=startDriftCorrectSpan"
                                       data-toggle="tooltip"
@@ -197,6 +197,7 @@
                                       class="glyphicon glyphicon-screenshot">
                                       </span>
                               </label>
+-->
                             </div>
 
 
@@ -665,23 +666,23 @@
             $('#startCalibrationButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'START_EYETRACKER_CALIBRATION'});
                 server_websocket.send(sendmsg);
-                //$('#startRecordButton').addClass('disabled');
+                //$('#startCalibrationButton').removeClass('active');
                 //$('#stopRecordButton').removeClass('disabled');
             });
 
             $('#startValidationButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'START_EYETRACKER_VALIDATION'});
                 server_websocket.send(sendmsg);
-                //$('#startRecordButton').addClass('disabled');
+                //$('#startValidationButton').removeClass('active');
                 //$('#stopRecordButton').removeClass('disabled');
             });
 
-            $('#startDriftCorrectionButton').on('click', function() {
-                var sendmsg=JSON.stringify({type:'START_EYETRACKER_DRIFT_CORRECTION'});
-                server_websocket.send(sendmsg);
-                //$('#startRecordButton').addClass('disabled');
-                //$('#stopRecordButton').removeClass('disabled');
-            });
+//            $('#startDriftCorrectionButton').on('click', function() {
+//                var sendmsg=JSON.stringify({type:'START_EYETRACKER_DRIFT_CORRECTION'});
+//                server_websocket.send(sendmsg);
+//                //$('#startRecordButton').addClass('disabled');
+//                //$('#stopRecordButton').removeClass('disabled');
+//            });
 
             $('#stopRecordButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'STOP_RECORDING'});
