@@ -79,6 +79,27 @@ function updateDOMContents(client_obj,device_name){
         }
     }
 }
+function changeButtonStates(enable_list, disable_list, activate_list, deactivate_list){
+    for(var i = 0, size = enable_list.length; i < size ; i++){
+       var e = enable_list[i];
+       $('#'+e).removeClass('disabled');
+    }
+
+    for(var i = 0, size = disable_list.length; i < size ; i++){
+       var e = disable_list[i];
+       $('#'+e).addClass('disabled');
+    }
+
+    for(var i = 0, size = activate_list.length; i < size ; i++){
+       var e = activate_list[i];
+       $('#'+e).addClass('active');
+    }
+
+    for(var i = 0, size = deactivate_list.length; i < size ; i++){
+       var e = deactivate_list[i];
+       $('#'+e).removeClass('active');
+    }
+}
 
 // Create websocket
 function createWebSocket(client_obj,video_server_host){
@@ -106,7 +127,76 @@ function createWebSocket(client_obj,video_server_host){
        }
        else if (msg.msg_type === 'UI_GROWL'){
             $.bootstrapGrowl(msg.text,{type:msg.type});
-            //ui_server_websocket.send(ujson.encode([{'msg_type':'UI_GROWL','type':'info','text':'Data Collection Service Connected.'},]))
+        }
+       else if (msg.msg_type === 'EYETRACKER_CALIBRATION_COMPLETE'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Calibration Successful.",{type:msg.type});
+            else if (msg.type === 'error ')
+                $.bootstrapGrowl("Calibration Failed.",{type:msg.type});
+            changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startCalibrationButton']);
+        }
+       else if (msg.msg_type === 'EYETRACKER_VALIDATION_COMPLETE'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Validation Successful.",{type:msg.type});
+            else if (msg.type === 'error')
+                $.bootstrapGrowl("Validation Failed.",{type:msg.type});
+            changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startValidationButton']);
+        }
+       else if (msg.msg_type === 'EXP_SESSION_STARTED'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Experiment Session Started.",{type:msg.type});
+            else if (msg.type === 'error')
+                $.bootstrapGrowl("Experiment Session Could not be Started.",{type:msg.type});
+            changeButtonStates(['startCalibrationButton',
+                        'startValidationButton',
+                        'closeSessionButton',
+                        'submitExperimentMessage',
+                        'startRecordButton'
+                       ],
+                       ['newSessionButton',
+                        'stopRecordButton'
+                       ],[],[]);
+        }
+       else if (msg.msg_type === 'EXP_SESSION_CLOSED'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Experiment Session Closed.",{type:msg.type});
+            else if (msg.type === 'error')
+                $.bootstrapGrowl("Experiment Session Could not be Closed.",{type:msg.type});
+            changeButtonStates(['newSessionButton'],
+                       ['closeSessionButton',
+                        'startRecordButton',
+                        'startCalibrationButton',
+                        'startValidationButton',
+                        'stopRecordButton'
+                       ],[],[]);
+        }
+       else if (msg.msg_type === 'RECORDING_STARTED'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Data Recording Started.",{type:msg.type});
+            else if (msg.type === 'error')
+                $.bootstrapGrowl("Data Recording Could not be Started.",{type:msg.type});
+            changeButtonStates([
+                        'submitExperimentMessage',
+                        'stopRecordButton'
+                       ],
+                       ['startRecordButton',
+                        'startCalibrationButton',
+                        'startValidationButton',
+                        'closeSessionButton'
+                       ],[],[]);
+        }
+       else if (msg.msg_type === 'RECORDING_STOPPED'){
+            if (msg.type === 'success')
+                $.bootstrapGrowl("Data Recording Stopped.",{type:msg.type});
+            else if (msg.type === 'error')
+                $.bootstrapGrowl("Data Recording Could not be Stopped.",{type:msg.type});
+            changeButtonStates(['startCalibrationButton',
+                        'startValidationButton',
+                        'closeSessionButton',
+                        'submitExperimentMessage',
+                        'startRecordButton'
+                       ],
+                       [],[],[]);
         }
        else{
           console.log("!! RX Unknown Msg:",msg);

@@ -636,60 +636,37 @@
                 var sendmsg=JSON.stringify({type:'START_EXP_SESSION'});
                 server_websocket.send(sendmsg);
                 $('#newSessionModal').modal('hide');
-                $('#newSessionButton').addClass('disabled');
-                $('#closeSessionButton').removeClass('disabled');
-                $('#submitExperimentMessage').removeClass('disabled');
-                $('#stopRecordButton').addClass('disabled');
-                $('#startRecordButton').removeClass('disabled');
-
             });
 
             $('#close_session').on('click', function() {
                 var sendmsg=JSON.stringify({type:'CLOSE_EXP_SESSION'});
                 server_websocket.send(sendmsg);
                 $('#closeSessionModal').modal('hide');
-                $('#newSessionButton').removeClass('disabled');
-                $('#closeSessionButton').addClass('disabled');
-                $('#submitExperimentMessage').addClass('disabled');
-                $('#stopRecordButton').addClass('disabled');
-                $('#startRecordButton').addClass('disabled');
-
             });
 
             $('#startRecordButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'START_RECORDING'});
                 server_websocket.send(sendmsg);
-                $('#startRecordButton').addClass('disabled');
-                $('#stopRecordButton').removeClass('disabled');
+             });
+
+
+            $('#stopRecordButton').on('click', function() {
+                var sendmsg=JSON.stringify({type:'STOP_RECORDING'});
+                server_websocket.send(sendmsg);
             });
 
             $('#startCalibrationButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'START_EYETRACKER_CALIBRATION'});
                 server_websocket.send(sendmsg);
-                //$('#startCalibrationButton').removeClass('active');
-                //$('#stopRecordButton').removeClass('disabled');
+                changeButtonStates([],['startCalibrationButton','startValidationButton','startRecordButton','newSessionButton','submitExperimentMessage'],[],[])
             });
 
             $('#startValidationButton').on('click', function() {
                 var sendmsg=JSON.stringify({type:'START_EYETRACKER_VALIDATION'});
                 server_websocket.send(sendmsg);
-                //$('#startValidationButton').removeClass('active');
-                //$('#stopRecordButton').removeClass('disabled');
+                changeButtonStates([],['startCalibrationButton','startValidationButton','startRecordButton','newSessionButton','submitExperimentMessage'],[],[])
             });
 
-//            $('#startDriftCorrectionButton').on('click', function() {
-//                var sendmsg=JSON.stringify({type:'START_EYETRACKER_DRIFT_CORRECTION'});
-//                server_websocket.send(sendmsg);
-//                //$('#startRecordButton').addClass('disabled');
-//                //$('#stopRecordButton').removeClass('disabled');
-//            });
-
-            $('#stopRecordButton').on('click', function() {
-                var sendmsg=JSON.stringify({type:'STOP_RECORDING'});
-                server_websocket.send(sendmsg);
-                $('#stopRecordButton').addClass('disabled');
-                $('#startRecordButton').removeClass('disabled');
-            });
 
             $('#submitExperimentMessage').on('click', function(event) {
                 event.preventDefault();
