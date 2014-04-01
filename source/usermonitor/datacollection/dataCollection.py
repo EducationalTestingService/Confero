@@ -10,12 +10,19 @@ from websocket import WebSocketConnectionClosedException
 from psychopy import visual, core
 from psychopy.clock import CountdownTimer
 from psychopy.iohub.client import ioHubExperimentRuntime
-from psychopy.iohub import EventConstants, MouseConstants, Computer
+from psychopy.iohub import EventConstants, MouseConstants, Computer, EyeTrackerConstants
 from psychopy.iohub.util import NumPyRingBuffer
 getTime=core.getTime
 from util import PriorityQueue, createPath
 import messages
 
+
+from psychopy.iohub import ioHubConnection
+from psychopy.iohub import TimeTrigger, DeviceEventTrigger
+from psychopy.iohub import TargetStim, PositionGrid, ValidationProcedure
+
+import time
+import numpy as np
 
 class DataCollectionRuntime(ioHubExperimentRuntime):
     script_dir=os.path.dirname(__file__)
@@ -43,7 +50,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                                                          'stream_interval')
         # Setup devices
         self.computer=self.devices.computer
-        self.keyboard = self.hub.getDevice('kb')
+        self.keyboard = self.hub.getDevice('keyboard')
         self.display = self.devices.display
         self.mouse = self.hub.getDevice('mouse')
         self.eyetracker = self.hub.getDevice('tracker')
@@ -387,8 +394,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 self.startEyeTrackerCalibration()
             elif msg.get('type') == 'START_EYETRACKER_VALIDATION':
                 self.startEyeTrackerValidation()
-            elif msg.get('type') == 'START_EYETRACKER_DRIFT_CORRECTION':
-                self.startEyeTrackerDriftCorrection()
             else:
                 print('!!Unhandled Server Message:', msg)
 
@@ -402,6 +407,18 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             print("WebSocketConnectionClosedException:", wse)
             return 'EXIT_PROGRAM'
 
+    def sendToWebServer(self,*args):
+        try:
+            self.ui_server_websocket.send(ujson.dumps(args))
+        except Exception, e:
+            print(">>>")
+            print("Error: sendToWebServer failed: ",e)
+            import traceback                
+            traceback.print_exc()
+            print
+            print("Attempting to send:",args)
+            print("<<<")
+        
     def handleMsgTx(self):
         data_collection = messages.DataCollection
         data_collection.clear()
@@ -422,13 +439,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if update_count > 0:
             for k, v in self.stats_info_updates.iteritems():
                 data_collection[k] = v
-            try:
-                self.ui_server_websocket.send(ujson.dumps([data_collection,]))
-            except Exception, e:
-                print(">>>")
-                print("Warning: Could not send msg to feedback server: ",e)
-                print(data_collection)
-                print("<<<")
+            self.sendToWebServer(data_collection)
             self.stats_info_updates.clear()
 
 
@@ -481,6 +492,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.hub.sendMessageEvent("CALIBRATION STARTING. Enabling keyboard events.")
         et = self.eyetracker
         kb=self.keyboard
+        result=False
         if et:
             kbisrecording=kb.isReportingEvents()
             etisrecording=et.isRecordingEnabled()
@@ -488,17 +500,145 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 kb.enableEventReporting(True)
             if etisrecording:
                 et.setRecordingState(False)
-            et.runSetupProcedure()
+            result=et.runSetupProcedure()
             if not kbisrecording:
                 kb.enableEventReporting(False)
             if etisrecording:
                 et.setRecordingState(True)
         self.hub.sendMessageEvent("CALIBRATION COMPLETE. Disabling keyboard events.")
+        cmtype="success"
+        if result in [False,None,EyeTrackerConstants.EYETRACKER_CALIBRATION_ERROR,
+                      EyeTrackerConstants.EYETRACKER_ERROR,]:
+            cmtype="error"                  
+        msg={'msg_type':'EYETRACKER_CALIBRATION_COMPLETE','type':cmtype}
+        self.sendToWebServer(msg)
 
     def startEyeTrackerValidation(self):
-        print("SHOULD BE STARTING EYE TRACKER *VALIDATION* PROCESS....TBC")
-    def startEyeTrackerDriftCorrect(self):
-        print("SHOULD BE HANDLING EYE TRACKER *DRIFT CORRECT*....TBC")
+        self.hub.sendMessageEvent("VALIDATION STARTING. Enabling keyboard events.")
+        et = self.eyetracker
+        kb=self.keyboard
+        display = self.display
+        result=False
+        if et:
+            kbisrecording=kb.isReportingEvents()
+
+            if not kbisrecording:
+                kb.enableEventReporting(True)
+
+            # Validation specific code starts.....
+            
+            res=display.getPixelResolution() # Current pixel resolution of the Display to be used
+            coord_type=display.getCoordinateType()
+            win=visual.Window(res,monitor=display.getPsychopyMonitorName(), # name of the PsychoPy Monitor Config file if used.
+                                        units=coord_type, # coordinate space to use.
+                                        fullscr=True, # We need full screen mode.
+                                        allowGUI=False, # We want it to be borderless
+                                        screen= display.getIndex() # The display index to use, assuming a multi display setup.
+                                        )
+            
+            # Create a TargetStim instance
+            target = TargetStim(
+                    win,
+                    radius=16,               # 16 pix outer radius.
+                    fillcolor=[.5, .5, .5],  # 75% white fill color.
+                    edgecolor=[-1, -1, -1],  # Fully black outer edge
+                    edgewidth=3,             # with a 3 pixel width.
+                    dotcolor=[1, -1, -1],    # Full red center dot
+                    dotradius=3,             # with radius of 3 pixels.
+                    units='pix',             # Size & position units are in pix.
+                    colorspace='rgb'         # colors are in 'rgb' space (-1.0 - 1.0) range
+                )                            # forevents r,g,b.
+            
+            # Create a PositionGrid instance that will hold the locations to display the
+            # target at. The example lists all possible keyword arguments that are
+            # supported. Any set to None are ignored during position grid creation.
+            positions = PositionGrid(
+                    winSize=win.size,   # width, height of window used for display.
+                    shape=3,            # Create a grid with 3 cols and 3 rows (9 points).
+                    posCount=None,
+                    leftMargin=None,
+                    rightMargin=None,
+                    topMargin=None,
+                    bottomMargin=None,
+                    scale=0.85,         # Equally space the 3x3 grid across 85% of the
+                                        # window width and height, centered.
+                    posList=None,
+                    noiseStd=None,
+                    firstposindex=4,    # Use the center position grid location as the
+                                        # first point in the position order.
+                    repeatfirstpos=True # As the last target position to display, use the
+                )                       # value of eventsthe first target position.
+            
+            # randomize the grid position presentation order (not including
+            # the first position).
+            positions.randomize()
+            
+            # Specifiy the Triggers to use to move from target point to point during
+            # the validation sequence....
+            
+            # Use DeviceEventTrigger to create a keyboard char event trigger
+            #     which will fire when the space key is pressed.
+            kb_trigger = DeviceEventTrigger(kb,
+                                            event_type=EventConstants.KEYBOARD_CHAR,
+                                            event_attribute_conditions={'key': ' '},
+                                            repeat_count=0)
+            
+            # Creating a list of Trigger instances. The first one that
+            #     fires will cause the start of the next target position
+            #     presentation.
+            multi_trigger = (TimeTrigger(start_time=None, delay=1.5), kb_trigger)
+            
+
+            # define a dict containing any animation params to be used
+            
+            targ_anim_param=dict(
+                                velocity=None,#800.0,
+                                expandedscale=None,#2.0,
+                                expansionduration=None,#0.1,
+                                contractionduration=None,#0.1
+                                )
+                                    
+            ##### Run a validation procedure 
+            validation_proc=ValidationProcedure(
+                                                target,
+                                                positions,
+                                                target_animation_params=targ_anim_param,
+                                                background=None,
+                                                triggers=multi_trigger,
+                                                storeeventsfor=None,
+                                                accuracy_period_start=0.550,
+                                                accuracy_period_stop=.150,
+                                                show_intro_screen=True,
+                                                intro_text="Validation procedure is now going to be performed.",
+                                                show_results_screen=True,
+                                                results_in_degrees=True
+                                                )                        
+            
+            # Run the validation process. The method does not return until the process
+            # is complete.
+            # Returns the validation calculation results and data collected for the
+            # analysis.                       
+            results = validation_proc.display()
+            
+            # The lasst calculated validation results can also be retrieved using
+            results = validation_proc.getValidationResults() 
+
+            win.close()
+            ##### Validation code ends
+            
+            if not kbisrecording:
+                kb.enableEventReporting(False)
+            self.hub.clearEvents('all')
+        # set result to hardcoded True for now
+        result = True
+
+        self.hub.sendMessageEvent("VALIDATION COMPLETE. Disabling keyboard events.")
+        cmtype="success"
+        if result in [False,None,EyeTrackerConstants.EYETRACKER_CALIBRATION_ERROR,
+                      EyeTrackerConstants.EYETRACKER_ERROR,]:
+            cmtype="error"                  
+        msg={'msg_type':'EYETRACKER_VALIDATION_COMPLETE','type':cmtype}
+        self.sendToWebServer(msg)
 
     def startDeviceRecording(self):
         session_info=self.device_info_stats['experiment_session']
@@ -518,6 +658,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.beginScreenCaptureStream()
 
             core.wait(0.25,0.05)
+
+            cmtype="success"
+            msg={'msg_type':'RECORDING_STARTED','type':cmtype}
+            self.sendToWebServer(msg)
+
             self.hub.clearEvents("all")
             self.hub.sendMessageEvent("Recording Block Started: %d"%(session_info['recording_counter'][0]),"data_monitoring")
             self.runVisualSyncProcedure(3)
@@ -542,6 +687,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             core.wait(3.0,.2)
             self.quiteSubprocs([self._ffmpeg_proc,])
 
+            cmtype="success"
+            msg={'msg_type':'RECORDING_STOPPED','type':cmtype}
+            self.sendToWebServer(msg)
+            
             self.hub.sendMessageEvent("Recording Block Stopped: %d"%(session_info['recording_counter'][0]),"data_monitoring")
 
 

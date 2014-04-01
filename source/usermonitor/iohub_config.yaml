@@ -14,7 +14,7 @@ monitor_devices:
             unit_type: mm
         psychopy_monitor_name: default
     - Keyboard:
-        name: kb
+        name: keyboard
         save_events: True
         stream_events: True
         auto_report_events: False
@@ -24,7 +24,7 @@ monitor_devices:
         stream_events: True
         auto_report_events: False
     - Experiment:
-        name: pc
+        name: experiment
         save_events: True
         stream_events: True
 # SMI iView Config (uncomment to use)
@@ -69,8 +69,8 @@ monitor_devices:
         calibration:
             type: FIVE_POINTS
             randomize: True
-            auto_pace: False
-            pacing_speed: 1.5
+            auto_pace: True
+            pacing_speed: 1.0
             screen_background_color: [128,128,128]            
             target_type: CIRCLE_TARGET
             target_attributes:
@@ -85,9 +85,9 @@ monitor_devices:
                  inner_line_color: [0,0,0]
                  animate:
                      enable: True
-                     movement_velocity: 600.0  # 500 pix / sec
+                     movement_velocity: 900.0  # 500 pix / sec
                      expansion_ratio: 3.0  # expands to 3 x the starting size
-                     expansion_speed: 30.0  # exapands at 30.0 pix / sec
+                     expansion_speed: 60.0  # exapands at 30.0 pix / sec
                      contract_only: True        
 data_store:
     enable: True

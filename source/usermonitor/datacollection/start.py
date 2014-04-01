@@ -102,6 +102,11 @@ def main(configurationDirectory):
             runtime.ui_server_websocket=proxy(ws)
             print("Starting Experiment Session...")
             print("")
+            
+            cmtype="success"
+            msg={'msg_type':'EXP_SESSION_STARTED','type':cmtype}
+            runtime.sendToWebServer(msg)
+            
             cmd = runtime.start()
             runtime.close()
             runtime=None
@@ -111,6 +116,11 @@ def main(configurationDirectory):
                 runtime.close()
                 runtime._close()
                 runtime = None
+ 
+            cmtype="success"
+            msg={'msg_type':'EXP_SESSION_CLOSED','type':cmtype}
+            runtime.sendToWebServer(msg)
+
             print("Experiment Session Closed.")
             cmd=None
         elif cmd == "EXIT_PROGRAM":
