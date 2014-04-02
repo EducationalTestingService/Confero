@@ -167,7 +167,8 @@ function createWebSocket(client_obj,video_server_host){
                         'startRecordButton',
                         'startCalibrationButton',
                         'startValidationButton',
-                        'stopRecordButton'
+                        'stopRecordButton',
+                        'submitExperimentMessage'
                        ],[],[]);
         }
        else if (msg.msg_type === 'RECORDING_STARTED'){
@@ -193,8 +194,8 @@ function createWebSocket(client_obj,video_server_host){
             changeButtonStates(['startCalibrationButton',
                         'startValidationButton',
                         'closeSessionButton',
-                        'submitExperimentMessage',
-                        'startRecordButton'
+                        'startRecordButton',
+                        'submitExperimentMessage'
                        ],
                        [],[],[]);
         }

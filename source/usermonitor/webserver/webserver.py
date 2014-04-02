@@ -23,6 +23,10 @@ import random
 import os
 import ujson
 
+def showSimpleWin32Dialog(message, caption):
+    import win32gui
+    win32gui.MessageBox(None, message, caption, 0)
+
 def keyChainValue(cdict, *key_path):
     result = cdict.get(key_path[0])
     key_path = list(key_path[1:])
@@ -213,7 +217,7 @@ class ControlFeedbackServer(object):
     
             # Start webapp server
             self.webapp.listen(8888)
-    
+            IOLoop.instance()
             IOLoop.instance().add_timeout(self.getServerTime()+0.5,
                                           self.openWebAppGUI)
     
@@ -252,7 +256,7 @@ class ControlFeedbackServer(object):
         server_port = keyChainValue(appconfig,
                                'experimenter_server',
                                'port')
-        autolaunch=keyChainValue(appconfig,'auto_launch_webapp')
+        autolaunch=keyChainValue(appconfig, 'auto_launch_webapp')
         if autolaunch:
             if autolaunch.lower() == 'default':
                 webbrowser.open_new_tab('http://%s:%d/'%(server_ip,server_port))
@@ -263,6 +267,11 @@ class ControlFeedbackServer(object):
                     import traceback
                     print("Error while starting webbrowser.get() with value of", autolaunch)
                     traceback.print_exc()
+        else:
+            showSimpleWin32Dialog("Use the following URL to open the "
+                                  "UserMonitor Web Interface:"
+                                  "\nhttp://%s:%d/"%(server_ip, server_port),
+                                  "UserMonitor Web UI Available")
 
     @staticmethod
     def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
