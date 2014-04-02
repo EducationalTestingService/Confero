@@ -72,10 +72,14 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         return_value=self.runEventLoop()
         self.hub.sendMessageEvent("Experiment Session Complete: %s"%(self.getSessionMetaData().get('code','CODE_MISSING')),"data_monitoring")
 
+        cmtype="success"
+        msg={'msg_type':'EXP_SESSION_CLOSED','type':cmtype}
+        self.sendToWebServer(msg)
+        
         # Close any application resources as needed and quit the ffmpeg
         # subprocess.
         self.close()
-        return return_value
+        return return_value,None
 
     def createDeviceStatsMessageDicts(self):
         display_info=copy.deepcopy(messages.display)

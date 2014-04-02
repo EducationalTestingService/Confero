@@ -34,9 +34,9 @@ def handleMsgRx(ws):
         server_msg=ws.recv()
         msg = ujson.loads(server_msg)
         if msg.get('type') == 'START_EXP_SESSION':
-            return 'START_EXP_SESSION'
+            return 'START_EXP_SESSION',msg.get('code')
         elif msg.get('type') == 'EXIT_PROGRAM':
-            return 'EXIT_PROGRAM'
+            return 'EXIT_PROGRAM',None
         else:
             print('!!Unhandled Server Message:', msg)
 
@@ -45,10 +45,10 @@ def handleMsgRx(ws):
             pass
         elif e.errno == 10054:
             print('WebSocket could not be connected to feedback server.')
-            return 'EXIT_PROGRAM'
+            return 'EXIT_PROGRAM',None
         else:
             raise e
-
+    return None, None
 
 def main(configurationDirectory):
     import os
@@ -81,47 +81,32 @@ def main(configurationDirectory):
     app_conf=None
     runtime = None
     cmd=None
-    print("Data Collection Listener Started.")
-    print("Waiting for Experiment Session Request....")
-    print("")
     while 1:
         if cmd is None:
-            cmd=handleMsgRx(ws)
-        else:
-            print("DAT_COL CMD: ",cmd)
+            cmd,data=handleMsgRx(ws)
 
         if cmd == 'START_EXP_SESSION':
             if runtime:
                 runtime.close()
                 runtime._close()
                 runtime = None
-            print("Experiment Session Request Received.")
+            print("Experiment Session Request Received. Session Code Requested:",data)
             time.sleep(0.5)
             runtime = DataCollectionRuntime(configurationDirectory,
                                         "..\\app_config.yaml")
-            runtime.ui_server_websocket=proxy(ws)
-            print("Starting Experiment Session...")
-            print("")
-            
+            runtime.ui_server_websocket=proxy(ws)            
             cmtype="success"
             msg={'msg_type':'EXP_SESSION_STARTED','type':cmtype}
             runtime.sendToWebServer(msg)
             
-            cmd = runtime.start()
+            cmd,_ = runtime.start()
             runtime.close()
             runtime=None
-            print("")
-        elif cmd == "CLOSE_EXP_SESSION":
+        elif cmd == "CLOSE_EXP_SESSION":            
             if runtime:
                 runtime.close()
                 runtime._close()
                 runtime = None
- 
-            cmtype="success"
-            msg={'msg_type':'EXP_SESSION_CLOSED','type':cmtype}
-            runtime.sendToWebServer(msg)
-
-            print("Experiment Session Closed.")
             cmd=None
         elif cmd == "EXIT_PROGRAM":
             if runtime:
@@ -129,7 +114,7 @@ def main(configurationDirectory):
                 runtime._close()
                 runtime = None
                 core.quit()
-            return
+            return None
 
         time.sleep(0.1)
     print("Data Collection Service Stopped.")
