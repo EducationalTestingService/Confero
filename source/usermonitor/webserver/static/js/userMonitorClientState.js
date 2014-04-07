@@ -1,5 +1,7 @@
 // Create client side app state
 var umf_state = {
+    experiment_name_list: [],
+
     ui_setting: {},
 
     monitored_devices: {},

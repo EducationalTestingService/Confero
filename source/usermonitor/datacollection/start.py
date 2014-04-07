@@ -28,13 +28,16 @@ def createWebsocketInterface(appcfg):
     
     
     # Inform feedback webserver of experiment directory list
-    avail_exp_list=DataCollectionRuntime.getActiveExperimentNames(appcfg.get("experiment_inactive_token"))    
-    msg_type='EXP_FOLDER_LIST'
-    ui_server_websocket.send(ujson.encode([{'msg_type':msg_type,'data':avail_exp_list},]))
+    avail_exp_list = DataCollectionRuntime.getActiveExperimentNames(appcfg.get("experiment_inactive_token"))
+    msg_type = 'EXP_FOLDER_LIST'
+    ui_server_websocket.send(ujson.encode([{'msg_type': msg_type,
+                                            'data': avail_exp_list}, ]))
 
     # Show web server ui a notification that data a data collection process has started  
-    ui_server_websocket.send(ujson.encode([{'msg_type':'UI_GROWL','type':'success','text':'Data Collection Service Connected.'},]))
-    #print("Websocket created: {0}.".format(ws_url), 'data_monitoring')
+    ui_server_websocket.send(ujson.encode([{'msg_type': 'UI_GROWL',
+                                            'type': 'success',
+                                            'text': 'Data Collection Service '
+                                                    'Connected.'}, ]))
     return ui_server_websocket
 
 def handleMsgRx(ws):

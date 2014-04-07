@@ -115,7 +115,6 @@ class WebSocket(websocket.WebSocketHandler):
     ws_key = None
     def open(self):
         self.set_nodelay(True)
-        print "\n**{0} opened.\n".format(self.__class__.__name__)
         self.server_app_websockets[self.ws_key] = self
 
     def on_message(self, message):
@@ -140,16 +139,19 @@ class WebSocket(websocket.WebSocketHandler):
             pass
 
 class UIWebSocket(WebSocket):
-    ws_key="WEB_UI"
-
+    ws_key = "WEB_UI"
     def open(self):
         WebSocket.open(self)
-        self.write_message(ujson.encode([{'msg_type':'UI_GROWL','type':'info','text':'No Data Collection Service Connected.'},]))
-
+        dc_ws = self.server_app_websockets.get('DATA_COLLECTION')
+        if not dc_ws:
+            self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'info','text':'No Data Collection Service Connected.'},]))
+        else:
+            self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'success','text':'Data Collection Service Already Running.'},]))
+            # send the known list of experiment names on the data collection
+            # service..
+            self.write_message(ujson.encode([dc_ws.data_collection_state['experiment_names_msg'],]))
     def on_message(self, message):
-        msg_dict= ujson.loads(message)
-        print("{0} TO HANDLE: ".format(self.__class__.__name__),msg_dict)
-        dc_sw= self.server_app_websockets.get("DATA_COLLECTION")
+        dc_sw = self.server_app_websockets.get("DATA_COLLECTION")
         if dc_sw:
             dc_sw.write_message(message)
         else:
@@ -159,22 +161,25 @@ class UIWebSocket(WebSocket):
 
 class DataCollectionWebSocket(WebSocket):
     ws_key = "DATA_COLLECTION"
+    def open(self):
+        WebSocket.open(self)
+        self.data_collection_service_state = dict()
 
     def on_message(self, message):
-        #print("DATA_COLLECTION WS SENDING TO UI_WS:",len(message))
         msg_list = ujson.loads(message)
+
         to_send=[]
         for m in msg_list:
             msg_type = m.get('msg_type', 'UNKNOWN')
-            if msg_type is not 'UNKNOWN':
+            if msg_type == 'EXP_FOLDER_LIST':
+                self.data_collection_state['experiment_names_msg'] = m
+            elif msg_type is not 'UNKNOWN':
                 to_send.append(m)
-        if len(to_send)>0:
-            ws_ui=self.server_app_websockets.get("WEB_UI")
+
+        if len(to_send) > 0:
+            ws_ui = self.server_app_websockets.get("WEB_UI")
             if ws_ui:
-                #print ("SENDING TO UI:",to_send)
                 ws_ui.write_message(ujson.dumps(to_send))
-            else:
-                print(">> Warning: Message was not sent to Feedback Web UI:",to_send)
 ###############################################################################
 
 class ControlFeedbackServer(object):
