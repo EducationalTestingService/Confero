@@ -159,8 +159,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             task(*args)
 
     @classmethod
-    def getActiveExperimentNames(cls):
-        inactiveexptoken=self.getConfiguration().get("experiment_inactive_token")
+    def getActiveExperimentNames(cls,inactiveexptoken):
         _, exp_dirs, _ = next(os.walk(cls.results_root_folder))
         if inactiveexptoken:
             return [d for d in exp_dirs if d.find(inactiveexptoken) == -1]

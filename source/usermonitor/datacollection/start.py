@@ -25,6 +25,14 @@ def createWebsocketInterface(appcfg):
     ws_url = "ws://{0}:{1}/data_websocket".format(address, port)
     ui_server_websocket =create_connection(ws_url, None, sockopt=sockopt)
     ui_server_websocket.settimeout(0)
+    
+    
+    # Inform feedback webserver of experiment directory list
+    avail_exp_list=DataCollectionRuntime.getActiveExperimentNames(appcfg.get("experiment_inactive_token"))    
+    msg_type='EXP_FOLDER_LIST'
+    ui_server_websocket.send(ujson.encode([{'msg_type':msg_type,'data':avail_exp_list},]))
+
+    # Show web server ui a notification that data a data collection process has started  
     ui_server_websocket.send(ujson.encode([{'msg_type':'UI_GROWL','type':'success','text':'Data Collection Service Connected.'},]))
     #print("Websocket created: {0}.".format(ws_url), 'data_monitoring')
     return ui_server_websocket
