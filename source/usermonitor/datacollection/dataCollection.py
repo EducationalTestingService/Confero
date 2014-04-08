@@ -703,11 +703,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         sess_results_dir=self._session_results_folder
         pjoin=os.path.join
         dshow_v=scParam('dshow_filters','video')
-#        dshow_a=scParam('dshow_filters','audio')
+        dshow_a=scParam('dshow_filters','audio')
         rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
-        cli='-f dshow -rtbufsize {0}k -i video="{1}" '.format(  #:audio="{2}"
+        cli='-f dshow -rtbufsize {0}k -i video="{1}":audio="{2}" '.format(
                                                             rtbufsize, dshow_v,
-                                                            #dshow_a
+                                                            dshow_a
                                                             )
         
         threads=scParam('http_stream','ffmpeg_settings','threads')
