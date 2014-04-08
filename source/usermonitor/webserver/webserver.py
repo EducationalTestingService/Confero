@@ -160,8 +160,8 @@ class UIWebSocket(WebSocket):
                 msg_type = msg_dict.get('type', 'UNKNOWN')
 
             if msg_type == 'EXPERIMENT_SELECTED':
-                self.data_collection_state['active_experiment'] = msg_dict.get('name')
-
+                dc_sw.data_collection_state['active_experiment'] = msg_dict.get('name')
+            print "SENDING MSG TO DC:'",msg_dict
             if msg_type is not 'UNKNOWN':
                 dc_sw.write_message(message)
 
