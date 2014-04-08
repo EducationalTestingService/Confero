@@ -704,10 +704,13 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         pjoin=os.path.join
         dshow_v=scParam('dshow_filters','video')
         dshow_a=scParam('dshow_filters','audio')
+        audio_arg=''
+        if dshow_a:
+            audio_arg=':audio="%s"'%(dshow_a)
         rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
-        cli='-f dshow -rtbufsize {0}k -i video="{1}":audio="{2}" '.format(
+        cli='-f dshow -rtbufsize {0}k -i video="{1}"{2} '.format(
                                                             rtbufsize, dshow_v,
-                                                            dshow_a
+                                                            audio_arg
                                                             )
         
         threads=scParam('http_stream','ffmpeg_settings','threads')

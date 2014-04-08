@@ -52,7 +52,17 @@ screen_capture:
         stderr_file: ffmpeg_stderr
         
     dshow_filters:
+        # Screen captue frames are taken by using Screen Capture Recorder
+        #   software. The installer in in the dependancies folder of the
+        #   project. This filter MUST be installed and configured or User
+        #   Monitor will not work.
+        #
         video: screen-capture-recorder
+        # audio options: 
+        #   leave blank: no audio saved to screen cap video
+        #   virtual-audio-capturer: save sound from computer audio out.
+        #   [ NOT WORKING ] Microphone: save what comes in the default audio input selected
+        #       by / within the OS settings.     
         audio: virtual-audio-capturer
         ffmpeg_settings:
             #  real time buffer size (in K)
