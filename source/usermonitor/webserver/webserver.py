@@ -163,7 +163,7 @@ class DataCollectionWebSocket(WebSocket):
     ws_key = "DATA_COLLECTION"
     def open(self):
         WebSocket.open(self)
-        self.data_collection_service_state = dict()
+        self.data_collection_state = dict()
 
     def on_message(self, message):
         msg_list = ujson.loads(message)

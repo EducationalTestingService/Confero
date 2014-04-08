@@ -201,6 +201,7 @@ function createWebSocket(client_obj,video_server_host){
         }
        else if (msg.msg_type === 'EXP_FOLDER_LIST'){
             client_obj.experiment_name_list=msg.data;
+            $.bootstrapGrowl("Experiment Names Received:\n"+client_obj.experiment_name_list,{type:'info'});
         }
        else{
           console.log("!! RX Unknown Msg:",msg);
