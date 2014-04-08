@@ -177,10 +177,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def createSessionResultsFolder(self):
         # Create folder for saved video file(s), etc.
-        session_code=self.device_info_stats['experiment_session']['code'][0]
+        session_code = self.device_info_stats['experiment_session']['code'][0]
         try:
             self._session_results_folder=os.path.join(self.results_root_folder,session_code)
             createPath(self._session_results_folder)
+            print("CREATED _session_results_folder: "+self._session_results_folder)
         except Exception, e:
             print('ERROR: Folder creation failed [{0}]. Exiting App.'.format(
                                                 self._session_results_folder))

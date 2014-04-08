@@ -144,16 +144,27 @@ class UIWebSocket(WebSocket):
         WebSocket.open(self)
         dc_ws = self.server_app_websockets.get('DATA_COLLECTION')
         if not dc_ws:
-            self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'info','text':'No Data Collection Service Connected.'},]))
+            pass#self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'info','text':'No Data Collection Service Connected.'},]))
         else:
-            self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'success','text':'Data Collection Service Already Running.'},]))
+            #self.write_message(ujson.encode([{'msg_type':'UI_GROWL', 'type':'success','text':'Data Collection Service Already Running.'},]))
             # send the known list of experiment names on the data collection
             # service..
             self.write_message(ujson.encode([dc_ws.data_collection_state['experiment_names_msg'],]))
     def on_message(self, message):
         dc_sw = self.server_app_websockets.get("DATA_COLLECTION")
         if dc_sw:
-            dc_sw.write_message(message)
+            msg_dict = ujson.loads(message)
+
+            msg_type = msg_dict.get('msg_type', 'UNKNOWN')
+            if msg_type is 'UNKNOWN':
+                msg_type = msg_dict.get('type', 'UNKNOWN')
+
+            if msg_type == 'EXPERIMENT_SELECTED':
+                self.data_collection_state['active_experiment'] = msg_dict.get('name')
+
+            if msg_type is not 'UNKNOWN':
+                dc_sw.write_message(message)
+
         else:
             print("")
             print("WARNING: Data Collection Web Socket is not Running. Msg not sent. Is the Data Collection application running?")
@@ -173,7 +184,7 @@ class DataCollectionWebSocket(WebSocket):
             msg_type = m.get('msg_type', 'UNKNOWN')
             if msg_type == 'EXP_FOLDER_LIST':
                 self.data_collection_state['experiment_names_msg'] = m
-            elif msg_type is not 'UNKNOWN':
+            if msg_type is not 'UNKNOWN':
                 to_send.append(m)
 
         if len(to_send) > 0:

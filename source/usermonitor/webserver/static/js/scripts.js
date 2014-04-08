@@ -134,6 +134,7 @@ function createWebSocket(client_obj,video_server_host){
             else if (msg.type === 'error ')
                 $.bootstrapGrowl("Calibration Failed.",{type:msg.type});
             changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startCalibrationButton']);
+            $('#startCalibrationButton').removeClass('active');
         }
        else if (msg.msg_type === 'EYETRACKER_VALIDATION_COMPLETE'){
             if (msg.type === 'success')
@@ -141,6 +142,7 @@ function createWebSocket(client_obj,video_server_host){
             else if (msg.type === 'error')
                 $.bootstrapGrowl("Validation Failed.",{type:msg.type});
             changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startValidationButton']);
+            $('#startValidationButton').removeClass('active');
         }
        else if (msg.msg_type === 'EXP_SESSION_STARTED'){
             if (msg.type === 'success')
@@ -201,7 +203,12 @@ function createWebSocket(client_obj,video_server_host){
         }
        else if (msg.msg_type === 'EXP_FOLDER_LIST'){
             client_obj.experiment_name_list=msg.data;
-            $.bootstrapGrowl("Experiment Names Received:\n"+client_obj.experiment_name_list,{type:'info'});
+            //console.log($('#expSelectionContent'))
+            $('#expSelectionContent')[0].innerHTML="<span>"+msg.data+"</span>"
+
+            $('#experimentSelectionModalButton')[0].innerHTML='Start'
+            $('#experimentSelectionModalButton').removeClass('disabled')
+            //$.bootstrapGrowl("Experiment Names Received:\n"+client_obj.experiment_name_list,{type:'info'});
         }
        else{
           console.log("!! RX Unknown Msg:",msg);
