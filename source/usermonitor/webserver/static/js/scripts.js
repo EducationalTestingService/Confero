@@ -209,10 +209,10 @@ function createWebSocket(client_obj,video_server_host){
 
             var exp_picker=$('#experimentSelectionList')
             exp_picker.prop('disabled',false);
-
-            if (msg.data.length > 0) {
-                for (var i= 0, size = msg.data.length; i < size; i++){
-                   exp_picker.append("<option data-subtext='x sessions'>"+msg.data[i]+"</option>");
+            exp_data=msg.data;
+            if (exp_data.length > 0) {
+                for (var i= 0, size = exp_data.length; i < size; i++){
+                   exp_picker.append("<option data-subtext='"+exp_data[i][1]+" sessions'>"+exp_data[i][0]+"</option>");
                 }
 
                 exp_picker.selectpicker('refresh');
