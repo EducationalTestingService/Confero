@@ -72,6 +72,11 @@ def main(configurationDirectory):
                                     "..\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
+    DataCollectionRuntime.results_root_folder=app_conf.get('results_root_folder')
+    if not os.path.exists(DataCollectionRuntime.results_root_folder) or not os.path.isdir(DataCollectionRuntime.results_root_folder):
+        DataCollectionRuntime.results_root_folder = os.path.abspath(os.path.join(DataCollectionRuntime.script_dir, DataCollectionRuntime.results_root_folder, active_exp_name))
+    util.createPath(DataCollectionRuntime.results_root_folder)
+
     try:
         ws = createWebsocketInterface(app_conf)
     except socket.error, e:
@@ -99,11 +104,8 @@ def main(configurationDirectory):
             active_exp_name=data
             print "ACTIVE EXPERIMENT_NAME:",active_exp_name
             # Create Root Results Folder for all Experiments; if needed
-            DataCollectionRuntime.results_root_folder=app_conf.get('results_root_folder')
-            if not os.path.exists(DataCollectionRuntime.results_root_folder) or not os.path.isdir(DataCollectionRuntime.results_root_folder):
-                DataCollectionRuntime.results_root_folder = os.path.abspath(os.path.join(DataCollectionRuntime.script_dir, DataCollectionRuntime.results_root_folder, active_exp_name))
-            util.createPath(DataCollectionRuntime.results_root_folder)
-
+            DataCollectionRuntime.active_exp_name=active_exp_name
+            cmd=None
         elif cmd == 'START_EXP_SESSION':
             if runtime:
                 runtime.close()

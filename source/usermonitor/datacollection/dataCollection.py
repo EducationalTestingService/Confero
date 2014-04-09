@@ -27,6 +27,7 @@ import numpy as np
 class DataCollectionRuntime(ioHubExperimentRuntime):
     script_dir=os.path.dirname(__file__)
     results_root_folder = None
+    active_exp_name=None
     cpu_usage_buffer = NumPyRingBuffer(3)
     def run(self, *args, **kwargs):
         appcfg=self.getConfiguration()
@@ -160,6 +161,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     @classmethod
     def getActiveExperimentNames(cls,inactiveexptoken):
+        print("cls.results_root_folder:",cls.results_root_folder)
         _, exp_dirs, _ = next(os.walk(cls.results_root_folder))
         if inactiveexptoken:
             return [d for d in exp_dirs if d.find(inactiveexptoken) == -1]
@@ -179,7 +181,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         # Create folder for saved video file(s), etc.
         session_code = self.device_info_stats['experiment_session']['code'][0]
         try:
-            self._session_results_folder=os.path.join(self.results_root_folder,session_code)
+            self._session_results_folder=os.path.join(self.results_root_folder,self.active_exp_name,session_code)
             createPath(self._session_results_folder)
             print("CREATED _session_results_folder: "+self._session_results_folder)
         except Exception, e:
