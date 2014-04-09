@@ -133,7 +133,16 @@ function createWebSocket(client_obj,video_server_host){
                 $.bootstrapGrowl("Calibration Successful.",{type:msg.type});
             else if (msg.type === 'error ')
                 $.bootstrapGrowl("Calibration Failed.",{type:msg.type});
-            changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startCalibrationButton']);
+
+            changeButtonStates(['startCalibrationButton',
+                                'startValidationButton',
+                                'startRecordButton',
+                                'closeSessionButton',
+                                'submitExperimentMessage'],
+                                ['newSessionButton'],
+                                [],
+                                ['startCalibrationButton']
+            );
             $('#startCalibrationButton').removeClass('active');
         }
        else if (msg.msg_type === 'EYETRACKER_VALIDATION_COMPLETE'){
@@ -141,7 +150,16 @@ function createWebSocket(client_obj,video_server_host){
                 $.bootstrapGrowl("Validation Successful.",{type:msg.type});
             else if (msg.type === 'error')
                 $.bootstrapGrowl("Validation Failed.",{type:msg.type});
-            changeButtonStates(['startCalibrationButton','startValidationButton','startRecordButton','closeSessionButton','submitExperimentMessage'],['newSessionButton'],[],['startValidationButton']);
+
+            changeButtonStates(['startCalibrationButton',
+                                'startValidationButton',
+                                'startRecordButton',
+                                'closeSessionButton',
+                                'submitExperimentMessage'],
+                                ['newSessionButton'],
+                                [],
+                                ['startValidationButton']
+            );
             $('#startValidationButton').removeClass('active');
         }
        else if (msg.msg_type === 'EXP_SESSION_STARTED'){
@@ -149,7 +167,8 @@ function createWebSocket(client_obj,video_server_host){
                 $.bootstrapGrowl("Experiment Session Started.",{type:msg.type});
             else if (msg.type === 'error')
                 $.bootstrapGrowl("Experiment Session Could not be Started.",{type:msg.type});
-            changeButtonStates(['startCalibrationButton',
+
+           changeButtonStates(['startCalibrationButton',
                         'startValidationButton',
                         'closeSessionButton',
                         'submitExperimentMessage',

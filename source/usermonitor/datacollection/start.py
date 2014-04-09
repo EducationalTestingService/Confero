@@ -19,6 +19,7 @@ def keyChainValue(cdict, *key_path):
 
 def createWebsocketInterface(appcfg):
     address = keyChainValue(appcfg,'experimenter_server','address')
+
     port = keyChainValue(appcfg,'experimenter_server','port')
 
     sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
@@ -68,11 +69,18 @@ def handleMsgRx(ws):
 def main(configurationDirectory):
     import os
     import util
-    app_conf=load(file(os.path.join(configurationDirectory,
+    app_conf = load(file(os.path.join(configurationDirectory,
                                     "..\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
-    DataCollectionRuntime.results_root_folder=app_conf.get('results_root_folder')
+    iohubconfpath=os.path.join(configurationDirectory,
+                                        iohub_config=keyChainValue(app_conf,
+                                                                   'ioHub',
+                                                                   'config'))
+    iohubconfpath=os.path.abspath(iohubconfpath)
+    iohub_conf = load(file(iohubconfpath, u'r'), Loader=Loader)
+    iohubconfdirname, iohubconfigfilename = os.path.split(iohubconfpath)
+    DataCollectionRuntime.results_root_folder = app_conf.get('results_root_folder')
     if not os.path.exists(DataCollectionRuntime.results_root_folder) or not os.path.isdir(DataCollectionRuntime.results_root_folder):
         DataCollectionRuntime.results_root_folder = os.path.abspath(os.path.join(DataCollectionRuntime.script_dir, DataCollectionRuntime.results_root_folder, active_exp_name))
     util.createPath(DataCollectionRuntime.results_root_folder)
@@ -105,7 +113,7 @@ def main(configurationDirectory):
             print "ACTIVE EXPERIMENT_NAME:",active_exp_name
             # Create Root Results Folder for all Experiments; if needed
             DataCollectionRuntime.active_exp_name=active_exp_name
-            cmd=None
+            cmd = None
         elif cmd == 'START_EXP_SESSION':
             if runtime:
                 runtime.close()
@@ -113,9 +121,27 @@ def main(configurationDirectory):
                 runtime = None
             print("Experiment Session Request Received. Session Code Requested:",data)
             app_conf.get('session_defaults',{})['code']=data
+            app_conf.get('ioHub', {})['config'] = '..\\last_'+iohubconfigfilename
             app_config_file_name = os.path.join(configurationDirectory, "..\\last_app_config.yaml")
             dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
+
+            dsfilename=iohub_conf.get('data_store', {}).get('filename')
+            if dsfilename is None:
+                dsfilename='events'
+            dsfilepath=os.path.join(DataCollectionRuntime.results_root_folder,
+                                    DataCollectionRuntime.active_exp_name,
+                                    dsfilename)
+            iohub_conf.get('data_store', {})['filename'] =dsfilepath
+
+            # save modified app config for loading by upcoming session
+            app_config_file_name = os.path.join(configurationDirectory, "..\\last_app_config.yaml")
+            dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
+
+            # save modified iohub_config for loading by upcoming session
+            dump(app_conf, file(app_conf.get('ioHub', {})['config'], 'w'), Dumper=Dumper)
             time.sleep(0.5)
+
+
             runtime = DataCollectionRuntime(configurationDirectory,
                                             "..\\last_app_config.yaml")
             runtime.ui_server_websocket=proxy(ws)            
