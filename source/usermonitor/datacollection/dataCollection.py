@@ -94,6 +94,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         tracker_info=copy.deepcopy(messages.eyetracker)
         self.device_info_stats['eyetracker']=tracker_info
+        tracker_info["model"][0] = u"{0} : {1}".format(
+                                            self.eyetracker.manufacturer_name,
+                                            self.eyetracker.model_name)
 
         session_info=copy.deepcopy(messages.experiment_session)
         self.device_info_stats['experiment_session']=session_info
@@ -210,69 +213,67 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         input_computer['cpu_usage_all'][0] = float(self.cpu_usage_buffer.mean())
         input_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
 
-        new_stats = dict(psutil.disk_io_counters(False)._asdict())
-        ctime = Computer.getTime()
-        if input_computer["disk_usage"][0] is None:
-            disk_usage_dict = {}
-            disk_usage_dict['start_time']=[ctime,'sec']
-            disk_usage_dict['start_bytes_read']=[new_stats['read_bytes'],'']
-            disk_usage_dict['start_bytes_write']=[new_stats['write_bytes'],'']
-            disk_usage_dict['start_read_time']=[new_stats['read_time'],'']
-            disk_usage_dict['start_write_time']=[new_stats['write_time'],'']
-            disk_usage_dict['stats_duration']=[0.0,'']
-            disk_usage_dict['read_kb_per_sec']=[0,'']
-            disk_usage_dict['write_kb_per_sec']=[0,r'kb/sec']
-            disk_usage_dict['read_time_perc']=[0.0,'']
-            disk_usage_dict['write_time_perc']=[0.0,r'%/sec']
-            input_computer["disk_usage"][0] = disk_usage_dict
-        else:
-            disk_usage_dict = input_computer["disk_usage"][0]
-            dur = ctime-disk_usage_dict['start_time'][0]
-            read_bytes_per_sec = ((new_stats['read_bytes']-disk_usage_dict['start_bytes_read'][0])/1024.0)/dur
-            write_bytes_per_sec = ((new_stats['write_bytes']-disk_usage_dict['start_bytes_write'][0])/1024.0)/dur
-            read_time = new_stats['read_time']-disk_usage_dict['start_read_time'][0]
-            write_time = new_stats['write_time']-disk_usage_dict['start_write_time'][0]
-            disk_usage_dict['stats_duration'][0] = dur
-            disk_usage_dict['read_kb_per_sec'][0] = read_bytes_per_sec
-            disk_usage_dict['write_kb_per_sec'][0] = write_bytes_per_sec
-            disk_usage_dict['read_time_perc'][0]=(read_time/dur)*100.0
-            disk_usage_dict['write_time_perc'][0]=(write_time/dur)*100.0
-            disk_usage_dict['start_time'][0]=ctime
-            disk_usage_dict['start_bytes_read'][0]=new_stats['read_bytes']
-            disk_usage_dict['start_bytes_write'][0]=new_stats['write_bytes']
-            disk_usage_dict['start_read_time'][0]=new_stats['read_time']
-            disk_usage_dict['start_write_time'][0]=new_stats['write_time']
+#        new_stats = dict(psutil.disk_io_counters(False)._asdict())
+#        ctime = Computer.getTime()
+#        if input_computer["disk_usage"][0] is None:
+#            disk_usage_dict = {}
+#            disk_usage_dict['start_time']=[ctime,'sec']
+#            disk_usage_dict['start_bytes_read']=[new_stats['read_bytes'],'']
+#            disk_usage_dict['start_bytes_write']=[new_stats['write_bytes'],'']
+#            disk_usage_dict['start_read_time']=[new_stats['read_time'],'']
+#            disk_usage_dict['start_write_time']=[new_stats['write_time'],'']
+#            disk_usage_dict['stats_duration']=[0.0,'']
+#            disk_usage_dict['read_kb_per_sec']=[0,'']
+#            disk_usage_dict['write_kb_per_sec']=[0,r'kb/sec']
+#            disk_usage_dict['read_time_perc']=[0.0,'']
+#            disk_usage_dict['write_time_perc']=[0.0,r'%/sec']
+#            input_computer["disk_usage"][0] = disk_usage_dict
+#        else:
+#            disk_usage_dict = input_computer["disk_usage"][0]
+#            dur = ctime-disk_usage_dict['start_time'][0]
+#            read_bytes_per_sec = ((new_stats['read_bytes']-disk_usage_dict['start_bytes_read'][0])/1024.0)/dur
+#            write_bytes_per_sec = ((new_stats['write_bytes']-disk_usage_dict['start_bytes_write'][0])/1024.0)/dur
+#            read_time = new_stats['read_time']-disk_usage_dict['start_read_time'][0]
+#            write_time = new_stats['write_time']-disk_usage_dict['start_write_time'][0]
+#            disk_usage_dict['stats_duration'][0] = dur
+#            disk_usage_dict['read_kb_per_sec'][0] = read_bytes_per_sec
+#            disk_usage_dict['write_kb_per_sec'][0] = write_bytes_per_sec
+#            disk_usage_dict['read_time_perc'][0]=(read_time/dur)*100.0
+#            disk_usage_dict['write_time_perc'][0]=(write_time/dur)*100.0
+#            disk_usage_dict['start_time'][0]=ctime
+#            disk_usage_dict['start_bytes_read'][0]=new_stats['read_bytes']
+#            disk_usage_dict['start_bytes_write'][0]=new_stats['write_bytes']
+#            disk_usage_dict['start_read_time'][0]=new_stats['read_time']
+#            disk_usage_dict['start_write_time'][0]=new_stats['write_time']
 
 
-        new_stats=dict(psutil.net_io_counters(False)._asdict())
-        ctime=Computer.getTime()
-        if input_computer["network_usage"][0] is None:
-            net_usage_dict = {}
-            net_usage_dict['start_time']=[ctime,'sec']
-            net_usage_dict['start_bytes_recv']=[new_stats['bytes_recv'],'']
-            net_usage_dict['start_bytes_sent']=[new_stats['bytes_sent'],'']
-            net_usage_dict['stats_duration']=[0.0,'sec']
-            net_usage_dict['kb_recv_per_sec']=[0,'']
-            net_usage_dict['kb_sent_per_sec']=[0,r'kb/sec']
-            input_computer["network_usage"][0] = net_usage_dict
-        else:
-            net_usage_dict = input_computer["network_usage"][0]
-            dur = ctime-net_usage_dict['start_time'][0]
-            bytes_recv_per_sec = ((new_stats['bytes_recv']-net_usage_dict['start_bytes_recv'][0])/1024.0)/dur
-            bytes_sent_per_sec = ((new_stats['bytes_sent']-net_usage_dict['start_bytes_sent'][0])/1024.0)/dur
-            net_usage_dict['stats_duration'][0] = dur
-            net_usage_dict['kb_recv_per_sec'][0] = bytes_recv_per_sec
-            net_usage_dict['kb_sent_per_sec'][0] = bytes_sent_per_sec
-            net_usage_dict['start_time'][0]=ctime
-            net_usage_dict['start_bytes_recv'][0]=new_stats['bytes_recv']
-            net_usage_dict['start_bytes_sent'][0]=new_stats['bytes_sent']
+#        new_stats=dict(psutil.net_io_counters(False)._asdict())
+#        ctime=Computer.getTime()
+#        if input_computer["network_usage"][0] is None:
+#            net_usage_dict = {}
+#            net_usage_dict['start_time']=[ctime,'sec']
+#            net_usage_dict['start_bytes_recv']=[new_stats['bytes_recv'],'']
+#            net_usage_dict['start_bytes_sent']=[new_stats['bytes_sent'],'']
+#            net_usage_dict['stats_duration']=[0.0,'sec']
+#            net_usage_dict['kb_recv_per_sec']=[0,'']
+#            net_usage_dict['kb_sent_per_sec']=[0,r'kb/sec']
+#            input_computer["network_usage"][0] = net_usage_dict
+#        else:
+#            net_usage_dict = input_computer["network_usage"][0]
+#            dur = ctime-net_usage_dict['start_time'][0]
+#            bytes_recv_per_sec = ((new_stats['bytes_recv']-net_usage_dict['start_bytes_recv'][0])/1024.0)/dur
+#            bytes_sent_per_sec = ((new_stats['bytes_sent']-net_usage_dict['start_bytes_sent'][0])/1024.0)/dur
+#            net_usage_dict['stats_duration'][0] = dur
+#            net_usage_dict['kb_recv_per_sec'][0] = bytes_recv_per_sec
+#            net_usage_dict['kb_sent_per_sec'][0] = bytes_sent_per_sec
+#            net_usage_dict['start_time'][0]=ctime
+#            net_usage_dict['start_bytes_recv'][0]=new_stats['bytes_recv']
+#            net_usage_dict['start_bytes_sent'][0]=new_stats['bytes_sent']
         return input_computer
 
 
     def updateMouseMsgInfo(self):
         dev_data = self.device_info_stats['mouse']
-        dev_data["recording"][0] = self.mouse.isReportingEvents()
-        dev_data["duration"][0] = self.device_info_stats['experiment_session']['duration'][0]
         new_events = self.mouse.getEvents(asType='dict')
         self.updateLocalEventsCache(new_events)
 
@@ -310,8 +311,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def updateKeyboardMsgInfo(self):
         dev_data = self.device_info_stats['keyboard']
-        dev_data["recording"][0] = self.keyboard.isReportingEvents()
-        dev_data["duration"][0] = self.device_info_stats['experiment_session']['duration'][0]
         new_events = self.keyboard.getEvents(asType='dict')
 
         self.updateLocalEventsCache(new_events)
@@ -345,10 +344,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def updateEyetrackerMsgInfo(self):
         dev_data = self.device_info_stats['eyetracker']
-        dev_data["recording"][0] = self.eyetracker.isReportingEvents()
         dev_data["time"][0] = self.eyetracker.trackerSec()
-        dev_data["model"][0] = "Unknown Model"
-        dev_data["duration"][0] = self.device_info_stats['experiment_session']['duration'][0]
 
         gp=self.eyetracker.getLastGazePosition()
         if gp:
@@ -715,6 +711,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         dshow_a=scParam('dshow_filters','audio')
         audio_arg=''
         if dshow_a:
+            #TODO: If audio source is Mic, set audio_buffer_size to 80
             audio_arg=':audio="%s"'%(dshow_a)
         rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
         cli='-f dshow -rtbufsize {0}k -i video="{1}"{2} '.format(
@@ -774,71 +771,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         return p
 
-#    def startScreenCaptureStream(self):
-#        appcfg=self.getConfiguration()
-#        scParam=partial(self.keyChainValue,appcfg,'screen_capture')
-#        sess_results_dir=self._session_results_folder
-#        pjoin=os.path.join
-#        dshow_v=scParam('dshow_filters','video')
-#        dshow_a=scParam('dshow_filters','audio')
-#        rtbufsize=scParam('dshow_filters','ffmpeg_settings','rtbufsize')        
-#        cli='-f dshow -rtbufsize {0}k -i video="{1}":audio="{2}" '.format(
-#                                                            rtbufsize, dshow_v,
-#                                                            dshow_a
-#                                                            )
-#        
-#        threads=scParam('http_stream','ffmpeg_settings','threads')
-#        scale=scParam('http_stream','ffmpeg_settings','scale')
-#        px,py=self.display.getPixelResolution()
-#        stream_width=int(px*scale)
-#        stream_height=int(py*scale)
-#        rate=scParam('http_stream','ffmpeg_settings','r')
-#        bv=scParam('http_stream','ffmpeg_settings','b','v')        
-#        cli+='-threads {0} -s {1}x{2} -f mpeg1video -b:v {3}k -r {4} '.format(
-#                                                        threads,stream_width,
-#                                                        stream_height,bv,rate
-#                                                        )
-#
-#        host=scParam('http_stream','host')
-#        write_port=scParam('http_stream','write_port')
-#        uri=scParam('http_stream','uri')
-#        cli+='http://{0}:{1}/{2}/{3}/{4}/ '.format(host, write_port, uri,
-#                                                stream_width, stream_height
-#                                                )
-#
-#        avFile=scParam('media_file','name')
-#        avExtension=scParam('media_file','extension')
-#        codec=scParam('media_file','ffmpeg_settings','codec')
-#        crf=scParam('media_file','ffmpeg_settings','crf')
-#        pix_fmt=scParam('media_file','ffmpeg_settings','pix_fmt')
-#        preset=scParam('media_file','ffmpeg_settings','preset')
-#        g=scParam('media_file','ffmpeg_settings','g')
-#        threads=scParam('media_file','ffmpeg_settings','threads')
-#        rec_count=self.device_info_stats['experiment_session']['recording_counter'][0]
-#        cli+='-vcodec {0} -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
-#                                        codec, crf, preset, threads,
-#                                        pjoin(sess_results_dir,avFile+"_%d."%(rec_count)+avExtension),
-#                                        pix_fmt,g
-#                                        )
-#
-#        fmpPath=scParam('ffmpeg','path')       
-#        if not os.path.isabs(fmpPath):
-#            fmpPath=pjoin(self.script_dir,fmpPath)
-#        ffmpeg=os.path.abspath(pjoin(fmpPath,scParam('ffmpeg','exe')))
-#        stdout_file=pjoin(sess_results_dir, scParam('ffmpeg','stdout_file')+"_%d"%(rec_count)+".txt")
-#        stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
-#
-#        self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-#        print("STARTING FFMPEG:",ffmpeg,cli)
-#        p = self.startSubProcess(ffmpeg, cli, 
-#                                    stdout_file=stdout_file, 
-#                                    stderr_file=stderr_file)
-#        self.hub.sendMessageEvent("Subprocess call returned...sleep(1.0)...", "ffmpeg_init")
-#        core.wait(1.0,.2)
-#        self.hub.sendMessageEvent("sleep(1.0) complete.", "ffmpeg_init")
-#
-#        return p
-        
     def quiteSubprocs(self,procs):
         import psutil
         def on_terminate(proc):

@@ -83,3 +83,11 @@
   right: 0;
   overflow: hidden; /* or auto or scroll */
 }
+
+.iohub-warning{
+  background-color: rgb(255, 201, 14);
+}
+
+.iohub-error{
+  background-color: rgb(165, 37, 32);
+}
