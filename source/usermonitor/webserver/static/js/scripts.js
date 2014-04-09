@@ -203,12 +203,20 @@ function createWebSocket(client_obj,video_server_host){
         }
        else if (msg.msg_type === 'EXP_FOLDER_LIST'){
             client_obj.experiment_name_list=msg.data;
-            //console.log($('#expSelectionContent'))
-            $('#expSelectionContent')[0].innerHTML="<span>"+msg.data+"</span>"
+            $('#experimentSelectionContent')[0].innerHTML="<span>Select the experiment results folder to save sessions into:</span>";
+            $('#experimentSelectionModalButton')[0].innerHTML='Start';
+            $('#experimentSelectionModalButton').removeClass('disabled');
 
-            $('#experimentSelectionModalButton')[0].innerHTML='Start'
-            $('#experimentSelectionModalButton').removeClass('disabled')
-            //$.bootstrapGrowl("Experiment Names Received:\n"+client_obj.experiment_name_list,{type:'info'});
+            var exp_picker=$('#experimentSelectionList')
+            exp_picker.prop('disabled',false);
+
+            if (msg.data.length > 0) {
+                for (var i= 0, size = msg.data.length; i < size; i++){
+                   exp_picker.append("<option data-subtext='x sessions'>"+msg.data[i]+"</option>");
+                }
+
+                exp_picker.selectpicker('refresh');
+            }
         }
        else{
           console.log("!! RX Unknown Msg:",msg);
@@ -216,6 +224,17 @@ function createWebSocket(client_obj,video_server_host){
     }
   };
   return socket;
+}
+
+function getExperimentNameSelectionContent(exp_list){
+    var html_result="<span>Select the experiment results folder to save sessions into:</span>";
+    html_result=html_result+"<select id='experimentSelectionList' class='selectpicker show-tick' data-live-search='true' data-style='btn-primary' data-width='auto' data-size=5>";
+    for (var i= 0, size = exp_list.length; i < size; i++){
+        html_result=html_result+"<option data-subtext='x sessions'>"+exp_list[i]+"</option>";
+    }
+    html_result=html_result+"</select>";
+    //  <option data-subtext="3 sessions">Mustard</option>
+    return html_result;
 }
 
 
