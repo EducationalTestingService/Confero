@@ -161,8 +161,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     @classmethod
     def getActiveExperimentNames(cls,inactiveexptoken):
-        print("cls.results_root_folder:",cls.results_root_folder)
-        _, exp_dirs, _ = next(os.walk(cls.results_root_folder))
+        _1, exp_dirs, _2 = next(os.walk(cls.results_root_folder))
+        print('_1:',_1)
+        print('_2:',_2)
+
         if inactiveexptoken:
             return [d for d in exp_dirs if d.find(inactiveexptoken) == -1]
         return [d for d in exp_dirs]
