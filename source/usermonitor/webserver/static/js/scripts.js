@@ -245,19 +245,6 @@ function createWebSocket(client_obj,video_server_host){
   return socket;
 }
 
-function getExperimentNameSelectionContent(exp_list){
-    var html_result="<span>Select the experiment results folder to save sessions into:</span>";
-    html_result=html_result+"<select id='experimentSelectionList' class='selectpicker show-tick' data-live-search='true' data-style='btn-primary' data-width='auto' data-size=5>";
-    for (var i= 0, size = exp_list.length; i < size; i++){
-        html_result=html_result+"<option data-subtext='x sessions'>"+exp_list[i]+"</option>";
-    }
-    html_result=html_result+"</select>";
-    //  <option data-subtext="3 sessions">Mustard</option>
-    return html_result;
-}
-
-
-
 
 
 

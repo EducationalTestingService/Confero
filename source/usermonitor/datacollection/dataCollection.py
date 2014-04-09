@@ -100,7 +100,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.stats_info_updates['experiment_session'] = session_info
         session_info['code'][0]=self.getSessionMetaData().get('code')
         session_info['start_time'][0]=self.computer.getTime()
-
+        session_info['experiment_name'][0] = self.active_exp_name
         display_info['resolution'][0] = self.display.getPixelResolution()
         display_unit_type = self.display.getCoordinateType()
         display_info['resolution'][1] = display_unit_type
