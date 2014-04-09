@@ -161,14 +161,18 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     @classmethod
     def getActiveExperimentNames(cls,inactiveexptoken):
-        _1, exp_dirs, _2 = next(os.walk(cls.results_root_folder))
-        print('_1:',_1)
-        print('_2:',_2)
+        _, exp_dirs, _ = next(os.walk(cls.results_root_folder))
 
+        exp_names_session_counts = []
         if inactiveexptoken:
-            return [d for d in exp_dirs if d.find(inactiveexptoken) == -1]
-        return [d for d in exp_dirs]
+            exp_dirs = [exp_name for exp_name in exp_dirs if d.find(inactiveexptoken) == -1]
 
+        for exp_name in exp_dirs:
+            _, session_dirs, _ = next(os.walk(os.path.join(cls.results_root_folder,exp_name)))
+            exp_names_session_counts.append((exp_name, len(session_dirs)))
+
+        return exp_names_session_counts
+    
     # Start the ffmpeg screen capturing sub process
     def beginScreenCaptureStream(self):
         try:
