@@ -66,7 +66,7 @@ screen_capture:
         audio: virtual-audio-capturer
         ffmpeg_settings:
             #  real time buffer size (in K)
-            rtbufsize: 702000 # 2097152 K
+            rtbufsize: 1404000 # 2097152 K
             
     # params related to saving the screen stream to file
     media_file:
@@ -95,7 +95,7 @@ screen_capture:
             # bitrates (in K)
             b:
                 # video
-                v: 800
+                v: 1600
             
 ################# ETS Experimenter Control & Monitoring Server #################
 
