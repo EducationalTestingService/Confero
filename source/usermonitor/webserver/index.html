@@ -557,9 +557,10 @@
                   } else {
                     if (result !== ''){
                         if (umf_state.existing_session_names.indexOf(result) > -1) {
+                            ;
+                        } else {
                             var sendmsg=JSON.stringify({type:'START_EXP_SESSION', code: result});
                             server_websocket.send(sendmsg);
-                        } else {
                             duplicateSessionName= false;
                         }
                         }
