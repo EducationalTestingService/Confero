@@ -4,6 +4,8 @@ var umf_state = {
 
     active_experiment_name: '',
 
+    existing_session_names: [],
+
     ui_setting: {},
 
     monitored_devices: {},

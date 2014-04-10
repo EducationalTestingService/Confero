@@ -174,7 +174,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         for exp_name in exp_dirs:
             _, session_dirs, _ = next(os.walk(os.path.join(cls.results_root_folder,exp_name)))
-            exp_names_session_counts.append((exp_name, len(session_dirs)))
+            exp_names_session_counts.append((exp_name, session_dirs))
 
         return exp_names_session_counts
     

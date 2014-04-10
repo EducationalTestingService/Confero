@@ -505,6 +505,13 @@
 
              $('#experimentSelectionModalButton').on('click', function(event) {
                 umf_state.active_experiment_name=$('.expNamePicker')[0].value;
+                for (var i = 0, size = client_obj.experiment_name_list.length; i < size; i++){
+                    if (client_obj.experiment_name_list[i][0] === umf_state.active_experiment_name){
+                        umf_state.existing_session_names=client_obj.experiment_name_list[i][1];
+                        break;
+                    }
+                }
+                console.log("Exp Sessions:",umf_state.existing_session_names);
                 var sendmsg=JSON.stringify({type:'EXPERIMENT_SELECTED', name: umf_state.active_experiment_name});
                 server_websocket.send(sendmsg);
                 $('#experimentSelectionModal').modal('hide');

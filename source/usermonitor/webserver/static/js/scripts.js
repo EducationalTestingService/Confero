@@ -231,7 +231,7 @@ function createWebSocket(client_obj,video_server_host){
             exp_data=msg.data;
             if (exp_data.length > 0) {
                 for (var i= 0, size = exp_data.length; i < size; i++){
-                   exp_picker.append("<option data-subtext='"+exp_data[i][1]+" sessions'>"+exp_data[i][0]+"</option>");
+                   exp_picker.append("<option data-subtext='"+exp_data[i][1].length+" sessions'>"+exp_data[i][0]+"</option>");
                 }
 
                 exp_picker.selectpicker('refresh');
