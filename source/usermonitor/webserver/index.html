@@ -511,7 +511,6 @@
                         break;
                     }
                 }
-                console.log("Exp Sessions:",umf_state.existing_session_names);
                 var sendmsg=JSON.stringify({type:'EXPERIMENT_SELECTED', name: umf_state.active_experiment_name});
                 server_websocket.send(sendmsg);
                 $('#experimentSelectionModal').modal('hide');
@@ -549,28 +548,37 @@
                 });
             });
 
+            var duplicateSessionName=true;
+
             $('#newSessionButton').on('click', function() {
                 var box=bootbox.prompt("Enter New Session Code:", function(result) {
                   if (result === null) {
                     $.bootstrapGrowl("Create Session Cancelled",{type:'default'});
                   } else {
                     if (result !== ''){
-                        var sendmsg=JSON.stringify({type:'START_EXP_SESSION', code: result});
-                        server_websocket.send(sendmsg);
+                        if (umf_state.existing_session_names.indexOf(result) > -1) {
+                            var sendmsg=JSON.stringify({type:'START_EXP_SESSION', code: result});
+                            server_websocket.send(sendmsg);
+                        } else {
+                            duplicateSessionName= false;
+                        }
                         }
                     else
                         $.bootstrapGrowl("Session Not Created.",{type:'error'});
+                        duplicateSessionName= false;
                     }
                  });
-                box.modal("show").css({
-                        'margin-top': function () { //vertical centering
-                                        return -($(this).height() / 2);
-                                        },
-                        'margin-left': function () { //Horizontal centering
-                                        return -($('#navbarDIV').width() / 2);
-                                        }
-                });
 
+                while (duplicateSessionName === true){
+                    box.modal("show").css({
+                            'margin-top': function () { //vertical centering
+                                            return -($(this).height() / 2);
+                                            },
+                            'margin-left': function () { //Horizontal centering
+                                            return -($('#navbarDIV').width() / 2);
+                                            }
+                    });
+                }
 
 
             });
