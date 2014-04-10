@@ -548,40 +548,42 @@
                 });
             });
 
-            var duplicateSessionName=true;
-
-            $('#newSessionButton').on('click', function() {
-                var box=bootbox.prompt("Enter New Session Code:", function(result) {
+            function onNewSessionButtonPress() {
                   if (result === null) {
                     $.bootstrapGrowl("Create Session Cancelled",{type:'default'});
                   } else {
                     if (result !== ''){
                         if (umf_state.existing_session_names.indexOf(result) > -1) {
-                            ;
+                            newSessionbox.modal("show").css({
+                                    'margin-top': function () { //vertical centering
+                                                    return -($(this).height() / 2);
+                                                    },
+                                    'margin-left': function () { //Horizontal centering
+                                                    return -($('#navbarDIV').width() / 2);
+                                                    }
+                            });
                         } else {
                             var sendmsg=JSON.stringify({type:'START_EXP_SESSION', code: result});
                             server_websocket.send(sendmsg);
-                            duplicateSessionName= false;
                         }
                         }
                     else
                         $.bootstrapGrowl("Session Not Created.",{type:'error'});
-                        duplicateSessionName= false;
                     }
-                 });
+                 }
 
-                while (duplicateSessionName === true){
-                    box.modal("show").css({
-                            'margin-top': function () { //vertical centering
-                                            return -($(this).height() / 2);
-                                            },
-                            'margin-left': function () { //Horizontal centering
-                                            return -($('#navbarDIV').width() / 2);
-                                            }
-                    });
-                }
+             var newSessionbox=bootbox.prompt("Enter New Session Code:",onNewSessionButtonPress);
 
+            $('#newSessionButton').on('click', function() {
 
+                newSessionbox.modal("show").css({
+                        'margin-top': function () { //vertical centering
+                                        return -($(this).height() / 2);
+                                        },
+                        'margin-left': function () { //Horizontal centering
+                                        return -($('#navbarDIV').width() / 2);
+                                        }
+                });
             });
 
             $('#closeSessionButton').on('click', function() {
