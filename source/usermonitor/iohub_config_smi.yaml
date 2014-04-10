@@ -57,38 +57,8 @@ monitor_devices:
                 target_color: 239
                 target_inner_color: RED
             show_validation_accuracy_window: False
-#        model_name: REDm
-#    - eyetracker.hw.tobii.EyeTracker:
-#        enable: True
-#        name: tracker
-#        auto_report_events: False
-#        model_name:
-#        serial_number:
-#        runtime_settings:
-#            sampling_rate: 60
-#        calibration:
-#            type: FIVE_POINTS
-#            randomize: True
-#            auto_pace: True
-#            pacing_speed: 1.0
-#            screen_background_color: [128,128,128]            
-#            target_type: CIRCLE_TARGET
-#            target_attributes:
-#                 outer_diameter: 35
-#                 outer_stroke_width: 2
-#                 outer_fill_color: [128,128,128]
-#                 outer_line_color: [255,255,255]
-#                 inner_diameter: 7
-#                 inner_stroke_width: 1
-#                 inner_color: [0,0,0]
-#                 inner_fill_color: [0,0,0]
-#                 inner_line_color: [0,0,0]
-#                 animate:
-#                     enable: True
-#                     movement_velocity: 900.0  # 500 pix / sec
-#                     expansion_ratio: 3.0  # expands to 3 x the starting size
-#                     expansion_speed: 60.0  # exapands at 30.0 pix / sec
-#                     contract_only: True        
+        model_name: REDm
+        
 data_store:
     filename: iohub_events
     enable: True

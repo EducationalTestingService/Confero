@@ -91,12 +91,14 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         mouse_info=copy.deepcopy(messages.mouse)
         self.device_info_stats['mouse']=mouse_info
-
-        tracker_info=copy.deepcopy(messages.eyetracker)
-        self.device_info_stats['eyetracker']=tracker_info
-        tracker_info["model"][0] = u"{0} : {1}".format(
-                                            self.eyetracker.manufacturer_name,
-                                            self.eyetracker.model_name)
+        
+        if self.eyetracker:
+            tracker_info=copy.deepcopy(messages.eyetracker)
+            self.device_info_stats['eyetracker']=tracker_info
+            et_config=self.eyetracker.getConfiguration()
+            tracker_info["model"][0] = u"{0} : {1}".format(
+                                                et_config.get('manufacturer_name','-'),
+                                                et_config.get('model_name','-'))
 
         session_info=copy.deepcopy(messages.experiment_session)
         self.device_info_stats['experiment_session']=session_info
@@ -343,6 +345,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             return dev_data
 
     def updateEyetrackerMsgInfo(self):
+        if self.eyetracker is None:
+            return
+            
         dev_data = self.device_info_stats['eyetracker']
         dev_data["time"][0] = self.eyetracker.trackerSec()
 
