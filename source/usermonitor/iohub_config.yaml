@@ -90,5 +90,5 @@ monitor_devices:
 #                     expansion_speed: 60.0  # exapands at 30.0 pix / sec
 #                     contract_only: True        
 data_store:
-    filename: iohub_events.hdf5
+    filename: iohub_events
     enable: True

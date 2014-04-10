@@ -73,10 +73,8 @@ def main(configurationDirectory):
                                     "..\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
-    iohubconfpath=os.path.join(configurationDirectory,
-                                        iohub_config=keyChainValue(app_conf,
-                                                                   'ioHub',
-                                                                   'config'))
+    iohub_configfname=keyChainValue(app_conf,'ioHub','config')
+    iohubconfpath=os.path.join(configurationDirectory,iohub_configfname )
     iohubconfpath=os.path.abspath(iohubconfpath)
     iohub_conf = load(file(iohubconfpath, u'r'), Loader=Loader)
     iohubconfdirname, iohubconfigfilename = os.path.split(iohubconfpath)
@@ -138,7 +136,7 @@ def main(configurationDirectory):
             dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
 
             # save modified iohub_config for loading by upcoming session
-            dump(app_conf, file(app_conf.get('ioHub', {})['config'], 'w'), Dumper=Dumper)
+            dump(iohub_conf, file(app_conf.get('ioHub', {})['config'], 'w'), Dumper=Dumper)
             time.sleep(0.5)
 
 
