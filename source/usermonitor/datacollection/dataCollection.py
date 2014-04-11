@@ -153,12 +153,13 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 if cmd:
                     run=False
                     return cmd
-
+                        
                 # Check for App exit
                 if self.checkForTerminateEvent():
+                    print("SESSION CLOSED BY COLLECTION APP TERMINATE EVENT.")
                     run=False
                     break
-    
+    self._session_results_folder
                 # check for any commands that need to be handled
                 self.handleCommands()
                
@@ -306,7 +307,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if isinstance(gp, (tuple, list)):
             gp = int(gp[0]), int(gp[1])
         else:
-            gp = [-1000, -1000]
+            gp = None#gp = [-1000, -1000]
             
         dev_data_update = False
         if dev_data["gaze_position"][0] != gp:            
@@ -581,7 +582,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                                                 show_intro_screen=True,
                                                 intro_text="Validation procedure is now going to be performed.",
                                                 show_results_screen=True,
-                                                results_in_degrees=True
+                                                results_in_degrees=True,
+                                                save_figure=self._session_results_folder
                                                 )                        
             
             # Run the validation process. The method does not return until the process
