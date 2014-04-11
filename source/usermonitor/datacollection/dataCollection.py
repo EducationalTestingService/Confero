@@ -351,11 +351,12 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         dev_data = self.device_info_stats['eyetracker']
         dev_data["time"][0] = self.eyetracker.trackerSec()
 
-        gp=self.eyetracker.getLastGazePosition()
+        gp = self.eyetracker.getLastGazePosition()
+        print('gp:',gp)
         if gp:
             gp = int(gp[0]), int(gp[1])
         else:
-            gp = [-1000,-1000]
+            gp = [-1000, -1000]
             
         dev_data_update=False        
         if dev_data["gaze_position"][0] != gp:            
