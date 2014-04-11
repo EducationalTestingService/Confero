@@ -510,19 +510,6 @@
                 $('#experimentSelectionModal').modal('hide');
                });
 
-
-            //$.bootstrapGrowl("My message1",{delay: 40000000});
-            //$.bootstrapGrowl("another message, yay!", {
-            //  ele: 'body', // which element to append to
-            //  type: 'info', // (null, 'info', 'error', 'success')
-            //  offset: {from: 'top', amount: 20}, // 'top', or 'bottom'
-            //  align: 'right', // ('left', 'right', or 'center')
-            //   width: 250, // (integer, or 'auto')
-            //  delay: 4000, // Time while the message will be displayed. It's not equivalent to the *demo* timeOut!
-            //  allow_dismiss: true, // If true then will display a cross to close the popup.
-            //  stackup_spacing: 10 // spacing between consecutively stacked growls.
-            //});
-            // >>> Navigation JS
             $('#shutdownSoftwareButton').on('click', function() {
                 var box=bootbox.confirm("Are you sure you want to shut down the UserMonitor software?", function(result) {
                   if (result === false) {
@@ -541,7 +528,6 @@
                                         }
                 });
             });
-
 
             function displayNewSessionNameEntryDialog(){
                 var box=bootbox.prompt("Enter New Session Code:", function(result) {
@@ -643,7 +629,8 @@
             $('#submitExperimentMessage').on('click', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
-                var sendmsg=JSON.stringify({type:'experiment_message',category:"feedback_log",text:$("#msgLogText")[0].value});
+                var sendmsg=JSON.stringify({type:'experiment_message',category:"feedback_log",text:$("#msgLogText")[0].value.trim()});
+                $("#msgLogText")[0].value='';
                 server_websocket.send(sendmsg);
                 //console.log($("#msgLogText").value());
                 //alert(args);
@@ -654,7 +641,8 @@
 				event.preventDefault();
                 event.stopPropagation();
 
-                var sendmsg=JSON.stringify({type:'experiment_message',category:"feedback_log",text:$("#msgLogText")[0].value});
+                var sendmsg=JSON.stringify({type:'experiment_message',category:"feedback_log",text:$("#msgLogText")[0].value.trim()});
+                $("#msgLogText")[0].value='';
                 server_websocket.send(sendmsg);
 
 				// stop the form from submitting and refreshing
