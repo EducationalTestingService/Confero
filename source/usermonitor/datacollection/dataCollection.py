@@ -211,66 +211,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def updateInputComputerStats(self,):
         self.cpu_usage_buffer.append(psutil.cpu_percent(0.0))
-        input_computer=self.device_info_stats['input_computer']
+        input_computer = self.device_info_stats['input_computer']
         input_computer['cpu_usage_all'][0] = float(self.cpu_usage_buffer.mean())
         input_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
-
-#        new_stats = dict(psutil.disk_io_counters(False)._asdict())
-#        ctime = Computer.getTime()
-#        if input_computer["disk_usage"][0] is None:
-#            disk_usage_dict = {}
-#            disk_usage_dict['start_time']=[ctime,'sec']
-#            disk_usage_dict['start_bytes_read']=[new_stats['read_bytes'],'']
-#            disk_usage_dict['start_bytes_write']=[new_stats['write_bytes'],'']
-#            disk_usage_dict['start_read_time']=[new_stats['read_time'],'']
-#            disk_usage_dict['start_write_time']=[new_stats['write_time'],'']
-#            disk_usage_dict['stats_duration']=[0.0,'']
-#            disk_usage_dict['read_kb_per_sec']=[0,'']
-#            disk_usage_dict['write_kb_per_sec']=[0,r'kb/sec']
-#            disk_usage_dict['read_time_perc']=[0.0,'']
-#            disk_usage_dict['write_time_perc']=[0.0,r'%/sec']
-#            input_computer["disk_usage"][0] = disk_usage_dict
-#        else:
-#            disk_usage_dict = input_computer["disk_usage"][0]
-#            dur = ctime-disk_usage_dict['start_time'][0]
-#            read_bytes_per_sec = ((new_stats['read_bytes']-disk_usage_dict['start_bytes_read'][0])/1024.0)/dur
-#            write_bytes_per_sec = ((new_stats['write_bytes']-disk_usage_dict['start_bytes_write'][0])/1024.0)/dur
-#            read_time = new_stats['read_time']-disk_usage_dict['start_read_time'][0]
-#            write_time = new_stats['write_time']-disk_usage_dict['start_write_time'][0]
-#            disk_usage_dict['stats_duration'][0] = dur
-#            disk_usage_dict['read_kb_per_sec'][0] = read_bytes_per_sec
-#            disk_usage_dict['write_kb_per_sec'][0] = write_bytes_per_sec
-#            disk_usage_dict['read_time_perc'][0]=(read_time/dur)*100.0
-#            disk_usage_dict['write_time_perc'][0]=(write_time/dur)*100.0
-#            disk_usage_dict['start_time'][0]=ctime
-#            disk_usage_dict['start_bytes_read'][0]=new_stats['read_bytes']
-#            disk_usage_dict['start_bytes_write'][0]=new_stats['write_bytes']
-#            disk_usage_dict['start_read_time'][0]=new_stats['read_time']
-#            disk_usage_dict['start_write_time'][0]=new_stats['write_time']
-
-
-#        new_stats=dict(psutil.net_io_counters(False)._asdict())
-#        ctime=Computer.getTime()
-#        if input_computer["network_usage"][0] is None:
-#            net_usage_dict = {}
-#            net_usage_dict['start_time']=[ctime,'sec']
-#            net_usage_dict['start_bytes_recv']=[new_stats['bytes_recv'],'']
-#            net_usage_dict['start_bytes_sent']=[new_stats['bytes_sent'],'']
-#            net_usage_dict['stats_duration']=[0.0,'sec']
-#            net_usage_dict['kb_recv_per_sec']=[0,'']
-#            net_usage_dict['kb_sent_per_sec']=[0,r'kb/sec']
-#            input_computer["network_usage"][0] = net_usage_dict
-#        else:
-#            net_usage_dict = input_computer["network_usage"][0]
-#            dur = ctime-net_usage_dict['start_time'][0]
-#            bytes_recv_per_sec = ((new_stats['bytes_recv']-net_usage_dict['start_bytes_recv'][0])/1024.0)/dur
-#            bytes_sent_per_sec = ((new_stats['bytes_sent']-net_usage_dict['start_bytes_sent'][0])/1024.0)/dur
-#            net_usage_dict['stats_duration'][0] = dur
-#            net_usage_dict['kb_recv_per_sec'][0] = bytes_recv_per_sec
-#            net_usage_dict['kb_sent_per_sec'][0] = bytes_sent_per_sec
-#            net_usage_dict['start_time'][0]=ctime
-#            net_usage_dict['start_bytes_recv'][0]=new_stats['bytes_recv']
-#            net_usage_dict['start_bytes_sent'][0]=new_stats['bytes_sent']
         return input_computer
 
 

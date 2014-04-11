@@ -11,14 +11,15 @@ from tornado import websocket
 from tornado.web import RequestHandler
 import tornado.ioloop
 from tornado.ioloop import IOLoop
+import psutil
 
 from proc_util import startSubProcess,startNodeWebStreamer,quiteSubprocs
 
-import timeit,time
-IOLoop.time=timeit.default_timer
+import timeit, time
+IOLoop.time = timeit.default_timer
 
 import webbrowser
-import string,  Queue
+import string, Queue
 import random
 import os
 import ujson
@@ -42,11 +43,11 @@ class RestAppHandler(tornado.web.RequestHandler):
 
 class RestAppRpcHandler(RestAppHandler):
     def get(self,slug):
-        path_tokens=slug.split('/')
-        calls={}
-        skipped=[]
+        path_tokens = slug.split('/')
+        calls = {}
+        skipped = []
         for pt in path_tokens:
-            if pt and hasattr(self.server_app,pt):
+            if pt and hasattr(self.server_app, pt):
                 if pt.lower().endswith('quit') or pt.lower().endswith('quit/'):
                     print("Calling quit()")
                     self.server_app.quit()
@@ -175,7 +176,7 @@ class DataCollectionWebSocket(WebSocket):
     def open(self):
         WebSocket.open(self)
         self.data_collection_state = dict()
-
+        self.server_computer = dict(cpu_usage_all=(0.0, r' %'),memory_usage_all=(0.0, r' %'))
     def on_message(self, message):
         msg_list = ujson.loads(message)
 
@@ -184,6 +185,10 @@ class DataCollectionWebSocket(WebSocket):
             msg_type = m.get('msg_type', 'UNKNOWN')
             if msg_type == 'EXP_FOLDER_LIST':
                 self.data_collection_state['experiment_names_msg'] = m
+            elif msg_type =='DataCollection':
+                self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
+                self.server_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
+                m['server_computer'] = self.server_computer
             if msg_type is not 'UNKNOWN':
                 to_send.append(m)
 

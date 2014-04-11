@@ -39,20 +39,16 @@ experiment_session = {
 input_computer = {
     "cpu_usage_all": [None,r'%'],
     "memory_usage_all": [None,r'%'],
-    "disk_usage": [None,r''],
-    'network_usage': [None,''],
     'up_time': [0.0,'sec'],
     "countdown_time": [1.0,'sec']
 }
 
 display = {               # name of iohub device class
-    "recording": [False,''], # Is screen capture process running for the monitor
     "duration": [0.0,'sec'],# number of seconds into this recording period
     "resolution": [[0,0],'pix']
     }
 
 keyboard = {            # name of iohub device class
-    "recording": [False,''], # Is iohub currently recording events from device
     "duration": [0.0,'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
     "type": [None,''],
@@ -68,7 +64,6 @@ keyboard = {            # name of iohub device class
     }                     # the DataCollection message (in secs)
 
 mouse = {                 # name of iohub device class
-    "recording": [False,''], # Is iohub currently recording events from device
     "duration": [0,'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
                         # if recording is False, events will be empty None
@@ -113,7 +108,6 @@ EyeInfo = {            # all data for left eye (if available)
 
 eyetracker = {          # name of iohub device class
     "model": ['Unknown',''], # eye tracker model
-    "recording": [False,''], # Is iohub currently recording events from device
     "duration": [132.934,' sec'],# number of seconds into this recording period
     "time": [100.234,' sec'],    # current tracker time, in secs
     "gaze_position": [[0.0, 0.0],''], # current gaze position
