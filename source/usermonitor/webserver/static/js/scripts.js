@@ -117,6 +117,7 @@ function createWebSocket(client_obj,video_server_host){
        var msg = msg_list[i];
        if(msg.msg_type === 'DataCollection'){
           delete msg['msg_type'];
+          console.log(msg);
           for (var key in msg) {
             client_obj.monitored_devices[key]=msg[key];
             updateDOMContents(client_obj,key);
