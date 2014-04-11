@@ -176,7 +176,7 @@ class DataCollectionWebSocket(WebSocket):
     def open(self):
         WebSocket.open(self)
         self.data_collection_state = dict()
-        self.server_computer = dict(cpu_usage_all=(0.0, r' %'),memory_usage_all=(0.0, r' %'))
+        self.server_computer = dict(cpu_usage_all=[0.0, r' %'],memory_usage_all=[0.0, r' %'])
     def on_message(self, message):
         msg_list = ujson.loads(message)
 
