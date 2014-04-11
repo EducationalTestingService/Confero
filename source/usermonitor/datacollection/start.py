@@ -136,7 +136,7 @@ def main(configurationDirectory):
             app_conf = load(file(app_conf_path, u'r'), Loader=Loader)
             # Update the session code to be used
             #
-            app_conf.get('session_defaults', {})['code'] = data
+            app_conf.setdefault('session_defaults', {})['code'] = data
             iohubconfpath = abspath(pjoin(configurationDirectory,
                                                          keyChainValue(app_conf,
                                                             'ioHub', 'config')))
