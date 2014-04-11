@@ -60,7 +60,7 @@ keyboard = {            # name of iohub device class
     "key": [None,''],
     "modifiers": [None,''],
     "window_id": [None,''],
-    "last_event_time": [Non    "start_time": [None,'sec'],e,'sec'],
+    "last_event_time": [None,'sec'],
     "countdown_time": [0.1,'sec'], # how often should this device info be updated in
     }                     # the DataCollection message (in secs)
 DataCollection['keyboard'] = keyboard
@@ -82,7 +82,7 @@ DataCollection['mouse'] = mouse
 
 eyetracker = {          # name of iohub device class
     "model": [None, ''], # eye tracker model
-    "sampling_rate": [None, 'Hz']
+    "sampling_rate": [None, 'Hz'],
     "time": [None, ' sec'],    # current tracker time, in secs
     "track_eyes": [None, ''],    # LEFT, RIGHT, BINOCULAR, MONOCULAR 
     "eye_sample_type":[None, ''], 
