@@ -187,7 +187,7 @@ class DataCollectionWebSocket(WebSocket):
                 self.data_collection_state['experiment_names_msg'] = m
             elif msg_type =='DataCollection':
                 if m.get('input_computer'):
-                    if  is None:
+                    if m.get('input_computer')['cpu_usage_all'][0] is None:
                         self.server_computer = dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %'])
                     else:    
                         self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
@@ -230,6 +230,7 @@ class ControlFeedbackServer(object):
     def __init__(self, app_config):
         self.webapp = tornado.web.Application(self.handlers, **self.settings)
         self.ssproxy = None
+        self._win_dialog_thread=None
         ControlFeedbackServer.app_config = app_config
         UIWebSocket.server_app_websockets = self.web_sockets
         DataCollectionWebSocket.server_app_websockets = self.web_sockets
@@ -243,9 +244,28 @@ class ControlFeedbackServer(object):
             # Start webapp server
             self.webapp.listen(8888)
             IOLoop.instance()
-            IOLoop.instance().add_timeout(self.getServerTime()+0.5,
+            autolaunch=keyChainValue(self.app_config, 'auto_launch_webapp')
+            if autolaunch:            
+                IOLoop.instance().add_timeout(self.getServerTime()+0.5,
                                           self.openWebAppGUI)
+            else:
+                def showWinDialog(server_ip,server_port):                
+                    showSimpleWin32Dialog("Use the following URL to open the "
+                                          "UserMonitor Web Interface:"
+                                          "\nhttp://%s:%d/"%(server_ip, server_port),
+                                          "UserMonitor Web UI Available")
     
+                server_ip = keyChainValue(self.app_config,
+                                       'experimenter_server',
+                                       'address')
+                server_port = keyChainValue(self.app_config,
+                                       'experimenter_server',
+                                       'port')
+                import threading                       
+                self._win_dialog_thread = threading.Timer(0.5, showWinDialog,args=[server_ip,server_port])
+                self._win_dialog_thread.start()
+                
+                
             tornado.locale.load_translations(
                 os.path.join(os.path.dirname(__file__), "translations"))
     
@@ -264,6 +284,11 @@ class ControlFeedbackServer(object):
                 self.ssproxy=None
             IOLoop.instance().stop()
             print 'Tornado server stopped OK.'
+            
+            if self._win_dialog_thread and self._win_dialog_thread.isAlive():
+                self._win_dialog_thread=None
+                quiteSubprocs([psutil.Process(),])
+            
         IOLoop.instance().add_timeout(self.getServerTime()+2.0,_exit)
 
     #def _terminate(self):
@@ -292,11 +317,6 @@ class ControlFeedbackServer(object):
                     import traceback
                     print("Error while starting webbrowser.get() with value of", autolaunch)
                     traceback.print_exc()
-        else:
-            showSimpleWin32Dialog("Use the following URL to open the "
-                                  "UserMonitor Web Interface:"
-                                  "\nhttp://%s:%d/"%(server_ip, server_port),
-                                  "UserMonitor Web UI Available")
 
     @staticmethod
     def id_generator(size=12, chars=string.ascii_uppercase + string.digits):
