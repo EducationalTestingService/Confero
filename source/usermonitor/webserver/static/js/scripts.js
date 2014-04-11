@@ -177,6 +177,7 @@ function createWebSocket(client_obj,video_server_host){
                        ],[],[]);
         }
        else if (msg.msg_type === 'EXP_SESSION_CLOSED'){
+            umf_state.fillVideoCanvas();
             if (msg.type === 'success')
                 $.bootstrapGrowl("Experiment Session Closed.",{type:msg.type});
             else if (msg.type === 'error')
@@ -206,6 +207,7 @@ function createWebSocket(client_obj,video_server_host){
                        ],[],[]);
         }
        else if (msg.msg_type === 'RECORDING_STOPPED'){
+            umf_state.fillVideoCanvas()
             if (msg.type === 'success')
                 $.bootstrapGrowl("Data Recording Stopped.",{type:msg.type});
             else if (msg.type === 'error')

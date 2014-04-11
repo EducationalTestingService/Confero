@@ -14,6 +14,14 @@ var umf_state = {
 
     active_overlay_types: [],
 
+    fillVideoCanvas: function(){
+          var canvas = document.getElementById('videoCanvas');
+          var context = canvas.getContext('2d');
+          context.fillStyle="rgba(209, 207, 176,1)";
+          context.fillRect(0,0,canvas.width,canvas.height);
+        },
+
+
     toggleOverlayType: function(class_list,otype){
         var pressed = class_list.contains("active") == false;
         var i = this.active_overlay_types.indexOf(otype);
@@ -43,6 +51,7 @@ function drawCanvasCircle(canvas, centerX, centerY, radius, color, lineWidth){
         context.stroke();
         }
     }
+
 
 function onDecodeWsVideoFrame(jsmpg_obj,video_canvas){
         // draw any overlay graphics on the realtime screen cap feed

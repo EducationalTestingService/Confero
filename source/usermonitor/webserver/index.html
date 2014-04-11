@@ -681,13 +681,9 @@
         // Show loading notice on video canvas
         var canvas = document.getElementById('videoCanvas');
         // Setup the WebSocket connection and start the player
-        console.log('canvas:',canvas)
         var client = new WebSocket( 'ws://{{ video_server_host }}:{{ video_server_port }}/' );
-        console.log('client:',client)
         var player = new jsmpeg(client, {canvas:canvas, ondecodeframe:onDecodeWsVideoFrame});
-        console.log('player:',player)
-
-
+        umf_state.fillVideoCanvas();
     });
     </script>
 </body>
