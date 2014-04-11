@@ -39,25 +39,24 @@ window.addEventListener('resize', resizeVideoDiv, false);
 
 ///////////////////////////////////////////////////////////////////////////////
 function updateNode(client_obj,element_id,device,key){
+    var value = device[key][0];
+    var after=device[key][1];
+    if (value === null)
+        value = '';
+    else if (isFloat(value))
+        value=value.toFixed(3)+' '+after;
+    else
+        value=JSON.stringify(device[key][0]).trim()
+        if (value.length>0)
+            value=value+' '+after;
+
     if (element_id in client_obj.device_dom_nodes){
-        var value = device[key][0];
-        var after=device[key][1];
-        if (isFloat(value))
-            value=value.toFixed(3)+' '+after;
-        else
-            value=JSON.stringify(device[key][0])+' '+after;
         client_obj.device_dom_nodes[element_id].html(value);
     }
     else{
         var dom_node=$(element_id);
         if (dom_node.length > 0) {
             client_obj.device_dom_nodes[element_id]=dom_node;
-            var value = device[key][0];
-            var after=device[key][1];
-            if (isFloat(value))
-                value=value.toFixed(3)+' '+after;
-            else
-                value=JSON.stringify(device[key][0])+' '+after;
             dom_node.html(value);
         }
     }
@@ -118,7 +117,6 @@ function createWebSocket(client_obj,video_server_host){
        var msg = msg_list[i];
        if(msg.msg_type === 'DataCollection'){
           delete msg['msg_type'];
-          console.log(msg);
           for (var key in msg) {
             client_obj.monitored_devices[key]=msg[key];
             updateDOMContents(client_obj,key);

@@ -162,7 +162,7 @@ class UIWebSocket(WebSocket):
 
             if msg_type == 'EXPERIMENT_SELECTED':
                 dc_sw.data_collection_state['active_experiment'] = msg_dict.get('name')
-            print "SENDING MSG TO DC:'",msg_dict
+            #print "SENDING MSG TO DC:'",msg_dict
             if msg_type is not 'UNKNOWN':
                 dc_sw.write_message(message)
 
@@ -176,7 +176,7 @@ class DataCollectionWebSocket(WebSocket):
     def open(self):
         WebSocket.open(self)
         self.data_collection_state = dict()
-        self.server_computer = dict(cpu_usage_all=[0.0, r' %'],memory_usage_all=[0.0, r' %'])
+        self.server_computer = dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %'])
     def on_message(self, message):
         msg_list = ujson.loads(message)
 
@@ -186,9 +186,13 @@ class DataCollectionWebSocket(WebSocket):
             if msg_type == 'EXP_FOLDER_LIST':
                 self.data_collection_state['experiment_names_msg'] = m
             elif msg_type =='DataCollection':
-                self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
-                self.server_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
-                m['server_computer'] = self.server_computer
+                if m.get('input_computer'):
+                    if  is None:
+                        self.server_computer = dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %'])
+                    else:    
+                        self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
+                        self.server_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
+                    m['server_computer'] = self.server_computer
             if msg_type is not 'UNKNOWN':
                 to_send.append(m)
 
@@ -301,28 +305,3 @@ class ControlFeedbackServer(object):
     def __del__(self):
         self.quit()
 
-###############################################################################
-            
-
-# class SandboxHandler(BaseHandler):
-#    # def get(self, uri):
-#        # self.render(os.path.normcase("sandbox\\"+uri))
-#class LoginHandler(BaseHandler):
-#    def get(self):
-#        self.render("login.html")
-#
-#    def post(self):
-#        self.set_secure_cookie("user", self.get_argument("username"))
-#        password=self.get_argument("password")
-#        rememberme=False
-#        try:
-#            rememberme=self.get_argument("rememberme")
-#        except:
-#            pass
-#        self.redirect("/")
-
-#class LogoutHandler(BaseHandler):
-#    def get(self):
-#        #self.write("Goodbye, " + self.current_user)
-#        self.clear_cookie("user")
-#        self.render("logout.html")
