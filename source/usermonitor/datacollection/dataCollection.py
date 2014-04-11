@@ -386,9 +386,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             print("<<<")
 
     def resetWebAppDataStats(self):
-        data_collection = messages.DataCollection
-        import pprint
-        pprint.pprint(messages.DataCollection)
         self.sendToWebServer(messages.DataCollection)
 
     def handleMsgTx(self):
@@ -643,7 +640,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     def stopDeviceRecording(self):
         session_info=self.device_info_stats['experiment_session']
         if session_info['recording'][0] is True:
-            print ("** TODO: RESET DEVICE INFO AT END OF RECORDING **")
             session_info['recording'][0] =False
             self.stats_info_updates['experiment_session'] = session_info
 
@@ -726,7 +722,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
 
         self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-        print("STARTING FFMPEG:",ffmpeg,cli)
+        #print("STARTING FFMPEG:",ffmpeg,cli)
         p = self.startSubProcess(ffmpeg, cli, 
                                     stdout_file=stdout_file, 
                                     stderr_file=stderr_file)
