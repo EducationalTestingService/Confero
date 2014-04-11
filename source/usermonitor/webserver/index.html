@@ -469,12 +469,6 @@
     <script type="text/javascript" src="static/js/userMonitorClientState.js"></script>
     <script type="text/javascript" src="static/js/scripts.js"></script>
     <script type="text/javascript">
-        var server_websocket= createWebSocket(umf_state,'{{ video_server_host }}');
-        // Show loading notice on video canvas
-        var canvas = document.getElementById('videoCanvas');
-        // Setup the WebSocket connection and start the player
-        var client = new WebSocket( 'ws://{{ video_server_host }}:{{ video_server_port }}/' );
-        var player = new jsmpeg(client, {canvas:canvas, ondecodeframe:onDecodeWsVideoFrame});
 
          $(document).ready(function(){
 
@@ -694,6 +688,17 @@
             });
 
             // <<< Modal JS
+
+        var server_websocket= createWebSocket(umf_state,'{{ video_server_host }}');
+        // Show loading notice on video canvas
+        var canvas = document.getElementById('videoCanvas');
+        // Setup the WebSocket connection and start the player
+        console.log('canvas:',canvas)
+        var client = new WebSocket( 'ws://{{ video_server_host }}:{{ video_server_port }}/' );
+        console.log('client:',client)
+        var player = new jsmpeg(client, {canvas:canvas, ondecodeframe:onDecodeWsVideoFrame});
+        console.log('player:',player)
+
 
     });
     </script>

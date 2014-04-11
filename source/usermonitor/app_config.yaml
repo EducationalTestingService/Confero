@@ -1,29 +1,52 @@
+###############################################################################
+#
+# PLEASE READ:
+# Four settings in this file MUST BE UPDATED when the software is first being
+# setup for a given computer / screen resolution. The following config settings
+# must be modified for the software to function correctly:
+#
+# 1. ioHub -> config : Relative path of the iohub config file, including the
+#   file name. Path must be relative to the application run.py script location.
+#
+# 2. screen_capture->screen_resolution : Resolution of the *data collection*
+#   app. display that screen capture video will be coming from.
+#
+# 3. screen_capture -> http_stream -> host : The ip address of the web server 
+#    application PC.
+#
+# 4. screen_capture -> experimenter_server -> address : The ip address of the 
+#    web server application PC.
+#
+###############################################################################
+  
 # Title you want to give the experiment. 48 char max length please.
-title: Eyetracking
+#title: Eyetracking
 
 # The experiment code to use. Max 8 chars please. FIELD REQUIRED.
-code: logs
+#code: logs
 
 # A version string to associate with the experiment. Max 6 chars please.
-version: '0.1'
+#version: '0.1'
 
 # The experiment description, in 256 characters or less. ;)
-description: Test of using ioHub for gathering all the data we need.
+#description: Test of using ioHub for gathering all the data we need.
 
 # When using the ioHubExperimentRuntime class to create your experiment, do you want
 # the read-only experiment Info dialog to appear at the start of the experiment?
-display_experiment_dialog: False
+#display_experiment_dialog: False
 
 # When using the ioHubExperimentRuntime class to create your experiment, do you want
 # the Session Info dialog to appear at the start of the experiment? 
-display_session_dialog: False
+#display_session_dialog: False
 
-session_defaults:
-    name: Session Name
-    code: E1S01
-    comments: None
+#session_defaults:
+#    name: Session Name
+#    code: E1S01
+#    comments: None
 
-session_variable_order: [ name, code, comments]
+#session_variable_order: [ name, code, comments]
+
+# ioHub client side settings
 
 event_buffer_length: 1048
 
@@ -43,7 +66,7 @@ auto_launch_webapp:
 
 screen_capture:
     screen_index: 0
-    screen_resolution: [1280,1024]
+    screen_resolution: [1920,1080]
 
     ffmpeg:
         path: '..\..\..\bin\ffmpegwin32\bin\'
