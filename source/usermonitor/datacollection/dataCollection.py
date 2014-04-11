@@ -724,13 +724,13 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         threads=scParam('http_stream','ffmpeg_settings','threads')
         scale=scParam('http_stream','ffmpeg_settings','scale')
         px,py=self.display.getPixelResolution()
-        stream_width=int(px*scale)
-        stream_height=int(py*scale)
+        stream_width = int(px*scale)-int(px*scale)%2
+        stream_height = int(py*scale)-int(py*scale)%2
         rate=scParam('http_stream','ffmpeg_settings','r')
         bv=scParam('http_stream','ffmpeg_settings','b','v')        
-        cli+='-threads {0} -s {1}x{2} -f mpeg1video -b:v {3}k -r {4} '.format(
-                                                        threads,stream_width,
-                                                        stream_height,bv,rate
+        cli+='-threads {0} -s {1}x{2} -f mpeg1video -b 0 -b:v {3}k -r {4} '.format(
+                                                        threads, stream_width,
+                                                        stream_height, bv, rate
                                                         )
 
         host=scParam('http_stream','host')

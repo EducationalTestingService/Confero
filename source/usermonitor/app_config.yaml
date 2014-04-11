@@ -28,7 +28,7 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    config: ..\iohub_config_no_eyetracker.yaml
+    config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -79,7 +79,7 @@ screen_capture:
     #params related to the realtime stream to the experimenter app. 
     #
     http_stream:
-        host: 192.168.1.37
+        host: 192.168.1.15
         write_port: 8082
         read_port: 8084
         uri: screenstream
@@ -96,7 +96,7 @@ screen_capture:
 ################# ETS Experimenter Control & Monitoring Server #################
 
 experimenter_server:
-    address: 192.168.1.37
+    address: 192.168.1.15
     port: 8888
     
     #streaming iohub events to experiment app server

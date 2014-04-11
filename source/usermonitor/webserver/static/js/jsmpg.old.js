@@ -34,7 +34,6 @@ var jsmpeg = window.jsmpeg = function( url, opts ) {
 	this.externalDecodeCallback = opts.ondecodeframe || null;
 	this.externalFinishedCallback = opts.onfinished || null;
 	this.bwFilter = opts.bwFilter || false;
-
 	this.customIntraQuantMatrix = new Uint8Array(64);
 	this.customNonIntraQuantMatrix = new Uint8Array(64);
 	this.blockData = new Int32Array(64);
@@ -83,15 +82,17 @@ jsmpeg.prototype.decodeSocketHeader = function( data ) {
 	) {
 		this.width = (data[4] * 256 + data[5]);
 		this.height = (data[6] * 256 + data[7]);
+       //("decodeSocketHeader: size ", this.width , ' x ',this.height)
 		this.initBuffers();
 	}
 };
 
 jsmpeg.prototype.receiveSocketMessage = function( event ) {
 	var messageData = new Uint8Array(event.data);
-
+    //console.log("prototype.receiveSocketMessage")
 	if( !this.sequenceStarted ) {
 		this.decodeSocketHeader(messageData);
+        //console.log("prototype.sequenceStarted")
 	}
 
 	var current = this.buffer;
@@ -219,6 +220,8 @@ jsmpeg.prototype.startRecording = function(callback) {
 		0x00, 0x00, 0x01, 0xb8, 0x00, 0x08, 0x00, // GOP
 		0x00, 0x00, 0x00, 0x01, 0x00 // First Picture Start Code
 	]));
+
+    //console.log("Recording started...")
 };
 
 jsmpeg.prototype.recordFrameFromCurrentBuffer = function() {
@@ -236,6 +239,7 @@ jsmpeg.prototype.recordFrameFromCurrentBuffer = function() {
 	}
 	
 	this.recordedFrames++;
+    //console.log("recordedFrames: ",this.recordedFrames)
 	this.recordedSize += this.buffer.writePos;
 	
 	// Copy the actual subrange for the current picture into a new Buffer
@@ -251,6 +255,7 @@ jsmpeg.prototype.stopRecording = function() {
 	var blob = new Blob(this.recordBuffers, {type: 'video/mpeg'});
 	this.discardRecordBuffers();
 	this.isRecording = false;
+    //console.log("stopRecording: ")
 	return blob;
 };
 
@@ -282,14 +287,15 @@ jsmpeg.prototype.updateLoader = function( ev ) {
 		w = this.canvas.width,
 		h = this.canvas.height,
 		ctx = this.canvasContext;
-
-	ctx.fillStyle = '#222';
-	ctx.fillRect(0, 0, w, h);
-	ctx.fillStyle = '#fff';
-	ctx.fillRect(0, h - h*p, w, h*p);
+    //console.log("prototype.updateLoader p,w,h: ",p,' ',w,' ',h)
+//	ctx.fillStyle = '#222';
+//	ctx.fillRect(0, 0, w, h);
+//	ctx.fillStyle = '#fff';
+//	ctx.fillRect(0, h - h*p, w, h*p);
 };
 	
 jsmpeg.prototype.loadCallback = function(file) {
+    //console.log("prototype.loadCallback call started")
 	var time = Date.now();
 	this.buffer = new BitReader(file);
 	
@@ -307,6 +313,7 @@ jsmpeg.prototype.loadCallback = function(file) {
 	if( this.externalLoadCallback ) {
 		this.externalLoadCallback(this);
 	}
+    //console.log("....call finished")
 };
 
 jsmpeg.prototype.play = function(file) {
@@ -389,7 +396,7 @@ jsmpeg.prototype.nextFrame = function() {
 		else if( code == BitReader.NOT_FOUND ) {
 			this.stop(); // Jump back to the beginning
 
-			if( this.externalFinishedCallback ) {
+			if( this.this.externalFinishedCallback ) {
 				this.externalFinishedCallback(this);
 			}
 
@@ -445,7 +452,7 @@ jsmpeg.prototype.decodeSequenceHeader = function() {
 	this.buffer.advance(4); // skip pixel aspect ratio
 	this.pictureRate = PICTURE_RATE[this.buffer.getBits(4)];
 	this.buffer.advance(18 + 1 + 10 + 1); // skip bitRate, marker, bufferSize and constrained bit
-
+    //console.log(">>>decodeSequenceHeader: size ", this.width , ' x ',this.height)
 	this.initBuffers();
 
 	if( this.buffer.getBits(1) ) { // load custom intra quant matrix?
@@ -514,7 +521,7 @@ jsmpeg.prototype.initBuffers = function() {
 	
 	this.canvas.width = this.width;
 	this.canvas.height = this.height;
-	
+	//console.log("****** JS UPDATING CANVAS SIZE: ",this.canvas.width,this.canvas.height )
 	this.currentRGBA = this.canvasContext.getImageData(0, 0, this.width, this.height);
 
 	if( this.bwFilter ) {
