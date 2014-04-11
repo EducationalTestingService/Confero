@@ -108,6 +108,17 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             tracker_info["model"][0] = u"{0} : {1}".format(
                                                 et_config.get('manufacturer_name','-'),
                                                 et_config.get('model_name','-'))
+                                                
+            tracker_info["sampling_rate"][0] = 'N/A'
+            tracker_info["track_eyes"][0] = 'N/A'
+            runtime_settings=et_config.get('runtime_settings')
+            if runtime_settings:
+                srate=runtime_settings.get('sampling_rate')
+                track_eyes=runtime_settings.get('track_eyes')                
+                if srate:
+                    tracker_info["sampling_rate"][0] =  srate
+                if track_eyes:
+                    tracker_info["track_eyes"][0] =  track_eyes
 
         session_info=copy.deepcopy(messages.experiment_session)
         self.device_info_stats['experiment_session']=session_info
@@ -137,7 +148,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             print(" TODO: Finish updateEyetrackerMsgInfo function")
             self.recording_devices['eyetracker']=[self.eyetracker, tracker_info]
             self.device_info_update_funcs['eyetracker'] = self.updateEyetrackerMsgInfo
-            tracker_info['gaze_position'][1] = display_unit_type
+            tracker_info['average_gaze_position'][1] = display_unit_type
 
     def runEventLoop(self):
         self.hub.clearEvents('all')
@@ -159,7 +170,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                     print("SESSION CLOSED BY COLLECTION APP TERMINATE EVENT.")
                     run=False
                     break
-    self._session_results_folder
                 # check for any commands that need to be handled
                 self.handleCommands()
                
@@ -198,7 +208,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             return False
 
     def createSessionResultsFolder(self):
-        # Create folder for saved video file(s), etc.
+        # Create folder for saved viaverage_gaze_positiondeo file(s), etc.
         session_code = self.device_info_stats['experiment_session']['code'][0]
         try:
             self._session_results_folder=os.path.join(self.results_root_folder,self.active_exp_name,session_code)
@@ -299,7 +309,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     def updateEyetrackerMsgInfo(self):
         if self.eyetracker is None:
             return
-            
+       
         dev_data = self.device_info_stats['eyetracker']
         dev_data["time"][0] = self.eyetracker.trackerSec()
 
@@ -310,26 +320,55 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             gp = None#gp = [-1000, -1000]
             
         dev_data_update = False
-        if dev_data["gaze_position"][0] != gp:            
-            dev_data["gaze_position"][0] = gp
+        if dev_data["average_gaze_position"][0] != gp:            
+            dev_data["average_gaze_position"][0] = gp
             dev_data_update = True
             
-        new_events = self.eyetracker.getEvents(asType='dict')
-        new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
+        new_samples = self.eyetracker.getEvents(asType='dict')
+        new_samples=[e for e in new_samples if e['type'] in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
 
-        self.updateLocalEventsCache(new_events)
+        if new_samples: 
+            dev_data_update=True
+            if dev_data['eye_sample_type'][0] is None:
+                if new_samples[-1]['type']  == EventConstants.BINOCULAR_EYE_SAMPLE:    
+                    dev_data['eye_sample_type'][0]="Binocular"
+                else:
+                    dev_data['eye_sample_type'][0]="Monocular"
+                
+        self.updateLocalEventsCache(new_samples)
+        
+        tracking_eyes=dev_data['track_eyes']
 
-        if dev_data["events"][0] is None and (new_events is None or len(new_events) == 0):
-            dev_data["type"][0] = "N/A"
-            dev_data['last_event_time'][0] = 0.0
-            dev_data["events"][0] = []
-            return dev_data
-        if new_events:
-            dev_data["events"][0]=new_events
-            mevent = dev_data["events"][0][-1]
-            dev_data['last_event_time'][0] = mevent['time']
-            dev_data["type"] = EventConstants.getName(mevent["type"])
-            return dev_data
+#        if new_samples is None or len(new_samples) == 0:
+#
+#            dev_data["et_left_eye_status"][0]=None 
+#            dev_data["et_right_eye_status"][0]=None 
+#            dev_data["et_left_eye_state"][0]=None 
+#            dev_data["et_right_eye_state"][0]=None 
+#            dev_data["et_left_eye_gaze"][0]=None 
+#            dev_data["et_right_eye_gaze"][0]=None 
+#            dev_data["et_left_eye_pos"][0]=None 
+#            dev_data["et_right_eye_pos"][0]=None 
+#            dev_data["et_left_eye_pupil"][0]=None 
+#            dev_data["et_right_eye_pupil"][0]=None 
+#            dev_data["et_left_eye_noise"][0]=None 
+#            dev_data["et_right_eye_noise"][0]=None 
+#            return dev_data
+#        elif new_samples:
+#            dev['eye_sample_type']=
+#            dev_data["et_left_eye_status"][0]=None 
+#            dev_data["et_right_eye_status"][0]=None 
+#            dev_data["et_left_eye_state"][0]=None 
+#            dev_data["et_right_eye_state"][0]=None 
+#            dev_data["et_left_eye_gaze"][0]=None 
+#            dev_data["et_right_eye_gaze"][0]=None 
+#            dev_data["et_left_eye_pos"][0]=None 
+#            dev_data["et_right_eye_pos"][0]=None 
+#            dev_data["et_left_eye_pupil"][0]=None 
+#            dev_data["et_right_eye_pupil"][0]=None 
+#            dev_data["et_left_eye_noise"][0]=None 
+#            dev_data["et_right_eye_noise"][0]=None 
+#            return dev_data
             
         if dev_data_update:
             return dev_data

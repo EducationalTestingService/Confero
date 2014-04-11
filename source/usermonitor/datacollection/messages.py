@@ -26,7 +26,7 @@ experiment_session = {
     "code": ['',''],
     'experiment_name': ['',''],
     "start_time": [None,'sec'],
-    "duration": [0.0,'sec'],
+    "duration": [None,'sec'],
     "recording": [False,''],
     "recording_counter": [0,''],
     "recording_start_time":[0.0,'sec'],
@@ -51,7 +51,6 @@ display = {               # name of iohub device class
 DataCollection['display'] = display
 
 keyboard = {            # name of iohub device class
-    "duration": [None, 'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
     "type": [None,''],
     "auto_repeated": [None,''],
@@ -61,13 +60,12 @@ keyboard = {            # name of iohub device class
     "key": [None,''],
     "modifiers": [None,''],
     "window_id": [None,''],
-    "last_event_time": [None,'sec'],
+    "last_event_time": [Non    "start_time": [None,'sec'],e,'sec'],
     "countdown_time": [0.1,'sec'], # how often should this device info be updated in
     }                     # the DataCollection message (in secs)
 DataCollection['keyboard'] = keyboard
 
 mouse = {                 # name of iohub device class
-    "duration": [None,'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
                         # if recording is False, events will be empty None
     "type": [None,''],
@@ -81,50 +79,27 @@ mouse = {                 # name of iohub device class
     }
 DataCollection['mouse'] = mouse
 
-# EyeInfo dict is used within the EyeTracker device dict, up to 3 times.
-#
-EyeInfo = {            # all data for left eye (if available)
-        "found": True, # does the eye tracker have data for this eye
-        "position": {
-            "gaze": {
-                "point": [100,100], # latest (x,y) gaze position
-                "noise":{           # available gaze noise levels
-                    "rms": 0.12,
-                    "peak": 1.3,
-                    }
-                }, # end gaze position type
-            "distance": {
-                "point": [100,100,100], # latest (x,y,z) eye position
-                "noise": {              # available gaze noise levels
-                    "rms": 0.12,
-                    "peak": 1.3
-                    },
-                },  #end distance position type
-            },      # end positions
-        "pupil": {  # available pupil size / shape measures.
-            "area": 20500.0,
-            "diameter": 1000.0,
-            "radius": 500.0,
-            "minor_axis": 970.0,
-            "major_axis": 1000.0,
-            },  # end pupil
-        }
 
 eyetracker = {          # name of iohub device class
     "model": [None, ''], # eye tracker model
-    "duration": [None, ' sec'],# number of seconds into this recording period
+    "sampling_rate": [None, 'Hz']
     "time": [None, ' sec'],    # current tracker time, in secs
-    "gaze_position": [None, ''], # current gaze position
-    "events": [None, ''],     # list of any new eye events received from the device
-    "last_event_time": [None, ' sec'],
-    "type": [None, ''],        # This does not include eye samples, which are in
-                        # eyes.samples list
-#    "eyes":{
-#        "samples": [],  # list of eye sample events
-#        "left": None,   # dict(EyeInfo),
-#        "right": None,  # dict(EyeInfo),
-#        "averaged": None,# dict(EyeInfo),
-#        },  # end eyes
+    "track_eyes": [None, ''],    # LEFT, RIGHT, BINOCULAR, MONOCULAR 
+    "eye_sample_type":[None, ''], 
+    "average_gaze_position": [None, ''], # current avg. gaze position
+    
+    "et_left_eye_status": [None, ''], 
+    "et_right_eye_status": [None, ''], 
+    "et_left_eye_state": [None, ''], 
+    "et_right_eye_state": [None, ''], 
+    "et_left_eye_gaze": [None, ''], 
+    "et_right_eye_gaze": [None, ''], 
+    "et_left_eye_pos": [None, ''], 
+    "et_right_eye_pos": [None, ''], 
+    "et_left_eye_pupil": [None, ''], 
+    "et_right_eye_pupil": [None, ''], 
+    "et_left_eye_noise": [None, ''], 
+    "et_right_eye_noise": [None, ''],     
     "countdown_time": [0.033, ' sec']
     }  # end eye tracker
 DataCollection['eyetracker'] = eyetracker
