@@ -32,6 +32,7 @@ experiment_session = {
     "recording_start_time":[0.0,'sec'],
     "current_time":[0.0,'sec']
 }
+DataCollection['experiment_session'] = experiment_session
 
 # Device dicts to add to DataCollection msg when app starts up.
 #
@@ -39,17 +40,18 @@ experiment_session = {
 input_computer = {
     "cpu_usage_all": [None,r'%'],
     "memory_usage_all": [None,r'%'],
-    'up_time': [0.0,'sec'],
+    'up_time': [None,'sec'],
     "countdown_time": [1.0,'sec']
 }
+DataCollection['input_computer'] = input_computer
 
 display = {               # name of iohub device class
-    "duration": [0.0,'sec'],# number of seconds into this recording period
-    "resolution": [[0,0],'pix']
+    "resolution": [None,'pix']
     }
+DataCollection['display'] = display
 
 keyboard = {            # name of iohub device class
-    "duration": [0.0,'sec'],# number of sessions into this recording period
+    "duration": [None, 'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
     "type": [None,''],
     "auto_repeated": [None,''],
@@ -62,20 +64,22 @@ keyboard = {            # name of iohub device class
     "last_event_time": [None,'sec'],
     "countdown_time": [0.1,'sec'], # how often should this device info be updated in
     }                     # the DataCollection message (in secs)
+DataCollection['keyboard'] = keyboard
 
 mouse = {                 # name of iohub device class
-    "duration": [0,'sec'],# number of sessions into this recording period
+    "duration": [None,'sec'],# number of sessions into this recording period
     "events": [None,''],       # list of any new events received from the device
                         # if recording is False, events will be empty None
     "type": [None,''],
     "last_event_time":[None,'sec'],
-    "position": [[0.0, 0.0],''], # current mouse position
-    "buttons": [[],''],   # current mouse buttons pressed
-    "scroll": [0,''],    # current mouse scroll wheel 'position'
-    "modifiers": [[],''],
-    "window_id": [0,''],
+    "position": [None,''], # current mouse position
+    "buttons": [None,''],   # current mouse buttons pressed
+    "scroll": [None,''],    # current mouse scroll wheel 'position'
+    "modifiers": [None,''],
+    "window_id": [None,''],
     "countdown_time": [0.033,'sec'],
     }
+DataCollection['mouse'] = mouse
 
 # EyeInfo dict is used within the EyeTracker device dict, up to 3 times.
 #
@@ -107,13 +111,13 @@ EyeInfo = {            # all data for left eye (if available)
         }
 
 eyetracker = {          # name of iohub device class
-    "model": ['Unknown',''], # eye tracker model
-    "duration": [132.934,' sec'],# number of seconds into this recording period
-    "time": [100.234,' sec'],    # current tracker time, in secs
-    "gaze_position": [[0.0, 0.0],''], # current gaze position
-    "events": [None,''],     # list of any new eye events received from the device
-    "last_event_time": [None,' sec'],
-    "type": [None,''],        # This does not include eye samples, which are in
+    "model": [None, ''], # eye tracker model
+    "duration": [None, ' sec'],# number of seconds into this recording period
+    "time": [None, ' sec'],    # current tracker time, in secs
+    "gaze_position": [None, ''], # current gaze position
+    "events": [None, ''],     # list of any new eye events received from the device
+    "last_event_time": [None, ' sec'],
+    "type": [None, ''],        # This does not include eye samples, which are in
                         # eyes.samples list
 #    "eyes":{
 #        "samples": [],  # list of eye sample events
@@ -121,5 +125,6 @@ eyetracker = {          # name of iohub device class
 #        "right": None,  # dict(EyeInfo),
 #        "averaged": None,# dict(EyeInfo),
 #        },  # end eyes
-    "countdown_time": [0.033,' sec']
+    "countdown_time": [0.033, ' sec']
     }  # end eye tracker
+DataCollection['eyetracker'] = eyetracker

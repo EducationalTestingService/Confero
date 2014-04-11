@@ -82,6 +82,15 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.close()
         return return_value,None
 
+    def resetDataCollectionStats(self):
+        self.events_by_type = dict()
+        self.stats_info_updates = dict()
+        self.device_info_update_funcs=dict()
+        self.device_monitor_countdowns = dict()
+        self.recording_devices={}
+        self.device_info_stats={}
+        self.cpu_usage_buffer.clear()
+
     def createDeviceStatsMessageDicts(self):
         display_info=copy.deepcopy(messages.display)
         self.device_info_stats['display']=display_info
@@ -138,7 +147,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if 1: #try:
             while run:
                 # Send iohub events to MonitoringServer
-                self.device_info_stats['input_computer']['up_time'][0] = gtime()- self.device_info_stats['experiment_session']['start_time'][0]
                 self.handleMsgTx()
 
                 cmd=self.handleMsgRx()
@@ -295,16 +303,15 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         dev_data["time"][0] = self.eyetracker.trackerSec()
 
         gp = self.eyetracker.getLastGazePosition()
-        print('gp:',gp)
-        if gp:
+        if isinstance(gp, (tuple, list)):
             gp = int(gp[0]), int(gp[1])
         else:
             gp = [-1000, -1000]
             
-        dev_data_update=False        
+        dev_data_update = False
         if dev_data["gaze_position"][0] != gp:            
             dev_data["gaze_position"][0] = gp
-            dev_data_update=True
+            dev_data_update = True
             
         new_events = self.eyetracker.getEvents(asType='dict')
         new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
@@ -340,8 +347,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             elif msg.get('type') == "CLOSE_EXP_SESSION":
                 #print("MSG RX: ",msg)
                 self.stopDeviceRecording()
+                self.resetDataCollectionStats()
                 self.createDeviceStatsMessageDicts()
                 self.handleMsgTx()
+                self.resetWebAppDataStats()
                 return 'CLOSE_EXP_SESSION'
             elif msg.get('type') == 'START_RECORDING':
                 self.startDeviceRecording()
@@ -375,14 +384,21 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             print
             print("Attempting to send:",args)
             print("<<<")
-        
-    def handleMsgTx(self):
+
+    def resetWebAppDataStats(self):
         data_collection = messages.DataCollection
+        import pprint
+        pprint.pprint(messages.DataCollection)
+        self.sendToWebServer(messages.DataCollection)
+
+    def handleMsgTx(self):
+        data_collection = copy.deepcopy(messages.DataCollection)
         data_collection.clear()
         data_collection['msg_type'] = 'DataCollection'
         ctime=core.getTime()
         self.device_info_stats['experiment_session']['current_time'][0]= ctime
         self.device_info_stats['experiment_session']['duration'][0]= ctime - self.device_info_stats['experiment_session']['start_time'][0]
+        self.device_info_stats['input_computer']['up_time'][0] = ctime- self.device_info_stats['experiment_session']['start_time'][0]
         for device_label,device_timer in self.device_monitor_countdowns.iteritems():
             if device_timer.getTime() <= 0.0:
                 # timer expired for given device reporting interval, so send

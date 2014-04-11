@@ -105,7 +105,6 @@ def main(configurationDirectory):
 
         if cmd == 'EXPERIMENT_SELECTED':
             active_exp_name = data
-            print "ACTIVE EXPERIMENT_NAME:", active_exp_name
             # Create Root Results Folder for all Experiments; if needed
             DataCollectionRuntime.active_exp_name = active_exp_name
 
@@ -129,14 +128,11 @@ def main(configurationDirectory):
                 runtime.close()
                 runtime._close()
                 runtime = None
-            print("Experiment Session Request Rx. Session Code:", data)
-
             ### Update App Config Settings for this exp. session ###
             #
             # Read the default app config yaml file
             #
             app_conf_path = pjoin(configurationDirectory, "..\\app_config.yaml")
-            print("app_conf_path:", app_conf_path)
             app_conf = load(file(app_conf_path, u'r'), Loader=Loader)
             # Update the session code to be used
             #
@@ -144,11 +140,9 @@ def main(configurationDirectory):
             iohubconfpath = abspath(pjoin(configurationDirectory,
                                                          keyChainValue(app_conf,
                                                             'ioHub', 'config')))
-            print('iohubconfpath:',iohubconfpath)
             # Update the iohub config file relative path to use.
             #
             new_iohubconfig_rpath = '..\\last_'+psplit(iohubconfpath)[1]
-            print('new_iohubconfig_rpath:', new_iohubconfig_rpath)
             app_conf.get('ioHub', {})['config'] = new_iohubconfig_rpath
             # Create the name of the temp app config file to use when
             # starting the runtime. Save the app config, with changes, to the
@@ -156,7 +150,6 @@ def main(configurationDirectory):
             #
             app_config_file_name = pjoin(configurationDirectory,
                                                 "..\\last_app_config.yaml")
-            print('app_config_file_name:', app_config_file_name)
             dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
             app_conf = None
             ##########################################################
@@ -171,11 +164,9 @@ def main(configurationDirectory):
             dsfilename = iohub_conf.get('data_store', {}).get('filename')
             if dsfilename is None:
                 dsfilename = 'events'
-            print('dsfilename:', dsfilename)
             dsfilepath = pjoin(DataCollectionRuntime.results_root_folder,
                                     DataCollectionRuntime.active_exp_name,
                                     dsfilename)
-            print('dsfilepath:', dsfilepath)
             iohub_conf.get('data_store', {})['filename'] = dsfilepath
             # save modified iohub_config for loading by upcoming session
             #
@@ -186,6 +177,7 @@ def main(configurationDirectory):
             #
             runtime = DataCollectionRuntime(configurationDirectory,
                                             "..\\last_app_config.yaml")
+
             # Set the app web socket and send a msg indicating data collection
             # is ready
             #
