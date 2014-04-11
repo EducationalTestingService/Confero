@@ -50,8 +50,8 @@ def startNodeWebStreamer(app_config):
                                   'screen_capture',
                                   'screen_resolution')
 
-    VID_WIDTH = int(screen_cap_width*stream_scale)
-    VID_HEIGHT = int(screen_cap_height*stream_scale)
+    VID_WIDTH = int(screen_cap_width*stream_scale)-int(screen_cap_width*stream_scale)%2
+    VID_HEIGHT = int(screen_cap_height*stream_scale)-int(screen_cap_width*stream_scale)%2
     npath = os.path.join(script_dir, r'..\..\..\bin\nodejs\node.exe')
     jpath = os.path.join(script_dir, r'..\..\..\bin\nodejs\stream-server.js')
     nodejs = os.path.abspath(npath)

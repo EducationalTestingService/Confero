@@ -97,8 +97,8 @@ class MainHandler(BaseHandler):
         screen_cap_width, screen_cap_height = keyChainValue(appconfig,
                                   'screen_capture',
                                   'screen_resolution')
-        screen_cap_width = int(screen_cap_width*vstream_scale)
-        screen_cap_height = int(screen_cap_height*vstream_scale)
+        screen_cap_width = int(screen_cap_width*vstream_scale)-int(screen_cap_width*vstream_scale)%2
+        screen_cap_height = int(screen_cap_height*vstream_scale)- int(screen_cap_height*vstream_scale)%2
 
         self.render("index.html", video_server_host=vshost,
                     video_server_port=rport,
