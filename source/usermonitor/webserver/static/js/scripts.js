@@ -68,7 +68,7 @@ function updateDOMContents(client_obj,device_name){
     for(var key in device){
         var element_id = "#"+device_name+"_"+key;
         var subprops=device[key][0];
-        if (typeof subprops.start_time != 'undefined'){
+        if (subprops != null && typeof subprops.start_time != 'undefined'){
             for(var subkey in subprops){
                 var sub_element_id = element_id+"_"+subkey;
                 updateNode(client_obj,sub_element_id,subprops,subkey);
@@ -118,7 +118,7 @@ function createWebSocket(client_obj,video_server_host){
        var msg = msg_list[i];
        if(msg.msg_type === 'DataCollection'){
           delete msg['msg_type'];
-          //console.log(msg);
+          console.log(msg);
           for (var key in msg) {
             client_obj.monitored_devices[key]=msg[key];
             updateDOMContents(client_obj,key);
