@@ -189,7 +189,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         exp_names_session_counts = []
         if inactiveexptoken:
-            exp_dirs = [exp_name for exp_name in exp_dirs if d.find(inactiveexptoken) == -1]
+            exp_dirs = [exp_name for exp_name in exp_dirs if exp_name.find(inactiveexptoken) == -1]
 
         for exp_name in exp_dirs:
             _, session_dirs, _ = next(os.walk(os.path.join(cls.results_root_folder,exp_name)))
