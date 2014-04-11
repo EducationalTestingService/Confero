@@ -19,33 +19,6 @@
 #
 ###############################################################################
   
-# Title you want to give the experiment. 48 char max length please.
-#title: Eyetracking
-
-# The experiment code to use. Max 8 chars please. FIELD REQUIRED.
-#code: logs
-
-# A version string to associate with the experiment. Max 6 chars please.
-#version: '0.1'
-
-# The experiment description, in 256 characters or less. ;)
-#description: Test of using ioHub for gathering all the data we need.
-
-# When using the ioHubExperimentRuntime class to create your experiment, do you want
-# the read-only experiment Info dialog to appear at the start of the experiment?
-#display_experiment_dialog: False
-
-# When using the ioHubExperimentRuntime class to create your experiment, do you want
-# the Session Info dialog to appear at the start of the experiment? 
-#display_session_dialog: False
-
-#session_defaults:
-#    name: Session Name
-#    code: E1S01
-#    comments: None
-
-#session_variable_order: [ name, code, comments]
-
 # ioHub client side settings
 
 event_buffer_length: 1048
@@ -57,7 +30,7 @@ ioHub:
     process_affinity: []
     config: ..\iohub_config_no_eyetracker.yaml
 
-################# ETS Screen Streaming Application Specific ####################
+################# ETS Screen Streaming Application Specific ###################
 
 results_root_folder: .\results
 experiment_inactive_token:
