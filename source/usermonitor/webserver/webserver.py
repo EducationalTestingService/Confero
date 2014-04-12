@@ -193,6 +193,9 @@ class DataCollectionWebSocket(WebSocket):
                         self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
                         self.server_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
                     m['server_computer'] = self.server_computer
+                elif m.get('eyetracker'):
+                    etdata=m.get('eyetracker')
+                    m['eyetracker'] = self.processEyeTrackerData(etdata)
             if msg_type is not 'UNKNOWN':
                 to_send.append(m)
 
@@ -200,6 +203,10 @@ class DataCollectionWebSocket(WebSocket):
             ws_ui = self.server_app_websockets.get("WEB_UI")
             if ws_ui:
                 ws_ui.write_message(ujson.dumps(to_send))
+
+    def processEyeTrackerData(self, etdata):
+        print('got ET data:',etdata)
+        return etdata
 ###############################################################################
 
 class ControlFeedbackServer(object):
