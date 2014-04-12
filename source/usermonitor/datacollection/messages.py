@@ -88,18 +88,18 @@ eyetracker = {          # name of iohub device class
     "eye_sample_type":[None, ''], 
     "average_gaze_position": [None, ''], # current avg. gaze position
     
-    "et_left_eye_status": [None, ''], 
-    "et_right_eye_status": [None, ''], 
-    "et_left_eye_state": [None, ''], 
-    "et_right_eye_state": [None, ''], 
-    "et_left_eye_gaze": [None, ''], 
-    "et_right_eye_gaze": [None, ''], 
-    "et_left_eye_pos": [None, ''], 
-    "et_right_eye_pos": [None, ''], 
-    "et_left_eye_pupil": [None, ''], 
-    "et_right_eye_pupil": [None, ''], 
-    "et_left_eye_noise": [None, ''], 
-    "et_right_eye_noise": [None, ''],     
+    "left_eye_status": [None, ''],
+    "right_eye_status": [None, ''],
+    #"left_eye_state": [None, ''],
+    #"right_eye_state": [None, ''],
+    "left_eye_gaze": [None, ''],
+    "right_eye_gaze": [None, ''],
+    "left_eye_pos": [None, ''],
+    "right_eye_pos": [None, ''],
+    "left_eye_pupil": [None, ''],
+    "right_eye_pupil": [None, ''],
+    "left_eye_noise": [None, ''],
+    "right_eye_noise": [None, ''],
     "countdown_time": [0.05, ' sec']
     }  # end eye tracker
 DataCollection['eyetracker'] = eyetracker
