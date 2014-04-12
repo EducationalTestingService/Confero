@@ -330,103 +330,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.updateLocalEventsCache(new_events)
 
         if new_samples:
-            sample_type = dev_data['eye_sample_type'][0]
-            latest_sample_event = new_samples[-1]
-            if sample_type is None:
-                if latest_sample_event['type'] == EventConstants.BINOCULAR_EYE_SAMPLE:
-                    sample_type = "Binocular"
-                else:
-                    sample_type = "Monocular"
-            dev_data['eye_sample_type'][0] = sample_type
-            dev_data["time"][0] = latest_sample_event['time']
-            dev_data["status"][0] = latest_sample_event['status']
             dev_data["samples"][0] = new_samples
             return dev_data
-
+        dev_data["samples"][0] = None
         if dev_data_update:
             return dev_data
-
-    ########################################
-
-    def MOVE_TO_WEBSERVER_CODE(self, dev_data, latest_sample_event, sample_type):
-        # Update eye tracker left and right eye data fields based on
-        # eye sample type and eye being tracked
-        #
-        tracking_eyes = dev_data['track_eyes'][0]
-        #print("tracking_eyes:", tracking_eyes,sample_type)
-        et_left_eye_status = "TRACKING"
-        et_right_eye_status = "TRACKING"
-        if latest_sample_event['status'] in [2, 22]:
-            et_left_eye_status = "MISSING"
-        if latest_sample_event['status'] in [20, 22]:
-            et_right_eye_status = "MISSING"
-
-        # helpers
-        def clearLeftEyeInfo(dev_data):
-            dev_data["left_eye_status"][0] = None
-            dev_data["left_eye_gaze"][0] = None
-            dev_data["left_eye_pos"][0] = None
-            dev_data["left_eye_pupil"][0] = None
-            dev_data["left_eye_noise"][0] = None
-        def clearRightEyeInfo(dev_data):
-            dev_data["right_eye_status"][0] = None
-            dev_data["right_eye_gaze"][0] = None
-            dev_data["right_eye_pos"][0] = None
-            dev_data["right_eye_pupil"][0] = None
-            dev_data["right_eye_noise"][0] = None
-        def setLeftEyeInfo(dev_data, status, sample):
-            dev_data["left_eye_status"][0] = status
-            dev_data["left_eye_gaze"][0] = sample['left_gaze_x'], sample['left_gaze_y']
-            dev_data["left_eye_pos"][0] = sample['left_eye_cam_x'], sample['left_eye_cam_y'], sample['left_eye_cam_z']
-            dev_data["left_eye_pupil"][0] = sample['left_pupil_measure1']
-            dev_data["left_eye_noise"][0] = 'TBC'
-        def setRightEyeInfo(dev_data, status, sample):
-            dev_data["right_eye_status"][0] = status
-            dev_data["right_eye_gaze"][0] = sample['right_gaze_x'], sample['right_gaze_y']
-            dev_data["right_eye_pos"][0] = sample['right_eye_cam_x'], sample['right_eye_cam_y'], sample['right_eye_cam_z']
-            dev_data["right_eye_pupil"][0] = sample['right_pupil_measure1']
-            dev_data["right_eye_noise"][0] = 'TBC'
-
-        if sample_type == "Binocular":
-            if tracking_eyes and tracking_eyes <= EyeTrackerConstants.MONOCULAR:
-                # Monocular data in a binocular sample type
-                if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
-                    # access only left eye fields
-                    setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
-                    # Clear out right eye related data fields
-                    # Web app could use et_right_eye_status
-                    # to test if right eye data should be even displayed
-                    # based on a null value.
-                    clearRightEyeInfo(dev_data)
-                else:
-                    # any other monoc. eye type can be assumed
-                    # to be the right eye
-                    setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
-                    # Clear out left eye related data fields
-                    # Web app could use et_left_eye_status
-                    # to test if right eye data should be even displayed
-                    # based on a null value.
-                    clearLeftEyeInfo(dev_data)
-
-            elif tracking_eyes or tracking_eyes <= EyeTrackerConstants.BINOCULAR:
-                # Binocular data in a binocular sample type
-                setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
-                setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
-
-        else:
-            if tracking_eyes and tracking_eyes == EyeTrackerConstants.LEFT_EYE:
-                # access only left eye fields
-                setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
-                #clear out right eye related data fields
-                clearRightEyeInfo(dev_data)
-            else:
-                # any other monoc. eye type can be assumed
-                # to be the right eye
-                setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
-                #clear out left eye related data fields
-                clearLeftEyeInfo(dev_data)
-
-    ########################################
 
     def handleMsgRx(self):
         try:

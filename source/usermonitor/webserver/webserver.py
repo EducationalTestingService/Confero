@@ -23,6 +23,7 @@ import string, Queue
 import random
 import os
 import ujson
+from psychopy.iohub import EventConstants, EyeTrackerConstants
 
 def showSimpleWin32Dialog(message, caption):
     import win32gui
@@ -175,8 +176,9 @@ class DataCollectionWebSocket(WebSocket):
     ws_key = "DATA_COLLECTION"
     def open(self):
         WebSocket.open(self)
-        self.data_collection_state = dict()
-        self.server_computer = dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %'])
+        self.data_collection_state = dict(experiment_names_msg=None,
+                                          server_computer=dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %']))
+
     def on_message(self, message):
         msg_list = ujson.loads(message)
 
@@ -187,15 +189,12 @@ class DataCollectionWebSocket(WebSocket):
                 self.data_collection_state['experiment_names_msg'] = m
             elif msg_type =='DataCollection':
                 if m.get('input_computer'):
-                    if m.get('input_computer')['cpu_usage_all'][0] is None:
-                        self.server_computer = dict(cpu_usage_all=[None, r' %'],memory_usage_all=[None, r' %'])
-                    else:    
-                        self.server_computer['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
-                        self.server_computer["memory_usage_all"][0] = psutil.virtual_memory().percent
-                    m['server_computer'] = self.server_computer
+                    self.data_collection_state['server_computer']['cpu_usage_all'][0] = float(psutil.cpu_percent(0.0))
+                    self.data_collection_state['server_computer']["memory_usage_all"][0] = psutil.virtual_memory().percent
+                    m['server_computer'] = self.data_collection_state['server_computer']
                 elif m.get('eyetracker'):
-                    etdata=m.get('eyetracker')
-                    m['eyetracker'] = self.processEyeTrackerData(etdata)
+                    m['eyetracker'] = self.processEyeTrackerData(m.get('eyetracker'))
+
             if msg_type is not 'UNKNOWN':
                 to_send.append(m)
 
@@ -204,9 +203,122 @@ class DataCollectionWebSocket(WebSocket):
             if ws_ui:
                 ws_ui.write_message(ujson.dumps(to_send))
 
-    def processEyeTrackerData(self, etdata):
-        print('got ET data:',etdata)
-        return etdata
+    def processEyeTrackerData(self, dev_data):
+        current_et_data = self.data_collection_state.get('eyetracker')
+        if current_et_data is None:
+            current_et_data = dev_data
+            new_fields = {
+                "eye_sample_type": [None, ''],
+                "status": [None, ''],
+                "time": [None, ' sec'],    # time of last sample received
+                "left_eye_status": [None, ''],
+                "right_eye_status": [None, ''],
+                "left_eye_gaze": [None, ''],
+                "right_eye_gaze": [None, ''],
+                "left_eye_pos": [None, ''],
+                "right_eye_pos": [None, ''],
+                "left_eye_pupil": [None, ''],
+                "right_eye_pupil": [None, ''],
+                "left_eye_noise": [None, ''],
+                "right_eye_noise": [None, '']}
+            new_fields.setdefault('samples', [None, None])
+            current_et_data.update(new_fields)
+            self.data_collection_state['eyetracker'] = current_et_data
+
+        new_samples = dev_data.get('samples')[0]
+        if new_samples:
+            latest_sample_event = dev_data['samples'][0][-1]
+            sample_type = dev_data['eye_sample_type'][0]
+            if sample_type is None:
+                if latest_sample_event['type'] == EventConstants.BINOCULAR_EYE_SAMPLE:
+                    sample_type = "Binocular"
+                else:
+                    sample_type = "Monocular"
+            current_et_data['eye_sample_type'][0] = sample_type
+            current_et_data["time"][0] = latest_sample_event['time']
+            current_et_data["status"][0] = latest_sample_event['status']
+
+        print('got ET data:',dev_data)
+        return current_et_data
+
+    def MOVE_TO_WEBSERVER_CODE(self, dev_data, latest_sample_event, sample_type):
+        # Update eye tracker left and right eye data fields based on
+        # eye sample type and eye being tracked
+        #
+        tracking_eyes = dev_data['track_eyes'][0]
+        #print("tracking_eyes:", tracking_eyes,sample_type)
+        et_left_eye_status = "TRACKING"
+        et_right_eye_status = "TRACKING"
+        if latest_sample_event['status'] in [2, 22]:
+            et_left_eye_status = "MISSING"
+        if latest_sample_event['status'] in [20, 22]:
+            et_right_eye_status = "MISSING"
+
+        # helpers
+        def clearLeftEyeInfo(dev_data):
+            dev_data["left_eye_status"][0] = None
+            dev_data["left_eye_gaze"][0] = None
+            dev_data["left_eye_pos"][0] = None
+            dev_data["left_eye_pupil"][0] = None
+            dev_data["left_eye_noise"][0] = None
+        def clearRightEyeInfo(dev_data):
+            dev_data["right_eye_status"][0] = None
+            dev_data["right_eye_gaze"][0] = None
+            dev_data["right_eye_pos"][0] = None
+            dev_data["right_eye_pupil"][0] = None
+            dev_data["right_eye_noise"][0] = None
+        def setLeftEyeInfo(dev_data, status, sample):
+            dev_data["left_eye_status"][0] = status
+            dev_data["left_eye_gaze"][0] = sample['left_gaze_x'], sample['left_gaze_y']
+            dev_data["left_eye_pos"][0] = sample['left_eye_cam_x'], sample['left_eye_cam_y'], sample['left_eye_cam_z']
+            dev_data["left_eye_pupil"][0] = sample['left_pupil_measure1']
+            dev_data["left_eye_noise"][0] = 'TBC'
+        def setRightEyeInfo(dev_data, status, sample):
+            dev_data["right_eye_status"][0] = status
+            dev_data["right_eye_gaze"][0] = sample['right_gaze_x'], sample['right_gaze_y']
+            dev_data["right_eye_pos"][0] = sample['right_eye_cam_x'], sample['right_eye_cam_y'], sample['right_eye_cam_z']
+            dev_data["right_eye_pupil"][0] = sample['right_pupil_measure1']
+            dev_data["right_eye_noise"][0] = 'TBC'
+
+        if sample_type == "Binocular":
+            if tracking_eyes and tracking_eyes <= EyeTrackerConstants.MONOCULAR:
+                # Monocular data in a binocular sample type
+                if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
+                    # access only left eye fields
+                    setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
+                    # Clear out right eye related data fields
+                    # Web app could use et_right_eye_status
+                    # to test if right eye data should be even displayed
+                    # based on a null value.
+                    clearRightEyeInfo(dev_data)
+                else:
+                    # any other monoc. eye type can be assumed
+                    # to be the right eye
+                    setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                    # Clear out left eye related data fields
+                    # Web app could use et_left_eye_status
+                    # to test if right eye data should be even displayed
+                    # based on a null value.
+                    clearLeftEyeInfo(dev_data)
+
+            elif tracking_eyes or tracking_eyes <= EyeTrackerConstants.BINOCULAR:
+                # Binocular data in a binocular sample type
+                setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
+
+        else:
+            if tracking_eyes and tracking_eyes == EyeTrackerConstants.LEFT_EYE:
+                # access only left eye fields
+                setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
+                #clear out right eye related data fields
+                clearRightEyeInfo(dev_data)
+            else:
+                # any other monoc. eye type can be assumed
+                # to be the right eye
+                setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                #clear out left eye related data fields
+                clearLeftEyeInfo(dev_data)
+
 ###############################################################################
 
 class ControlFeedbackServer(object):

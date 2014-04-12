@@ -83,24 +83,9 @@ DataCollection['mouse'] = mouse
 eyetracker = {          # name of iohub device class
     "model": [None, ''], # eye tracker model
     "sampling_rate": [None, 'Hz'],
-    "time": [None, ' sec'],    # current tracker time, in secs
-    "status": [None, ''],
-    "track_eyes": [None, ''],    # LEFT, RIGHT, BINOCULAR, MONOCULAR 
-    "eye_sample_type":[None, ''], 
+    "track_eyes": [None, ''],    # LEFT, RIGHT, BINOCULAR, MONOCULAR
     "average_gaze_position": [None, ''], # current avg. gaze position
-    
-    "left_eye_status": [None, ''],
-    "right_eye_status": [None, ''],
-    #"left_eye_state": [None, ''],
-    #"right_eye_state": [None, ''],
-    "left_eye_gaze": [None, ''],
-    "right_eye_gaze": [None, ''],
-    "left_eye_pos": [None, ''],
-    "right_eye_pos": [None, ''],
-    "left_eye_pupil": [None, ''],
-    "right_eye_pupil": [None, ''],
-    "left_eye_noise": [None, ''],
-    "right_eye_noise": [None, ''],
+    "samples": [None, ''],
     "countdown_time": [0.05, ' sec']
     }  # end eye tracker
 DataCollection['eyetracker'] = eyetracker
