@@ -312,10 +312,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if self.eyetracker is None:
             return
         dev_data = self.device_info_stats['eyetracker']
-        dev_data["time"][0] = self.eyetracker.trackerSec()
 
         gp = self.eyetracker.getLastGazePosition()
-
         if isinstance(gp, (tuple, list)):
             gp = int(gp[0]), int(gp[1])
         else:
@@ -333,7 +331,14 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if new_samples: 
             dev_data_update = True
             sample_type = dev_data['eye_sample_type'][0]
+
+            valid_samples = [e for e in new_samples if e['status'] == 0]
+
+
+            
             latest_sample_event = new_samples[-1]
+            dev_data["time"][0] = latest_sample_event['time']
+            dev_data["status"][0] = latest_sample_event['status']
             if sample_type is None:
                 if latest_sample_event['type'] == EventConstants.BINOCULAR_EYE_SAMPLE:
                     sample_type = "Binocular"
@@ -385,7 +390,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                         # Monocular data in a binocular sample type
                         if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
                             # access only left eye fields
-                            setLeftEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                            setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
                             # Clear out right eye related data fields
                             # Web app could use et_right_eye_status
                             # to test if right eye data should be even displayed
@@ -404,12 +409,12 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                     elif tracking_eyes or tracking_eyes <= EyeTrackerConstants.BINOCULAR:
                         # Binocular data in a binocular sample type
                         setRightEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
-                        setLeftEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                        setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
 
                 else:
                     if tracking_eyes and tracking_eyes == EyeTrackerConstants.LEFT_EYE:
                         # access only left eye fields
-                        setLeftEyeInfo(dev_data, et_right_eye_status, latest_sample_event)
+                        setLeftEyeInfo(dev_data, et_left_eye_status, latest_sample_event)
                         #clear out right eye related data fields
                         clearRightEyeInfo(dev_data)
                     else:

@@ -84,6 +84,7 @@ eyetracker = {          # name of iohub device class
     "model": [None, ''], # eye tracker model
     "sampling_rate": [None, 'Hz'],
     "time": [None, ' sec'],    # current tracker time, in secs
+    "status": [None, ''],
     "track_eyes": [None, ''],    # LEFT, RIGHT, BINOCULAR, MONOCULAR 
     "eye_sample_type":[None, ''], 
     "average_gaze_position": [None, ''], # current avg. gaze position
