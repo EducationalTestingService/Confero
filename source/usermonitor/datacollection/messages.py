@@ -75,7 +75,7 @@ mouse = {                 # name of iohub device class
     "scroll": [None,''],    # current mouse scroll wheel 'position'
     "modifiers": [None,''],
     "window_id": [None,''],
-    "countdown_time": [0.033,'sec'],
+    "countdown_time": [0.05,'sec'],
     }
 DataCollection['mouse'] = mouse
 
@@ -100,6 +100,6 @@ eyetracker = {          # name of iohub device class
     "et_right_eye_pupil": [None, ''], 
     "et_left_eye_noise": [None, ''], 
     "et_right_eye_noise": [None, ''],     
-    "countdown_time": [0.033, ' sec']
+    "countdown_time": [0.05, ' sec']
     }  # end eye tracker
 DataCollection['eyetracker'] = eyetracker

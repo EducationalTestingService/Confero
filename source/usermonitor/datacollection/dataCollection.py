@@ -151,16 +151,16 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             tracker_info['average_gaze_position'][1] = display_unit_type
 
     def runEventLoop(self):
-        self.hub.clearEvents('all')
         event_loop_rate = self.getConfiguration().get('event_loop_rate', 0.001)
         run = True
         gtime=self.computer.getTime
-        if 1: #try:
+        self.hub.clearEvents('all')
+        try:
             while run:
                 # Send iohub events to MonitoringServer
                 self.handleMsgTx()
 
-                cmd=self.handleMsgRx()
+                cmd = self.handleMsgRx()
                 if cmd:
                     run=False
                     return cmd
@@ -168,15 +168,17 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 # Check for App exit
                 if self.checkForTerminateEvent():
                     print("SESSION CLOSED BY COLLECTION APP TERMINATE EVENT.")
-                    run=False
+                    run = False
                     break
                 # check for any commands that need to be handled
                 self.handleCommands()
                
-                core.wait(event_loop_rate,0.002)                
-        #except Exception, e:
-        #    print("Run Loop Exception: ",e)
-        #    raise e
+                core.wait(event_loop_rate, 0.002)
+        except Exception, e:
+            print("Run Loop Exception: ", e)
+            import traceback
+            traceback.print_exc()
+            raise e
             
     def handleCommands(self):
         while len(self.command_queue):
@@ -309,67 +311,128 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     def updateEyetrackerMsgInfo(self):
         if self.eyetracker is None:
             return
-       
         dev_data = self.device_info_stats['eyetracker']
         dev_data["time"][0] = self.eyetracker.trackerSec()
 
         gp = self.eyetracker.getLastGazePosition()
+
         if isinstance(gp, (tuple, list)):
             gp = int(gp[0]), int(gp[1])
         else:
-            gp = None#gp = [-1000, -1000]
-            
+            gp = None
+
         dev_data_update = False
         if dev_data["average_gaze_position"][0] != gp:            
             dev_data["average_gaze_position"][0] = gp
             dev_data_update = True
             
-        new_samples = self.eyetracker.getEvents(asType='dict')
-        new_samples=[e for e in new_samples if e['type'] in [EventConstants.BINOCULAR_EYE_SAMPLE,EventConstants.MONOCULAR_EYE_SAMPLE]]
+        new_events = self.eyetracker.getEvents(asType='dict')
+        self.updateLocalEventsCache(new_events)
 
+        new_samples=[e for e in new_events if e['type'] in [EventConstants.BINOCULAR_EYE_SAMPLE, EventConstants.MONOCULAR_EYE_SAMPLE]]
         if new_samples: 
-            dev_data_update=True
-            if dev_data['eye_sample_type'][0] is None:
-                if new_samples[-1]['type']  == EventConstants.BINOCULAR_EYE_SAMPLE:    
-                    dev_data['eye_sample_type'][0]="Binocular"
+            dev_data_update = True
+            sample_type = dev_data['eye_sample_type'][0]
+            latest_sample_event = new_samples[-1]
+            if sample_type is None:
+                if latest_sample_event['type'] == EventConstants.BINOCULAR_EYE_SAMPLE:
+                    sample_type = "Binocular"
                 else:
-                    dev_data['eye_sample_type'][0]="Monocular"
-                
-        self.updateLocalEventsCache(new_samples)
-        
-        tracking_eyes=dev_data['track_eyes']
+                    sample_type = "Monocular"
+                dev_data['eye_sample_type'][0] = sample_type
 
-#        if new_samples is None or len(new_samples) == 0:
-#
-#            dev_data["et_left_eye_status"][0]=None 
-#            dev_data["et_right_eye_status"][0]=None 
-#            dev_data["et_left_eye_state"][0]=None 
-#            dev_data["et_right_eye_state"][0]=None 
-#            dev_data["et_left_eye_gaze"][0]=None 
-#            dev_data["et_right_eye_gaze"][0]=None 
-#            dev_data["et_left_eye_pos"][0]=None 
-#            dev_data["et_right_eye_pos"][0]=None 
-#            dev_data["et_left_eye_pupil"][0]=None 
-#            dev_data["et_right_eye_pupil"][0]=None 
-#            dev_data["et_left_eye_noise"][0]=None 
-#            dev_data["et_right_eye_noise"][0]=None 
-#            return dev_data
-#        elif new_samples:
-#            dev['eye_sample_type']=
-#            dev_data["et_left_eye_status"][0]=None 
-#            dev_data["et_right_eye_status"][0]=None 
-#            dev_data["et_left_eye_state"][0]=None 
-#            dev_data["et_right_eye_state"][0]=None 
-#            dev_data["et_left_eye_gaze"][0]=None 
-#            dev_data["et_right_eye_gaze"][0]=None 
-#            dev_data["et_left_eye_pos"][0]=None 
-#            dev_data["et_right_eye_pos"][0]=None 
-#            dev_data["et_left_eye_pupil"][0]=None 
-#            dev_data["et_right_eye_pupil"][0]=None 
-#            dev_data["et_left_eye_noise"][0]=None 
-#            dev_data["et_right_eye_noise"][0]=None 
-#            return dev_data
-            
+                tracking_eyes = dev_data['track_eyes'][0]
+
+                print("tracking_eyes:", tracking_eyes,sample_type)
+
+                if sample_type == "Binocular":
+                    if tracking_eyes <= EyeTrackerConstants.MONOCULAR:
+                        # Monocular data in a binocular sample type
+                        if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
+                            # access only left eye fields
+                            dev_data["et_left_eye_status"][0] = None
+                            dev_data["et_left_eye_state"][0] = None
+                            dev_data["et_left_eye_gaze"][0] = None
+                            dev_data["et_left_eye_pos"][0] = None
+                            dev_data["et_left_eye_pupil"][0] = None
+                            dev_data["et_left_eye_noise"][0] = None
+
+                            #clear out right eye related data fields
+                            dev_data["et_right_eye_status"][0] = None
+                            dev_data["et_right_eye_state"][0] = None
+                            dev_data["et_right_eye_gaze"][0] = None
+                            dev_data["et_right_eye_pos"][0] = None
+                            dev_data["et_right_eye_pupil"][0] = None
+                            dev_data["et_right_eye_noise"][0] = None
+                        else:
+                            # any other monoc. eye type can be assumed
+                            # to be the right eye
+                            dev_data["et_right_eye_status"][0] = None
+                            dev_data["et_right_eye_state"][0] = None
+                            dev_data["et_right_eye_gaze"][0] = None
+                            dev_data["et_right_eye_pos"][0] = None
+                            dev_data["et_right_eye_pupil"][0] = None
+                            dev_data["et_right_eye_noise"][0] = None
+
+                            #clear out left eye related data fields
+                            dev_data["et_left_eye_status"][0] = None
+                            dev_data["et_left_eye_state"][0] = None
+                            dev_data["et_left_eye_gaze"][0] = None
+                            dev_data["et_left_eye_pos"][0] = None
+                            dev_data["et_left_eye_pupil"][0] = None
+                            dev_data["et_left_eye_noise"][0] = None
+
+                    elif tracking_eyes <= EyeTrackerConstants.BINOCULAR:
+                        # Binocular data in a binocular sample type
+                        dev_data["et_right_eye_status"][0] = None
+                        dev_data["et_right_eye_state"][0] = None
+                        dev_data["et_right_eye_gaze"][0] = None
+                        dev_data["et_right_eye_pos"][0] = None
+                        dev_data["et_right_eye_pupil"][0] = None
+                        dev_data["et_right_eye_noise"][0] = None
+
+                        dev_data["et_left_eye_status"][0] = None
+                        dev_data["et_left_eye_state"][0] = None
+                        dev_data["et_left_eye_gaze"][0] = None
+                        dev_data["et_left_eye_pos"][0] = None
+                        dev_data["et_left_eye_pupil"][0] = None
+                        dev_data["et_left_eye_noise"][0] = None
+
+                else:
+                    if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
+                        # access only left eye fields
+                        dev_data["et_left_eye_status"][0] = None
+                        dev_data["et_left_eye_state"][0] = None
+                        dev_data["et_left_eye_gaze"][0] = None
+                        dev_data["et_left_eye_pos"][0] = None
+                        dev_data["et_left_eye_pupil"][0] = None
+                        dev_data["et_left_eye_noise"][0] = None
+
+                        #clear out right eye related data fields
+                        dev_data["et_right_eye_status"][0] = None
+                        dev_data["et_right_eye_state"][0] = None
+                        dev_data["et_right_eye_gaze"][0] = None
+                        dev_data["et_right_eye_pos"][0] = None
+                        dev_data["et_right_eye_pupil"][0] = None
+                        dev_data["et_right_eye_noise"][0] = None
+                    else:
+                        # any other monoc. eye type can be assumed
+                        # to be the right eye
+                        dev_data["et_right_eye_status"][0] = None
+                        dev_data["et_right_eye_state"][0] = None
+                        dev_data["et_right_eye_gaze"][0] = None
+                        dev_data["et_right_eye_pos"][0] = None
+                        dev_data["et_right_eye_pupil"][0] = None
+                        dev_data["et_right_eye_noise"][0] = None
+
+                        #clear out left eye related data fields
+                        dev_data["et_left_eye_status"][0] = None
+                        dev_data["et_left_eye_state"][0] = None
+                        dev_data["et_left_eye_gaze"][0] = None
+                        dev_data["et_left_eye_pos"][0] = None
+                        dev_data["et_left_eye_pupil"][0] = None
+                        dev_data["et_left_eye_noise"][0] = None
+
         if dev_data_update:
             return dev_data
 
@@ -674,9 +737,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             msg={'msg_type':'RECORDING_STARTED','type':cmtype}
             self.sendToWebServer(msg)
 
-            self.hub.clearEvents("all")
             self.hub.sendMessageEvent("Recording Block Started: %d"%(session_info['recording_counter'][0]),"data_monitoring")
             self.runVisualSyncProcedure(3)
+            self.hub.clearEvents("all")
 
     def stopDeviceRecording(self):
         session_info=self.device_info_stats['experiment_session']
@@ -685,16 +748,17 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.stats_info_updates['experiment_session'] = session_info
 
             self.hub.sendMessageEvent("Stopping Recording Block: %d"%(session_info['recording_counter'][0] ),"data_monitoring")
-            self.hub.clearEvents("all")
-            for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
+
+            for device_label, (iohub_device, device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(False)
                 del self.device_monitor_countdowns[device_label]
             session_info['recording_start_time'][0] = 0.0
-            session_info['recording'][0] =False
+            session_info['recording'][0] = False
             self.runVisualSyncProcedure(3)
             # try to ensure frames with visual sync stim have been written
             # to video file
             core.wait(3.0,.2)
+            self.hub.clearEvents("all")
             self.quiteSubprocs([self._ffmpeg_proc,])
 
             cmtype="success"
