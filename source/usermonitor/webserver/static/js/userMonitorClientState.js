@@ -76,7 +76,7 @@ function onDecodeWsVideoFrame(jsmpg_obj,video_canvas){
                 }
             }
             if (drawGaze){
-                var gp=umf_state.monitored_devices.eyetracker.gaze_position[0];
+                var gp=umf_state.monitored_devices.eyetracker.average_gaze_position[0];
                 if (gp){
                     if (gp[0] > -1000){
                         var gx=gp[0]+dres[0]/2.0;
