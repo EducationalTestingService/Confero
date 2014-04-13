@@ -332,7 +332,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if new_samples:
             dev_data["samples"][0] = new_samples
             return dev_data
-        dev_data["samples"][0] = None
+ 
         if dev_data_update:
             return dev_data
 
