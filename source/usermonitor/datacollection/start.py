@@ -34,6 +34,11 @@ def createWebsocketInterface(appcfg):
     msg_type = 'EXP_FOLDER_LIST'
     ui_server_websocket.send(ujson.encode([{'msg_type': msg_type,
                                             'data': avail_exp_list}, ]))
+
+    msg_type = 'DATA_COLLECT_CONFIG'
+    ui_server_websocket.send(ujson.encode([{'msg_type': msg_type,
+                                            'data': appcfg}, ]))
+
     return ui_server_websocket
 
 def handleMsgRx(ws):
