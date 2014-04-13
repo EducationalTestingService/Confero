@@ -44,20 +44,18 @@ function updateNode(client_obj,element_id,device,key){
     if (value === null)
         value = '';
     else if (isFloat(value))
-        value=value.toFixed(3)+' '+after;
+        value=value.toFixed(3);
     else
-        value=JSON.stringify(device[key][0]).trim()
-        if (value.length>0)
-            value=value+' '+after;
+        value=JSON.stringify(value)
 
     if (element_id in client_obj.device_dom_nodes){
-        client_obj.device_dom_nodes[element_id].html(value);
+        client_obj.device_dom_nodes[element_id].html(value+' '+after);
     }
     else{
         var dom_node=$(element_id);
         if (dom_node.length > 0) {
             client_obj.device_dom_nodes[element_id]=dom_node;
-            dom_node.html(value);
+            dom_node.html(value+' '+after);
         }
     }
 }
