@@ -45,10 +45,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                                              'keyboard', 'key')
         self._quit_modifier = self.keyChainValue(appcfg, 'manual_termination',
                                                  'keyboard', 'modifier')    
-        self.event_posting_interval = self.keyChainValue(appcfg, 
-                                                         'experimenter_server',
-                                                         'event_streaming', 
-                                                         'stream_interval')
         # Setup devices
         self.computer=self.devices.computer
         self.keyboard = self.hub.getDevice('keyboard')
@@ -311,6 +307,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     def updateEyetrackerMsgInfo(self):
         if self.eyetracker is None:
             return
+        #print ('updateEyetrackerMsgInfo:', getTime()*1000.0)
         dev_data = self.device_info_stats['eyetracker']
 
         gp = self.eyetracker.getLastGazePosition()
@@ -688,14 +685,19 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         threads=scParam('http_stream','ffmpeg_settings','threads')
         scale=scParam('http_stream','ffmpeg_settings','scale')
         px,py=self.display.getPixelResolution()
-        stream_width = int(px*scale)-int(px*scale)%2
-        stream_height = int(py*scale)-int(py*scale)%2
-        rate=scParam('http_stream','ffmpeg_settings','r')
-        bv=scParam('http_stream','ffmpeg_settings','b','v')        
-        cli+='-threads {0} -s {1}x{2} -f mpeg1video -b 0 -b:v {3}k -r {4} '.format(
-                                                        threads, stream_width,
-                                                        stream_height, bv, rate
-                                                        )
+        stream_width = px
+        stream_height = py
+        scale_mpeg_stream = False
+        if scale is not None and scale not in (1.0, 1):
+            stream_width = int(px*scale)-int(px*scale)%2
+            stream_height = int(py*scale)-int(py*scale)%2
+            scale_mpeg_stream = True
+        rate = scParam('http_stream','ffmpeg_settings','r')
+        bv = scParam('http_stream','ffmpeg_settings','b','v')
+        cli += '-threads {0} '.format(threads)
+        if scale_mpeg_stream:
+            cli += '-s {0}x{1} '.format(stream_width, stream_height)
+        cli += '-f mpeg1video -b:v {0}k -r {1} '.format(bv, rate)
 
         host=scParam('http_stream','host')
         write_port=scParam('http_stream','write_port')

@@ -184,42 +184,42 @@ def createLeftEyeInfo(dev_data):
     dev_data["left_eye_gaze"] = [None,'']
     dev_data["left_eye_pos"] = [None,'']
     dev_data["left_eye_pupil"] = [None,'']
-    dev_data["left_eye_noise"] = [None,'']
+#    dev_data["left_eye_noise"] = [None,'']
 
 def createRightEyeInfo(dev_data):
     dev_data["right_eye_status"] = [None,'']
     dev_data["right_eye_gaze"] = [None,'']
     dev_data["right_eye_pos"] = [None,'']
     dev_data["right_eye_pupil"] = [None,'']
-    dev_data["right_eye_noise"] = [None,'']
+#    dev_data["right_eye_noise"] = [None,'']
     
 def clearLeftEyeInfo(dev_data):
     dev_data["left_eye_status"][0] = None
     dev_data["left_eye_gaze"][0] = None
     dev_data["left_eye_pos"][0] = None
     dev_data["left_eye_pupil"][0] = None
-    dev_data["left_eye_noise"][0] = None
+#    dev_data["left_eye_noise"][0] = None
 
 def clearRightEyeInfo(dev_data):
     dev_data["right_eye_status"][0] = None
     dev_data["right_eye_gaze"][0] = None
     dev_data["right_eye_pos"][0] = None
     dev_data["right_eye_pupil"][0] = None
-    dev_data["right_eye_noise"][0] = None
+#    dev_data["right_eye_noise"][0] = None
 
 def setLeftEyeInfo(dev_data, status, sample):
     dev_data["left_eye_status"][0] = status
     dev_data["left_eye_gaze"][0] = sample['left_gaze_x'], sample['left_gaze_y']
     dev_data["left_eye_pos"][0] = sample['left_eye_cam_x'], sample['left_eye_cam_y'], sample['left_eye_cam_z']
     dev_data["left_eye_pupil"][0] = sample['left_pupil_measure1']
-    dev_data["left_eye_noise"][0] = 'TBC'
+#    dev_data["left_eye_noise"][0] = 'TBC'
 
 def setRightEyeInfo(dev_data, status, sample):
     dev_data["right_eye_status"][0] = status
     dev_data["right_eye_gaze"][0] = sample['right_gaze_x'], sample['right_gaze_y']
     dev_data["right_eye_pos"][0] = sample['right_eye_cam_x'], sample['right_eye_cam_y'], sample['right_eye_cam_z']
     dev_data["right_eye_pupil"][0] = sample['right_pupil_measure1']
-    dev_data["right_eye_noise"][0] = 'TBC'
+#    dev_data["right_eye_noise"][0] = 'TBC'
             
 class DataCollectionWebSocket(WebSocket):
     ws_key = "DATA_COLLECTION"

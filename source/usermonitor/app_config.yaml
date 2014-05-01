@@ -28,7 +28,7 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    config: ..\iohub_config_smi.yaml
+    config: ..\iohub_config_no_eyetracker.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -79,12 +79,13 @@ screen_capture:
     #params related to the realtime stream to the experimenter app. 
     #
     http_stream:
-        host: 192.168.1.15
+        host: 127.0.0.1
+#        host: 192.168.1.15
         write_port: 8082
         read_port: 8084
         uri: screenstream
         ffmpeg_settings:
-            scale: 0.5
+            scale: 1
             threads: 0
             # frame rate
             r: 30
@@ -96,14 +97,52 @@ screen_capture:
 ################# ETS Experimenter Control & Monitoring Server #################
 
 experimenter_server:
-    address: 192.168.1.15
+    address: 127.0.0.1
+#    address: 192.168.1.15
     port: 8888
-    
-    #streaming iohub events to experiment app server
-    event_streaming:
-        rest_uri: events
-        filter: []
-        stream_interval: 0.05
+
+web_application:
+    notifications:
+        # Each entry will be used to define warning and / or error thresholds
+        # for a given device field value. The keys here should match a device
+        # info field that is used by the webapp to match device info values
+        # to webapp dom element ids. There are two issue status levels:
+        # warning and error. A device value can have either or both levels
+        # specified
+
+        # JUST AN IDEA EXAMPLE BELOW, NOT FINALIZED OR IMPLEMENTED
+        # Settings that are empty mean use a default value, unless otherwise
+        # stated.
+        eyetracker:
+            proportion_valid_samples:
+                warning:
+                    threshold: 0.1
+                    color:
+                    # No flashrate value (the default) means do not flash
+                    # background color on and off
+                    flashrate:
+                    growl:
+                        text: "Sample Data Loss Above 10%."
+                        # Duration can be:
+                        #    * a number, which is to be used to indicate number
+                        #      seconds to display growl,
+                        #    * MANUAL, which indicates experimenter must
+                        #      manually close growl dialog,
+                        #    * AUTO, which indicates growl should disappear when
+                        #      value has dropped back below warning threshold
+                        #      level programatically.
+                        duration: 3.0
+                        fillcolor:
+                        textcolor:
+                error:
+                    threshold: 0.8
+                    color:
+                    flashrate: 0.25
+                    growl:
+                        text: "Sample Data Loss Above 80%. Check participant positioning"
+                        duration: MANUAL
+                        fillcolor:
+                        textcolor:
 
 manual_termination:
     keyboard:
@@ -111,3 +150,8 @@ manual_termination:
         modifier: CONTROL_LEFT
         
 event_loop_rate: 0.005
+
+############# Misc ##############
+
+noise_calculation:
+   win_size: 0.2

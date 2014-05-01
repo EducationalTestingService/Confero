@@ -86,7 +86,7 @@ function onDecodeWsVideoFrame(jsmpg_obj,video_canvas){
                         var cradius = 20.0*x_scale;
                         var ccolor = "rgba(0,255,0,0.5)";
                         drawCanvasCircle(video_canvas, cx, cy, cradius, ccolor, 0);
-                        console.log('draw gaze_position:',cx,cy);
+                        //console.log('draw gaze_position:',cx,cy);
                        }
                 }
             }
