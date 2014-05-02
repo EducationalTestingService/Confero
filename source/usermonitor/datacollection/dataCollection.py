@@ -715,7 +715,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         g=scParam('media_file','ffmpeg_settings','g')
         threads=scParam('media_file','ffmpeg_settings','threads')
         rec_count=self.device_info_stats['experiment_session']['recording_counter'][0]
-        cli+='-vcodec {0} -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
+        cli+='-vcodec {0} -bv 4 -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
                                         codec, crf, preset, threads,
                                         pjoin(sess_results_dir,avFile+"_%d."%(rec_count)+avExtension),
                                         pix_fmt,g
@@ -729,7 +729,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
 
         self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-        #print("STARTING FFMPEG:",ffmpeg,cli)
+        print("STARTING FFMPEG:",ffmpeg,cli)
         p = self.startSubProcess(ffmpeg, cli, 
                                     stdout_file=stdout_file, 
                                     stderr_file=stderr_file)
@@ -741,6 +741,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def quiteSubprocs(self,procs):
         import psutil
+        import time
+        import win32api
+        import win32con
         def on_terminate(proc):
             if self.hub:
                 try:
@@ -749,12 +752,27 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 except:
                     pass
 
-        for p in procs:
+        for p in procs:            
+#            try:
+#                ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
+#                p.wait()
+#            except KeyboardInterrupt:
+#                print("ignoring ctrlc")
+#            print("still running")
+#            print("sending ctrl c")
+#            try:
+#                win32api.GenerateConsoleCtrlEvent(win32con.CTRL_C_EVENT, 0)
+#                p.wait()
+#            except KeyboardInterrupt:
+#                print("ignoring ctrl c")
+#            
+#            print("still running")
+    
             try:
                 p.terminate()
             except Exception, e:
                 print('Error during quiteSubprocs:',e)
-        gone, alive = psutil.wait_procs(procs=procs, timeout=3, callback=on_terminate)
+        gone, alive = psutil.wait_procs(procs=procs, timeout=10, callback=on_terminate)
         for p in alive:
                 try:
                     p.kill()
