@@ -456,7 +456,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             p=subprocess.Popen(cmd_line, stdin=subprocess.PIPE, 
                                stdout=out, stderr=err
                                )
-        return psutil.Process(p.pid)
+        return p#psutil.Process(p.pid)
 
     def startEyeTrackerCalibration(self):
         self.hub.sendMessageEvent("CALIBRATION STARTING. Enabling keyboard events.")
@@ -656,7 +656,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             # to video file
             core.wait(3.0,.2)
             self.hub.clearEvents("all")
-            self.quiteSubprocs([self._ffmpeg_proc,])
+            self.stopffmpeg()
 
             cmtype="success"
             msg={'msg_type':'RECORDING_STOPPED','type':cmtype}
@@ -715,7 +715,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         g=scParam('media_file','ffmpeg_settings','g')
         threads=scParam('media_file','ffmpeg_settings','threads')
         rec_count=self.device_info_stats['experiment_session']['recording_counter'][0]
-        cli+='-vcodec {0} -bv 4 -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
+        cli+='-vcodec {0} -pix_fmt {5} -crf {1} -preset {2} -g {6} -threads {3} "{4}"'.format(
                                         codec, crf, preset, threads,
                                         pjoin(sess_results_dir,avFile+"_%d."%(rec_count)+avExtension),
                                         pix_fmt,g
@@ -739,20 +739,45 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         return p
 
-    def quiteSubprocs(self,procs):
-        import psutil
-        import time
-        import win32api
-        import win32con
-        def on_terminate(proc):
-            if self.hub:
-                try:
-                    print("Process {0} Terminated OK.".format(proc))
-                    self.hub.sendMessageEvent("Process {0} Terminated OK.".format(proc), "close_subproc")
-                except:
-                    pass
+    def stopffmpeg(self,procs):
+        if self._ffmpeg_proc:
+            a,b = self._ffmpeg_proc.communicate(r"q\n\r")
 
-        for p in procs:            
+#    def quiteSubprocs(self,procs):
+#        import psutil
+#        import time
+#        import win32api
+#        import win32con
+#        def on_terminate(proc):
+#            if self.hub:
+#                try:
+#                    print("Process {0} Terminated OK.".format(proc))
+#                    self.hub.sendMessageEvent("Process {0} Terminated OK.".format(proc), "close_subproc")
+#                except:
+#                    pass
+#
+#        for p in procs:
+#            a,b=p.communicate(r"q\n\r")
+#
+#        try
+#        for p in procs:
+#            p=psutil.Process(p.pid)
+#
+#            try:
+#                p.terminate()
+#            except Exception, e:
+#                print('Error during quiteSubprocs:',e)
+#
+#        gone, alive = psutil.wait_procs(procs=procs, timeout=10, callback=on_terminate)
+#        for p in alive:
+#                try:
+#                    p.kill()
+#                    print("Process {0} had to be KILLED.".format(proc))
+#                    if self.hub:
+#                        self.hub.sendMessageEvent("Process {0} had to be KILLED.".format(p), "close_subproc")
+#                except Exception, e:
+#                    print ('Error2 during quiteSubprocs:',e)
+#            #print('post communicate.....')
 #            try:
 #                ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
 #                p.wait()
@@ -765,23 +790,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 #                p.wait()
 #            except KeyboardInterrupt:
 #                print("ignoring ctrl c")
-#            
+#
 #            print("still running")
-    
-            try:
-                p.terminate()
-            except Exception, e:
-                print('Error during quiteSubprocs:',e)
-        gone, alive = psutil.wait_procs(procs=procs, timeout=10, callback=on_terminate)
-        for p in alive:
-                try:
-                    p.kill()
-                    print("Process {0} had to be KILLED.".format(proc))
-                    if self.hub:
-                        self.hub.sendMessageEvent("Process {0} had to be KILLED.".format(p), "close_subproc")
-                except Exception, e:
-                    print ('Error2 during quiteSubprocs:',e)
-
+#            return
 
     def runVisualSyncProcedure(self, cycle_count=3, state_duration=0.333):
         colors=[(1,1,1),(-1,-1,-1)]
