@@ -591,8 +591,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             # analysis.                       
             results = validation_proc.display()
             
-            # The lasst calculated validation results can also be retrieved using
-            results = validation_proc.getValidationResults() 
+            # The last calculated validation results can also be retrieved using
+            #results = validation_proc.getValidationResults()
 
             win.close()
             ##### Validation code ends
@@ -614,13 +614,17 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     def startDeviceRecording(self):
         session_info=self.device_info_stats['experiment_session']
 
+        data_collect_config = self.getConfiguration().get('data_collection', {}).get('recording_period', {})
+        start_msg_txt = data_collect_config.get('start_msg', 'RECORDING_STARTED')
+        start_events_msg_text = data_collect_config.get('event_period', {}).get('start_msg', 'START_EVENT_PERIOD')
+
         if session_info['recording'][0] is False:
             #print ("** TODO: RESET DEVICE INFO AT START OF RECORDING **")
             self.stats_info_updates['experiment_session'] = session_info
             session_info['recording'][0] =True
             session_info['recording_counter'][0]+=1
 
-            self.hub.sendMessageEvent("Starting Recording Block: %d"%(session_info['recording_counter'][0]),"data_monitoring")
+            self.hub.sendMessageEvent(start_msg_txt,"data_monitoring")
             for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(True)
                 self.device_monitor_countdowns[device_label] = CountdownTimer(device_msg_dict.get('countdown_time', [0.01,''])[0])
@@ -628,30 +632,34 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
             self.beginScreenCaptureStream()
 
-            core.wait(0.25,0.05)
+            core.wait(0.25, 0.05)
 
             cmtype="success"
-            msg={'msg_type':'RECORDING_STARTED','type':cmtype}
+            msg={'msg_type':start_msg_txt,'type':cmtype}
             self.sendToWebServer(msg)
 
-            self.hub.sendMessageEvent("Recording Block Started: %d"%(session_info['recording_counter'][0]),"data_monitoring")
-            self.runVisualSyncProcedure(3)
+            self.runVisualSyncProcedure()
             self.hub.clearEvents("all")
+            self.hub.sendMessageEvent(start_events_msg_text, "data_monitoring")
 
     def stopDeviceRecording(self):
+        data_collect_config = self.getConfiguration().get('data_collection', {}).get('recording_period', {})
+        end_msg_txt = data_collect_config.get('end_msg', 'RECORDING_STOPPED')
+        end_events_msg_text = data_collect_config.get('event_period', {}).get('end_msg', 'END_EVENT_PERIOD')
+        self.hub.sendMessageEvent(end_events_msg_text, "data_monitoring")
         session_info=self.device_info_stats['experiment_session']
         if session_info['recording'][0] is True:
             session_info['recording'][0] =False
             self.stats_info_updates['experiment_session'] = session_info
 
-            self.hub.sendMessageEvent("Stopping Recording Block: %d"%(session_info['recording_counter'][0] ),"data_monitoring")
+            self.hub.sendMessageEvent("Stopping Recording Block: %d"%(session_info['recording_counter'][0] ), "data_monitoring")
 
             for device_label, (iohub_device, device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(False)
                 del self.device_monitor_countdowns[device_label]
             session_info['recording_start_time'][0] = 0.0
             session_info['recording'][0] = False
-            self.runVisualSyncProcedure(3)
+            self.runVisualSyncProcedure()
             # try to ensure frames with visual sync stim have been written
             # to video file
             core.wait(3.0,.2)
@@ -659,10 +667,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.stopffmpeg()
 
             cmtype="success"
-            msg={'msg_type':'RECORDING_STOPPED','type':cmtype}
+            msg={'msg_type': end_msg_txt, 'type': cmtype}
             self.sendToWebServer(msg)
             
-            self.hub.sendMessageEvent("Recording Block Stopped: %d"%(session_info['recording_counter'][0]),"data_monitoring")
+            self.hub.sendMessageEvent(end_msg_txt, "data_monitoring")
 
 
     def startScreenCaptureStream(self):
@@ -739,9 +747,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
         return p
 
-    def stopffmpeg(self,procs):
-        if self._ffmpeg_proc:
-            a,b = self._ffmpeg_proc.communicate(r"q\n\r")
+    def stopffmpeg(self):
+        a,b = self._ffmpeg_proc.communicate(r"q\n\r")
 
 #    def quiteSubprocs(self,procs):
 #        import psutil
@@ -794,20 +801,28 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 #            print("still running")
 #            return
 
-    def runVisualSyncProcedure(self, cycle_count=3, state_duration=0.333):
-        colors=[(1,1,1),(-1,-1,-1)]
-        w,h=self.display.getPixelResolution()
-        win_pos=0,0#int(-w/2),int(-h/2)
-        sync_win = visual.Window((100, 100.0),color=colors[0],
-                                 screen=0,pos=win_pos,
+    def runVisualSyncProcedure(self):
+        sync_config = self.getConfiguration().get('data_collection', {}).get('video_event_sync', {})
+        colors = sync_config.get('colors', [255,0])
+        l, t, r, b = sync_config.get('region', [0, 0, 10, 10])
+        cycle_count = sync_config.get('cycle_count', 3)
+        state_duration = sync_config.get('phase_duration', 0.125)
+
+        rgbcolors = []
+        for c in colors:
+            gsc = c/255.0*2.0-1.0
+            rgbcolors.append((gsc, gsc, gsc))
+        win_pos = l, t
+        sync_win = visual.Window((r-l, b-t), color=rgbcolors[0],
+                                 screen=0, pos=win_pos,
                                  allowGUI=False, units='pix')    
-        fill_rect = visual.Rect(sync_win,100,100,fillColor=colors[1],
-                                lineWidth=5, lineColor=colors[1],
+        fill_rect = visual.Rect(sync_win, r-l, b-t, fillColor=rgbcolors[1],
+                                lineWidth=1, lineColor=rgbcolors[1],
                                 interpolate=False)
 
         def displayState(color_index):
-            fill_rect.fillColor=colors[color_index]
-            fill_rect.lineColor=colors[color_index]
+            fill_rect.fillColor=rgbcolors[color_index]
+            fill_rect.lineColor=rgbcolors[color_index]
 
             fill_rect.draw()
             flip_time = sync_win.flip()

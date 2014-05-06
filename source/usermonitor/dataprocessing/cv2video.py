@@ -18,8 +18,28 @@ class OpenCVideo(object):
         return self._next_frame_sec
 
     @property
+    def last_frame_index(self):
+        return self._prev_frame_index
+
+    @property
+    def last_frame_time(self):
+        return self._prev_frame_sec
+
+    @property
     def total_frame_count(self):
         return self._total_frame_count
+
+    @property
+    def frame_rate(self):
+        return self._video_frame_rate
+
+    @property
+    def ifi(self):
+        return self._inter_frame_interval
+
+    @property
+    def resolution(self):
+        return self._video_width,self._video_height
 
     def reset(self):
         self.duration = None

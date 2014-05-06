@@ -28,7 +28,9 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    config: ..\iohub_config_no_eyetracker.yaml
+    #config: ..\iohub_config_no_eyetracker.yaml
+    #config: ..\iohub_config_tobii.yaml
+    config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -37,12 +39,26 @@ experiment_inactive_token:
 
 auto_launch_webapp:
 
+data_collection:
+    video_event_sync:
+        region: [0, 0, 20, 20]
+        colors: [255, 0]
+        phase_duration: 0.125
+        cycle_count: 15
+
+    recording_period:
+        start_msg: RECORDING_STARTED
+        event_period:
+            start_msg: START_EVENT_PERIOD
+            end_msg: END_EVENT_PERIOD
+        end_msg: RECORDING_STOPPED
+
 screen_capture:
     screen_index: 0
-    screen_resolution: [1920,1080]
+    screen_resolution: [1920, 1080]
 
     ffmpeg:
-        path: '..\..\..\bin\ffmpegwin32\bin\'
+        path: '..\..\..\bin\ffmpeg\bin'
         exe: ffmpeg.exe
         stdout_file: ffmpeg_stdout
         stderr_file: ffmpeg_stderr
@@ -71,8 +87,8 @@ screen_capture:
         ffmpeg_settings:
             codec: libx264
             pix_fmt: yuv420p
-            crf: 18.0
-            preset: veryfast
+            crf: 0 #18.0
+            preset: ultrafast
             g: 250
             threads: 0
             
@@ -80,12 +96,12 @@ screen_capture:
     #
     http_stream:
         host: 127.0.0.1
-#        host: 192.168.1.15
+#        host: 192.168.1.22
         write_port: 8082
         read_port: 8084
         uri: screenstream
         ffmpeg_settings:
-            scale: 1
+            scale: 1.0
             threads: 0
             # frame rate
             r: 30
@@ -98,7 +114,7 @@ screen_capture:
 
 experimenter_server:
     address: 127.0.0.1
-#    address: 192.168.1.15
+#    address: 192.168.1.22
     port: 8888
 
 web_application:
@@ -146,7 +162,7 @@ web_application:
 
 manual_termination:
     keyboard:
-        key: c
+        key: q
         modifier: CONTROL_LEFT
         
 event_loop_rate: 0.005
