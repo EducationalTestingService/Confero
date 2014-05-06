@@ -129,10 +129,10 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
             event_count=0
             for event_id, event_iter in hubdata.getEventsByType(cond).iteritems():
                 frame_num = 0
-                fstart_time = frame_times[0][1]
-                fend_time = frame_times[1][1]
+                fstart_time = int(frame_times[0][1]*1000)
+                fend_time = int(frame_times[1][1]*1000)
                 for e in event_iter:
-                     evt_time = e['time']
+                     evt_time = int(e['time']*1000)
                      if evt_time >= fstart_time:
                         if evt_time < fend_time:
                             event_count += 1
@@ -140,13 +140,17 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
                         else:
                             frame_num += 1
                             if frame_num+1 < frame_count:
-                                fstart_time = frame_times[frame_num][1]
-                                fend_time = frame_times[frame_num+1][1]
+                                fstart_time = int(frame_times[frame_num][1]*1000)
+                                fend_time = int(frame_times[frame_num+1][1]*1000)
                             elif frame_num+1 == frame_count:
                                 fend_time = fend_time+(fend_time-fstart_time)
                                 fstart_time = fend_time
                             else:
                                 break
+
+                            if evt_time < fend_time:
+                                event_count += 1
+                                video_frame_events[frame_num].append((vi, frame_num, e['type'], e['event_id'], e['time']))
 
             # now have all events per frame in the current video.
             # They are not sorted by time in each video, but ny event type.
