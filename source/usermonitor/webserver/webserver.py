@@ -470,9 +470,9 @@ class ControlFeedbackServer(object):
             else:
                 def showWinDialog(server_ip,server_port):                
                     showSimpleWin32Dialog("Use the following URL to open the "
-                                          "UserMonitor Web Interface:"
+                                          "Confero View Interface:"
                                           "\nhttp://%s:%d/"%(server_ip, server_port),
-                                          "UserMonitor Web UI Available")
+                                          "Confero View Available")
     
                 server_ip = keyChainValue(self.app_config,
                                        'experimenter_server',

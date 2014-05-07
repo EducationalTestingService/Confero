@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>UserMonitor RT Feedback v 0.1</title>
+  <title>Confero View 0.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
   <meta name="author" content="">
@@ -61,7 +61,7 @@
               </div>
               <div id="experimentSelectionBody" class="modal-body">
                   <div id="experimentSelectionContent">
-                    <span>The UserMonitor Data Collection application must be running before an experiment name can be selected.</span>
+                    <span>The Confero Track application must be running before an experiment name can be selected.</span>
                   </div>
                   <select id='experimentSelectionList' disabled class='selectpicker expNamePicker show-tick' data-live-search='true' data-style='btn-primary' data-width='auto' data-size=5>
                   </select>
@@ -85,7 +85,7 @@
                              <span class="icon-bar"></span>
                             <!-- <span class="icon-bar"></span> -->
                          </button>
-                        <a class="navbar-brand" href="#">UserMonitor</a>
+                        <a class="navbar-brand" href="#">Confero View</a>
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
@@ -187,7 +187,7 @@
                                               data-toggle="tooltip"
                                               data-placement="left"
                                               data-original-title="Tooltip on left"
-                                              title="Quit All UserMonitor Applications"
+                                              title="Quit All Confero Applications"
                                               class="glyphicon glyphicon-off">
                                         </span>
                             </button>
@@ -520,7 +520,7 @@
                });
 
             $('#shutdownSoftwareButton').on('click', function() {
-                var box=bootbox.confirm("Are you sure you want to shut down the UserMonitor software?", function(result) {
+                var box=bootbox.confirm("Are you sure you want to shut down all Confero software?", function(result) {
                   if (result === false) {
                     $.bootstrapGrowl("Software Shutdown Cancelled",{type:'info'});
                     $('#shutdownSoftwareButton').removeClass('active');

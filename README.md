@@ -1,28 +1,33 @@
-UserMonitor
-===========
+Confero Software Suite
+========================
 
-Screen and User Event Capturing System for Windows. 
+Screen and User Event Capturing System for Windows.
 
-User Monitor consists of two python applications, controlling a total of 5 processes:
 
-* datacollection: Handles the saving and streaming of user events and a screen capture video.
-* webserver: Built in web server is used to access a web 2.x datacollection monitoring and control application.  
 
-Data Collection Features
+
+
+The Confero Software Suite consists of two python applications and a web brower based UI:
+
+* **Confero Track** : Performs screen capturing and data collection; running in the background on the eye tracker PC.
+* **Confero View** : A web interface for monitoring data collected by, and controlling, **Confero Track**.
+* **Confero Server** : The web server application that **Confero Track** and **Confero View** connect to. The **Confero Server** facilitates data exchange and control between the two other Confero applications.
+
+Confero Track Features
 -------------------------
 
-* Uses psychopy.iohub to record events from keyboard, eye tracker, and others.
+* Uses psychopy.iohub to record events from keyboard, mouse, eye tracker, and others.
 * Events are available at run-time and are saved to a HDF5 based file.
 * A screen capture process saves the state of a single screen to a video file.
 * Computer audio is saved with the screen capture video.
-* Remotely controlled by the data collection monitoring and control application.
+* Remotely controlled by the **Confero View** application.
 
-Data Collection Monitoring and Control Interface Features:
------------------------------------------------------------
+Confero View Features:
+------------------------
 
 * Web based user interface.
-* Remotely open and close experiment sessions on the Data Collection application.
-* Start and Stop recording of screen capture video and input device events multiple times during a single experiment session.
+* Remotely open and close experiment sessions on **Confero Track**.
+* Start and Stop recording of screen capture video and input device events, multiple times, during a single experiment session.
 * Provides real-time display of screen capture video stream as well as the state of each input device when recording.
 * Send text messages during data collection which are saved in the experiment data file.
 * Overlay mouse position, gaze position, and the time since recording was last started on the screen video stream.
@@ -30,15 +35,19 @@ Data Collection Monitoring and Control Interface Features:
 Installation
 =============
 
-Important: The following installation instructions must be followed for both the computer that will be used to collect experiment data from, as well as the computer that will run the feedback and control web server.
+Important: The following installation instructions must be followed for both the
+computer that will be used to run **Confero Track**, as well as the computer that
+will run the **Confero Server** and **Confero View** aplications.
 
 Python Package Dependancies
 ----------------------------
 
-The following python packages must be installed in the python distribution being used to run UserMonitor applications. All packages must be for Python 2.7 32-bit (even if Windows is 64bit)
+The following python packages must be installed in the python distribution
+being used to run Confero Application Suite. All packages must
+be for Python 2.7 32-bit (even if Windows is 64bit)
 
-* All dependancies needed for PsychoPy http://www.psychopy.org/installation.html#dependencies
-* All dependancies needed for ioHub http://www.isolver-solutions.com/iohubdocs/iohub/installation.html#python-2-7-package-list-with-urls
+* All dependencies needed for PsychoPy http://www.psychopy.org/installation.html#dependencies
+* All dependencies needed for ioHub http://www.isolver-solutions.com/iohubdocs/iohub/installation.html#python-2-7-package-list-with-urls
 * PsychoPy 1.80.01 package itself http://sourceforge.net/projects/psychpy/files/
 * Tornado 3.2 http://www.lfd.uci.edu/~gohlke/pythonlibs/#tornado
 * Websocket-client https://pypi.python.org/pypi/websocket-client/
@@ -47,15 +56,19 @@ The following python packages must be installed in the python distribution being
 Eye Tracker Client Library (if needed)
 ---------------------------------------
 
-If using an eye tracker, ensure any dependancies specific to the eye tracker being used have been installed.
-See the docs for the eye tracker being used with iohub for more details: http://www.isolver-solutions.com/iohubdocs/iohub/api_and_manual/device_details/eyetracker.html#eye-tracking-hardware-implementations
+If using an eye tracker, ensure any dependencies specific to the eye tracker
+being used have been installed. See the docs for the eye tracker being used
+with iohub for more details: http://www.isolver-solutions.com/iohubdocs/iohub/api_and_manual/device_details/eyetracker.html#eye-tracking-hardware-implementations
 
 UserMonitor Project Files
 --------------------------
 
-Download the latest version of the UserMonitor github repo: https://github.com/isolver/UserMonitor/archive/master.zip
+Download the latest version of the Confero Application Suite from it's
+github repo: https://github.com/isolver/UserMonitor/archive/master.zip
 
-Follow these steps to setup UserMonitor for the first time:
+** BELOW TEXT NEEDS UPDATING**
+
+Follow these steps to setup Confero for the first time:
 
 1. Unpack the master.zip archive to a location of your choice.
 2. Rename the folder that was unpacked from usermonitor-master to UserMonitor.
