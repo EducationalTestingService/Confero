@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	 <style>
+        body { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMC8yOS8xMiKqq3kAAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzVxteM2AAABHklEQVRIib2Vyw6EIAxFW5idr///Qx9sfG3pLEyJ3tAwi5EmBqRo7vHawiEEERHS6x7MTMxMVv6+z3tPMUYSkfTM/R0fEaG2bbMv+Gc4nZzn+dN4HAcREa3r+hi3bcuu68jLskhVIlW073tWaYlQ9+F9IpqmSfq+fwskhdO/AwmUTJXrOuaRQNeRkOd5lq7rXmS5InmERKoER/QMvUAPlZDHcZRhGN4CSeGY+aHMqgcks5RrHv/eeh455x5KrMq2yHQdibDO6ncG/KZWL7M8xDyS1/MIO0NJqdULLS81X6/X6aR0nqBSJcPeZnlZrzN477NKURn2Nus8sjzmEII0TfMiyxUuxphVWjpJkbx0btUnshRihVv70Bv8ItXq6Asoi/ZiCbU6YgAAAABJRU5ErkJggg==);}
+        .error-template {padding: 40px 15px;text-align: center; background-color: #dddcc5; color: #958976;}
+        .error-actions {margin-top:15px;margin-bottom:15px;}
+        .error-actions .btn { margin-right:10px; }
+        h1 {color: #958976;}
+        h2 {color: #958976;}
+    </style>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+	<link href="static/css/style.css" rel="stylesheet">
+    <title>Feedback Application Shut Down</title>
+    <script type="text/javascript" src="static/js/jquery.min.js"></script>
+    <script>
+        $(function() {
+          // Handler for .ready() called.
+            $.ajax({
+              url: "/rest_app/rpc/quit",
+              data: ""//,
+            //  success: null,
+            //  dataType: dataType
+            });
+        });
+    </script>
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="static/js/html5shiv.js"></script>
+    <![endif]-->
+
+  <!-- Fav and touch icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="static/img/apple-touch-icon-144-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="static/img/apple-touch-icon-114-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="static/img/apple-touch-icon-72-precomposed.png">
+  <link rel="apple-touch-icon-precomposed" href="static/img/apple-touch-icon-57-precomposed.png">
+  <link rel="shortcut icon" href="static/img/favicon.png">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="error-template">
+                <h1>
+                    Confero Software Closed</h1>
+                <h2>
+                    Thank you for using Confero View!</h2>
+                <div class="error-details">
+                    To use Confero View again, launch the Confero Server and then the Confero Track applications.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
