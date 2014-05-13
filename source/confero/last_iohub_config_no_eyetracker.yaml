@@ -1,0 +1,17 @@
+!!python/unicode data_store: {!!python/unicode enable: true, !!python/unicode filename: !!python/unicode .\results\first_exp\iohub_events}
+!!python/unicode monitor_devices:
+- !!python/unicode Display:
+    !!python/unicode default_eye_distance: {!!python/unicode surface_center: 500,
+      !!python/unicode unit_type: !!python/unicode mm}
+    !!python/unicode device_number: 0
+    !!python/unicode name: !!python/unicode display
+    !!python/unicode physical_dimensions: {!!python/unicode height: 281, !!python/unicode unit_type: !!python/unicode mm,
+      !!python/unicode width: 500}
+    !!python/unicode psychopy_monitor_name: !!python/unicode default
+    !!python/unicode reporting_unit_type: !!python/unicode pix
+- !!python/unicode Keyboard: {!!python/unicode auto_report_events: false, !!python/unicode name: !!python/unicode keyboard,
+    !!python/unicode save_events: true, !!python/unicode stream_events: true}
+- !!python/unicode Mouse: {!!python/unicode auto_report_events: false, !!python/unicode name: !!python/unicode mouse,
+    !!python/unicode save_events: true, !!python/unicode stream_events: true}
+- !!python/unicode Experiment: {!!python/unicode name: !!python/unicode experiment,
+    !!python/unicode save_events: true, !!python/unicode stream_events: true}
