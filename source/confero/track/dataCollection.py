@@ -433,7 +433,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         kb_events = self.events_by_type.get(EventConstants.KEYBOARD_PRESS)
         while kb_events and len(kb_events) > 0:
             ke = kb_events.pop()
-            char = ke['key'].lower()
+            char = ke['char'].lower()
             kmods = ke['modifiers']
             if char == self._quit_char and self._quit_modifier in kmods:
                 self.hub.sendMessageEvent("User Terminated data collection runtime using CTRL-C.","data_monitoring")
@@ -554,8 +554,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             # Use DeviceEventTrigger to create a keyboard char event trigger
             #     which will fire when the space key is pressed.
             kb_trigger = DeviceEventTrigger(kb,
-                                            event_type=EventConstants.KEYBOARD_CHAR,
-                                            event_attribute_conditions={'key': ' '},
+                                            event_type=EventConstants.KEYBOARD_RELEASE,
+                                            event_attribute_conditions={'char': ' '},
                                             repeat_count=0)
             
             # Creating a list of Trigger instances. The first one that

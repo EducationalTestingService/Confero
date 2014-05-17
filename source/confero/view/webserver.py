@@ -180,44 +180,44 @@ class UIWebSocket(WebSocket):
 
 
 def createLeftEyeInfo(dev_data):
-    dev_data["left_eye_status"] = [None,'']
+#    dev_data["left_eye_status"] = [None,'']
     dev_data["left_eye_gaze"] = [None,'']
     dev_data["left_eye_pos"] = [None,'']
     dev_data["left_eye_pupil"] = [None,'']
 #    dev_data["left_eye_noise"] = [None,'']
 
 def createRightEyeInfo(dev_data):
-    dev_data["right_eye_status"] = [None,'']
+#    dev_data["right_eye_status"] = [None,'']
     dev_data["right_eye_gaze"] = [None,'']
     dev_data["right_eye_pos"] = [None,'']
     dev_data["right_eye_pupil"] = [None,'']
 #    dev_data["right_eye_noise"] = [None,'']
     
 def clearLeftEyeInfo(dev_data):
-    dev_data["left_eye_status"][0] = None
+#    dev_data["left_eye_status"][0] = None
     dev_data["left_eye_gaze"][0] = None
     dev_data["left_eye_pos"][0] = None
     dev_data["left_eye_pupil"][0] = None
 #    dev_data["left_eye_noise"][0] = None
 
 def clearRightEyeInfo(dev_data):
-    dev_data["right_eye_status"][0] = None
+#    dev_data["right_eye_status"][0] = None
     dev_data["right_eye_gaze"][0] = None
     dev_data["right_eye_pos"][0] = None
     dev_data["right_eye_pupil"][0] = None
 #    dev_data["right_eye_noise"][0] = None
 
 def setLeftEyeInfo(dev_data, status, sample):
-    dev_data["left_eye_status"][0] = status
-    dev_data["left_eye_gaze"][0] = sample['left_gaze_x'], sample['left_gaze_y']
-    dev_data["left_eye_pos"][0] = sample['left_eye_cam_x'], sample['left_eye_cam_y'], sample['left_eye_cam_z']
+#    dev_data["left_eye_status"][0] = status
+    dev_data["left_eye_gaze"][0] = int(sample['left_gaze_x']), int(sample['left_gaze_y'])
+    dev_data["left_eye_pos"][0] = int(sample['left_eye_cam_x']), int(sample['left_eye_cam_y']), int(sample['left_eye_cam_z'])
     dev_data["left_eye_pupil"][0] = sample['left_pupil_measure1']
 #    dev_data["left_eye_noise"][0] = 'TBC'
 
 def setRightEyeInfo(dev_data, status, sample):
-    dev_data["right_eye_status"][0] = status
-    dev_data["right_eye_gaze"][0] = sample['right_gaze_x'], sample['right_gaze_y']
-    dev_data["right_eye_pos"][0] = sample['right_eye_cam_x'], sample['right_eye_cam_y'], sample['right_eye_cam_z']
+#    dev_data["right_eye_status"][0] = status
+    dev_data["right_eye_gaze"][0] = int(sample['right_gaze_x']), int(sample['right_gaze_y'])
+    dev_data["right_eye_pos"][0] = int(sample['right_eye_cam_x']), int(sample['right_eye_cam_y']), int(sample['right_eye_cam_z'])
     dev_data["right_eye_pupil"][0] = sample['right_pupil_measure1']
 #    dev_data["right_eye_noise"][0] = 'TBC'
             
@@ -365,7 +365,7 @@ class DataCollectionWebSocket(WebSocket):
                                 
 
             def calcrms(x, axis=None):
-                return float(np.sqrt(np.mean(np.power(x,2.0), axis=axis)))                    
+                return float(np.sqrt(np.mean(np.power(x,2.0), axis=axis))) / len(x)
 
             rms=None
             stdev=None
@@ -405,7 +405,7 @@ class DataCollectionWebSocket(WebSocket):
             if stdev:
                 current_et_data['stdev_noise'][0] = stdev  
             if prop_valid_samples:
-                current_et_data['proportion_valid_samples'][0] = prop_valid_samples*100.0  
+                current_et_data['proportion_valid_samples'][0] = int(prop_valid_samples*100.0)
             
             if valid_samples:
                 s=valid_samples[-1]
@@ -413,7 +413,7 @@ class DataCollectionWebSocket(WebSocket):
                 if eyename == 'BOTH':                       
                     setLeftEyeInfo(current_et_data,status,s)
                     setRightEyeInfo(current_et_data,status,s)
-                elif eyenamae == 'LEFT':
+                elif eyename == 'LEFT':
                     setLeftEyeInfo(current_et_data,status,s)
                 else:
                     setRightEyeInfo(current_et_data,status,s)

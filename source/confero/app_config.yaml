@@ -28,9 +28,9 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    config: ..\iohub_config_no_eyetracker.yaml
+    #config: ..\iohub_config_no_eyetracker.yaml
     #config: ..\iohub_config_tobii.yaml
-    #config: ..\iohub_config_smi.yaml
+    config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
