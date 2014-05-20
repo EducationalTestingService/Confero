@@ -119,26 +119,16 @@ experimenter_server:
 
 web_application:
     notifications:
-        # Each entry will be used to define warning and / or error thresholds
-        # for a given device field value. The keys here should match a device
-        # info field that is used by the webapp to match device info values
-        # to webapp dom element ids. There are two issue status levels:
-        # warning and error. A device value can have either or both levels
-        # specified
-
-        # JUST AN IDEA EXAMPLE BELOW, NOT FINALIZED OR IMPLEMENTED
-        # Settings that are empty mean use a default value, unless otherwise
-        # stated.
         eyetracker:
             proportion_valid_samples:
                 warning:
-                    threshold: 0.1
-                    color:
-                    # No flashrate value (the default) means do not flash
-                    # background color on and off
-                    flashrate:
+                    threshold: 85
+                    edges:
+                        falling: True
+                        #rising: False
+                    minimum_time_period: 2.5
                     growl:
-                        text: "Sample Data Loss Above 10%."
+                        text: "Warning: Valid Samples below 85%."
                         # Duration can be:
                         #    * a number, which is to be used to indicate number
                         #      seconds to display growl,
@@ -147,18 +137,23 @@ web_application:
                         #    * AUTO, which indicates growl should disappear when
                         #      value has dropped back below warning threshold
                         #      level programatically.
-                        duration: 3.0
-                        fillcolor:
-                        textcolor:
+                        duration: AUTO
                 error:
-                    threshold: 0.8
-                    color:
-                    flashrate: 0.25
+                    edges:
+                        falling: True
+                    minimum_time_period: 1.5
+                    threshold: 25
                     growl:
-                        text: "Sample Data Loss Above 80%. Check participant positioning"
+                        text: "Valid Samples below 25%. Check participant positioning."
                         duration: MANUAL
-                        fillcolor:
-                        textcolor:
+            rms_noise:
+                warning:
+                    threshold: 20
+                    edges:
+                        #falling: False
+                        rising: True
+                    minimum_time_period: 1
+
 
 manual_termination:
     keyboard:

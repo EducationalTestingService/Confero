@@ -131,7 +131,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         input_computer_info=copy.deepcopy(messages.input_computer)
         self.device_info_stats['input_computer']=input_computer_info
         self.updateInputComputerStats()
-        self.device_monitor_countdowns['input_computer'] = CountdownTimer(input_computer_info.get('countdown_time', [0.01,''])[0])
+        cntimer = CountdownTimer(input_computer_info.get('countdown_time', [0.01,''])[0])
+        #cntimer._label = "Computer Info"
+        self.device_monitor_countdowns['input_computer'] = cntimer
         self.device_info_update_funcs['input_computer'] = self.updateInputComputerStats
 
         if self.keyboard:
@@ -142,7 +144,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.device_info_update_funcs['mouse'] = self.updateMouseMsgInfo
             mouse_info['position'][1] = display_unit_type
         if self.eyetracker:
-            print(" TODO: Finish updateEyetrackerMsgInfo function")
             self.recording_devices['eyetracker']=[self.eyetracker, tracker_info]
             self.device_info_update_funcs['eyetracker'] = self.updateEyetrackerMsgInfo
             tracker_info['average_gaze_position'][1] = display_unit_type
@@ -409,6 +410,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 if dev_update:
                     self.stats_info_updates[device_label] = dev_update
                 device_timer.reset()
+                #print('device_timer reset:', getTime(), device_timer._label, device_timer.getTime())
 
         update_count = len(self.stats_info_updates)
         if update_count > 0:
@@ -624,7 +626,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         start_events_msg_text = data_collect_config.get('event_period', {}).get('start_msg', 'START_EVENT_PERIOD')
 
         if session_info['recording'][0] is False:
-            #print ("** TODO: RESET DEVICE INFO AT START OF RECORDING **")
             self.stats_info_updates['experiment_session'] = session_info
             session_info['recording'][0] =True
             session_info['recording_counter'][0]+=1
@@ -632,7 +633,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.hub.sendMessageEvent(start_msg_txt,"data_monitoring")
             for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(True)
-                self.device_monitor_countdowns[device_label] = CountdownTimer(device_msg_dict.get('countdown_time', [0.01,''])[0])
+                cntimer = CountdownTimer(device_msg_dict.get('countdown_time', [0.25,''])[0])
+                #cntimer._label = device_label
+                self.device_monitor_countdowns[device_label] = cntimer
             session_info['recording_start_time'][0] =getTime()
 
             self.beginScreenCaptureStream()
@@ -648,6 +651,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.hub.sendMessageEvent(start_events_msg_text, "data_monitoring")
 
     def stopDeviceRecording(self):
+        print ("** TODO: RESET DEVICE INFO USED FOR WEBAPP AT END OF EACH RECORDING AND SEND MSG TO WEBAPP**")
         data_collect_config = self.getConfiguration().get('data_collection', {}).get('recording_period', {})
         end_msg_txt = data_collect_config.get('end_msg', 'RECORDING_STOPPED')
         end_events_msg_text = data_collect_config.get('event_period', {}).get('end_msg', 'END_EVENT_PERIOD')

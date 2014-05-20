@@ -45,6 +45,8 @@ function updateNode(client_obj,element_id,device,key){
         value = '';
     else if (isFloat(value))
         value=value.toFixed(3);
+    else if (isInteger(value))
+        ;//value=value.toFixed(3);
     else
         value=JSON.stringify(value)
 
@@ -58,6 +60,12 @@ function updateNode(client_obj,element_id,device,key){
             dom_node.html(value+' '+after);
         }
     }
+
+    // check if any warning or error alerts should be displayed.
+    if (element_id in client_obj.device_alerts){
+        client_obj.device_alerts[element_id].check(value);
+    }
+
 }
 
 function updateDOMContents(client_obj,device_name){
@@ -236,6 +244,14 @@ function createWebSocket(client_obj,video_server_host){
                 exp_picker.selectpicker('refresh');
             }
         }
+       else if (msg.msg_type === 'RUNTIME_NOTIFICATION_SETTINGS'){
+           client_obj.initRuntimeAlerts(msg.data);
+           //client_obj.runtime_alerts=msg.data;
+
+       }
+       else if (msg.msg_type === 'DATA_COLLECT_CONFIG'){
+           ;
+       }
        else{
           console.log("!! RX Unknown Msg:",msg);
        }

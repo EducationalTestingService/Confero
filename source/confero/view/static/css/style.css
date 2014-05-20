@@ -34,7 +34,6 @@
 .table > tfoot > tr > td {
   padding: 1px;
   line-height: 1.2;
-  vertical-align: middle;
   border-top: 1px solid #dddddd;
   border-bottom-color: #6a6a61;
   border-left-color: #6a6a61;

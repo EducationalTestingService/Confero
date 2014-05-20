@@ -156,7 +156,6 @@ def main(configurationDirectory):
             app_config_file_name = pjoin(configurationDirectory,
                                                 "..\\last_app_config.yaml")
             dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
-            app_conf = None
             ##########################################################
 
             ### Update ioHub Config Settings for this exp. session ###
@@ -190,6 +189,15 @@ def main(configurationDirectory):
             cmtype = "success"
             msg = {'msg_type': 'EXP_SESSION_STARTED', 'type': cmtype}
             runtime.sendToWebServer(msg)
+
+            # Get the notifications config dict and send it to the server, which
+            # will forward it to the webapp
+            notifications_dict = app_conf.get('web_application',{}).get('notifications',{})
+            msg = {'msg_type': 'RUNTIME_NOTIFICATION_SETTINGS', 'data':notifications_dict}
+            runtime.sendToWebServer(msg)
+
+            app_conf = None
+
             # Start the exp runtime
             #
             cmd, _ = runtime.start(app_config_file_name,pjoin(configurationDirectory,
