@@ -69,12 +69,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         # Start the application processing / event loop
         # This method does not return until the application is quiting.        
         return_value=self.runEventLoop()
-        self.hub.sendMessageEvent("Experiment Session Complete: %s"%(self.getSessionMetaData().get('code','CODE_MISSING')),"data_monitoring")
 
-        cmtype="success"
-        msg={'msg_type':'EXP_SESSION_CLOSED','type':cmtype}
-        self.sendToWebServer(msg)
-        
         # Close any application resources as needed and quit the ffmpeg
         # subprocess.
         self.close()
@@ -354,6 +349,9 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             elif msg.get('type') == "CLOSE_EXP_SESSION":
                 #print("MSG RX: ",msg)
                 self.stopDeviceRecording()
+                self.hub.sendMessageEvent("Experiment Session Complete: %s"%(self.getSessionMetaData().get('code', 'CODE_MISSING')), "data_monitoring")
+                msg={'msg_type': 'EXP_SESSION_CLOSED', 'type': "success"}
+                self.sendToWebServer(msg)
                 self.resetDataCollectionStats()
                 self.createDeviceStatsMessageDicts()
                 self.handleMsgTx()
@@ -445,17 +443,17 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         
     def close(self):
         try:
-            if self.eyetracker:
-                self.eyetracker.setRecordingState(False)
-                self.eyetracker.setConnectionState(False)        
-        except Exception, e:
-            print ('**Exception in close():',e)
-            
-        try:
             self.hub.quit()
         except Exception, e:
             print ('**Exception self.hub.quit():',e)
-        
+#
+#        try:
+#            if self.eyetracker:
+#                self.eyetracker.setRecordingState(False)
+#                self.eyetracker.setConnectionState(False)
+#        except Exception, e:
+#            print ('**Exception in close():',e)
+
     def startSubProcess(self, *args,**kwargs):
         stdout_file=kwargs['stdout_file']
         stderr_file=kwargs['stderr_file']
@@ -652,7 +650,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.hub.sendMessageEvent(start_events_msg_text, "data_monitoring")
 
     def stopDeviceRecording(self):
-        print ("** TODO: RESET DEVICE INFO USED FOR WEBAPP AT END OF EACH RECORDING AND SEND MSG TO WEBAPP**")
         data_collect_config = self.getConfiguration().get('data_collection', {}).get('recording_period', {})
         end_msg_txt = data_collect_config.get('end_msg', 'RECORDING_STOPPED')
         end_events_msg_text = data_collect_config.get('event_period', {}).get('end_msg', 'END_EVENT_PERIOD')
@@ -747,7 +744,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         stderr_file=pjoin(sess_results_dir, scParam('ffmpeg','stderr_file')+"_%d"%(rec_count)+".txt")
 
         self.hub.sendMessageEvent("Starting subprocess.", "ffmpeg_init")
-        print("STARTING FFMPEG:",ffmpeg,cli)
+        #print("STARTING FFMPEG:",ffmpeg,cli)
         p = self.startSubProcess(ffmpeg, cli, 
                                     stdout_file=stdout_file, 
                                     stderr_file=stderr_file)

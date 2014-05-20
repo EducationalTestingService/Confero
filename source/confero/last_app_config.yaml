@@ -13,10 +13,9 @@
 !!python/unicode event_buffer_length: 1048
 !!python/unicode event_loop_rate: 0.005
 !!python/unicode experiment_inactive_token: null
-!!python/unicode experimenter_server: {!!python/unicode address: !!python/unicode 127.0.0.1,
-  !!python/unicode port: 8888}
+!!python/unicode experimenter_server: {!!python/unicode address: 192.168.1.10, !!python/unicode port: 8888}
 !!python/unicode ioHub:
-  !!python/unicode config: !!python/unicode ..\last_iohub_config_no_eyetracker.yaml
+  !!python/unicode config: !!python/unicode ..\last_iohub_config_smi.yaml
   !!python/unicode process_affinity: []
 !!python/unicode manual_termination:
   !!python/unicode keyboard: {!!python/unicode key: !!python/unicode q, !!python/unicode modifier: !!python/unicode CONTROL_LEFT}
@@ -37,7 +36,7 @@
       !!python/unicode r: 30
       !!python/unicode scale: 1.0
       !!python/unicode threads: 0
-    !!python/unicode host: !!python/unicode 127.0.0.1
+    !!python/unicode host: !!python/unicode AUTO
     !!python/unicode read_port: 8084
     !!python/unicode uri: !!python/unicode screenstream
     !!python/unicode write_port: 8082
@@ -49,21 +48,39 @@
     !!python/unicode name: !!python/unicode screen_capture
   !!python/unicode screen_index: 0
   !!python/unicode screen_resolution: [1920, 1080]
-session_defaults: {code: !!python/unicode s3}
+session_defaults: {code: !!python/unicode cxvxvxcv}
 !!python/unicode web_application:
   !!python/unicode notifications:
     !!python/unicode eyetracker:
       !!python/unicode proportion_valid_samples:
         !!python/unicode error:
-          !!python/unicode color: null
-          !!python/unicode flashrate: 0.25
+          !!python/unicode edges: {!!python/unicode falling: true}
           !!python/unicode growl: {!!python/unicode duration: !!python/unicode MANUAL,
-            !!python/unicode fillcolor: null, !!python/unicode text: !!python/unicode Sample
-              Data Loss Above 80%. Check participant positioning, !!python/unicode textcolor: null}
-          !!python/unicode threshold: 0.8
+            !!python/unicode text: !!python/unicode Valid Samples below 25%. Check
+              participant positioning.}
+          !!python/unicode minimum_time_period: 1.5
+          !!python/unicode threshold: 25
         !!python/unicode warning:
-          !!python/unicode color: null
-          !!python/unicode flashrate: null
-          !!python/unicode growl: {!!python/unicode duration: 3.0, !!python/unicode fillcolor: null,
-            !!python/unicode text: !!python/unicode Sample Data Loss Above 10%., !!python/unicode textcolor: null}
-          !!python/unicode threshold: 0.1
+          !!python/unicode edges: {!!python/unicode falling: true}
+          !!python/unicode growl: {!!python/unicode duration: !!python/unicode AUTO,
+            !!python/unicode text: !!python/unicode 'Warning: Valid Samples below
+              85%.'}
+          !!python/unicode minimum_time_period: 2.5
+          !!python/unicode threshold: 85
+      !!python/unicode rms_noise:
+        !!python/unicode warning:
+          !!python/unicode edges: {!!python/unicode rising: true}
+          !!python/unicode minimum_time_period: 1
+          !!python/unicode threshold: 20
+    !!python/unicode input_computer:
+      !!python/unicode cpu_usage_all:
+        !!python/unicode warning:
+          !!python/unicode edges: {!!python/unicode rising: true}
+          !!python/unicode minimum_time_period: 0.5
+          !!python/unicode threshold: 80
+    !!python/unicode server_computer:
+      !!python/unicode cpu_usage_all:
+        !!python/unicode warning:
+          !!python/unicode edges: {!!python/unicode rising: true}
+          !!python/unicode minimum_time_period: 0.5
+          !!python/unicode threshold: 80
