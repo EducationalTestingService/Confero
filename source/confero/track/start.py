@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from dataCollection import DataCollectionRuntime
+from findserver import findConferoViewServer
 import psychopy
 from psychopy import core
 from psychopy.iohub import load, Loader
@@ -77,6 +78,16 @@ def main(configurationDirectory):
                                     "..\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
+    view_server_info = findConferoViewServer()
+    print
+    print "Confero Track Started. "
+    print "Found Confero Server:", view_server_info['ip'],view_server_info['port']
+    print
+    app_conf.get('experimenter_server')['address'] = view_server_info['ip']
+    app_conf.get('experimenter_server')['port'] = view_server_info['port']
+
+    DataCollectionRuntime.view_server_ip = view_server_info['ip']
+
     DataCollectionRuntime.results_root_folder = \
                                     app_conf.get('results_root_folder')
     if not (pexists(DataCollectionRuntime.results_root_folder)
@@ -117,6 +128,9 @@ def main(configurationDirectory):
                                             "..\\app_config.yaml"), u'r'),
                                             Loader=Loader)
 
+            app_conf.get('experimenter_server')['address'] = view_server_info['ip']
+            app_conf.get('experimenter_server')['port'] = view_server_info['port']
+
             DataCollectionRuntime.results_root_folder = \
                                             app_conf.get('results_root_folder')
             if not (pexists(DataCollectionRuntime.results_root_folder)
@@ -139,6 +153,10 @@ def main(configurationDirectory):
             #
             app_conf_path = pjoin(configurationDirectory, "..\\app_config.yaml")
             app_conf = load(file(app_conf_path, u'r'), Loader=Loader)
+
+            app_conf.get('experimenter_server')['address'] = view_server_info['ip']
+            app_conf.get('experimenter_server')['port'] = view_server_info['port']
+
             # Update the session code to be used
             #
             app_conf.setdefault('session_defaults', {})['code'] = data

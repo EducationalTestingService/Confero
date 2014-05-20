@@ -1,7 +1,7 @@
 PRINT_STATUS = True
 SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = True
-SESSION_PATH = r'..\datacollection\results\first_exp\s1'
+SESSION_PATH = r'..\track\results\first_exp\s1'
 SYNC_TIME_BOX = 0, 0, 20, 20
 SYNC_TRANSITION_COUNT = 15  # Each includes a cycle through colors
 SYNC_COLORS = 255.0, 0.0

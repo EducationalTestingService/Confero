@@ -446,9 +446,11 @@ class ControlFeedbackServer(object):
     get_event_queue = Queue.Queue()
     web_sockets = dict()
     app_config = None
-    def __init__(self, app_config):
+    def __init__(self, app_config, bonjour_service):
         self.webapp = tornado.web.Application(self.handlers, **self.settings)
         self.ssproxy = None
+        self.bonjour_service = bonjour_service
+        self.bonjour_service.checkForDaemonRequests()
         self._win_dialog_thread=None
         ControlFeedbackServer.app_config = app_config
         UIWebSocket.server_app_websockets = self.web_sockets
@@ -463,6 +465,17 @@ class ControlFeedbackServer(object):
             # Start webapp server
             self.webapp.listen(8888)
             IOLoop.instance()
+
+            def checkForDaemonRequests():
+                if self.bonjour_service:
+                    self.bonjour_service.checkForDaemonRequests()
+
+            def register_timed_callback():
+                self.bonjour_service.tornado_callback = tornado.ioloop.PeriodicCallback(checkForDaemonRequests,1000)
+                self.bonjour_service.tornado_callback.start()
+
+            IOLoop.instance().add_callback(register_timed_callback)
+
             autolaunch=keyChainValue(self.app_config, 'auto_launch_webapp')
             if autolaunch:            
                 IOLoop.instance().add_timeout(self.getServerTime()+0.5,
@@ -497,6 +510,10 @@ class ControlFeedbackServer(object):
             
     def quit(self):
         def _exit():
+            if self.bonjour_service and self.bonjour_service.tornado_callback:
+                self.bonjour_service.tornado_callback.stop()
+                self.bonjour_service.tornado_callback = None
+
             print 'Quiting Tornado server.....'
             if self.ssproxy:
                 quiteSubprocs([self.ssproxy,])
@@ -507,7 +524,10 @@ class ControlFeedbackServer(object):
             if self._win_dialog_thread and self._win_dialog_thread.isAlive():
                 self._win_dialog_thread=None
                 quiteSubprocs([psutil.Process(),])
-            
+
+        self.bonjour_service.close()
+        self.bonjour_service = None
+
         IOLoop.instance().add_timeout(self.getServerTime()+2.0,_exit)
 
     #def _terminate(self):

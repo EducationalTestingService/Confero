@@ -95,7 +95,7 @@ screen_capture:
     #params related to the realtime stream to the experimenter app. 
     #
     http_stream:
-        host: 127.0.0.1
+        host: AUTO #127.0.0.1
 #        host: 192.168.1.22
         write_port: 8082
         read_port: 8084
@@ -113,9 +113,9 @@ screen_capture:
 ################# ETS Experimenter Control & Monitoring Server #################
 
 experimenter_server:
-    address: 127.0.0.1
+    address: AUTO #127.0.0.1
 #    address: 192.168.1.22
-    port: 8888
+    port: AUTO #8888
 
 web_application:
     notifications:
@@ -154,6 +154,23 @@ web_application:
                         rising: True
                     minimum_time_period: 1
 
+        input_computer:
+            cpu_usage_all:
+                warning:
+                    threshold: 80
+                    edges:
+                        #falling: False
+                        rising: True
+                    minimum_time_period: 0.5
+
+        server_computer:
+            cpu_usage_all:
+                warning:
+                    threshold: 80
+                    edges:
+                        #falling: False
+                        rising: True
+                    minimum_time_period: 0.5
 
 manual_termination:
     keyboard:

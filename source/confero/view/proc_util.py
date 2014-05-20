@@ -56,6 +56,7 @@ def startNodeWebStreamer(app_config):
     jpath = os.path.join(script_dir, r'..\..\..\bin\nodejs\stream-server.js')
     nodejs = os.path.abspath(npath)
     jsscript = os.path.abspath(jpath)
+    print("Starting Video Streaming Server on", STREAM_HOST)
     return startSubProcess(nodejs, jsscript, STREAM_SECRET, STREAM_PORT,
                            WEBSOCKET_PORT, VID_WIDTH, VID_HEIGHT, STREAM_HOST)
     

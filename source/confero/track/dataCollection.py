@@ -29,6 +29,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
     results_root_folder = None
     active_exp_name=None
     cpu_usage_buffer = NumPyRingBuffer(3)
+    view_server_ip = None
     def run(self, *args):
         self._app_config_file_path, self._io_config_file_path = args
         appcfg=self.getConfiguration()
@@ -213,7 +214,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         try:
             self._session_results_folder=os.path.join(self.results_root_folder,self.active_exp_name,session_code)
             createPath(self._session_results_folder)
-            print("CREATED _session_results_folder: "+self._session_results_folder)
+            #print("CREATED _session_results_folder: "+self._session_results_folder)
             import shutil
             shutil.copy(self._app_config_file_path, self._session_results_folder)
             shutil.copy(self._io_config_file_path, self._session_results_folder)
@@ -716,7 +717,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             cli += '-s {0}x{1} '.format(stream_width, stream_height)
         cli += '-f mpeg1video -b:v {0}k -r {1} '.format(bv, rate)
 
-        host=scParam('http_stream','host')
+        host=self.view_server_ip#scParam('http_stream','host')
         write_port=scParam('http_stream','write_port')
         uri=scParam('http_stream','uri')
         cli+='http://{0}:{1}/{2}/{3}/{4}/ '.format(host, write_port, uri,

@@ -42,7 +42,7 @@ input_computer = {
     "cpu_usage_all": [None, r'%'],
     "memory_usage_all": [None, r'%'],
     'up_time': [None, 'sec'],
-    "countdown_time": [0.1, 'sec']
+    "countdown_time": [0.5, 'sec']
 }
 DataCollection['input_computer'] = input_computer
 

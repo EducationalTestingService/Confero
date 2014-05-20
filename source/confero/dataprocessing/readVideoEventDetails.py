@@ -1,14 +1,13 @@
 __author__ = 'Sol'
-
-SESSION_PATH = r'..\datacollection\results\first_exp\s1'
-FRAME_EVENT_FILE = r'session_vframe_events.npz'
-FILTERS = dict(event_type=[EventConstants.MOUSE_MOVE,], video_id=[1,])
-BATCH_SIZE = 100
-
+from psychopy.iohub import EventConstants
 import os
 from common import openDataStoreReader, Picker
 import numpy as np
-from psychopy.iohub import EventConstants
+
+SESSION_PATH = r'..\track\results\first_exp\s1'
+FRAME_EVENT_FILE = r'session_vframe_events.npz'
+FILTERS = dict(event_type=[EventConstants.BINOCULAR_EYE_SAMPLE,], video_id=[1,])
+BATCH_SIZE = 100
 
 def getEventDetails(session_path, frame_event_lookup_file, filters, batch_size):
     session_folder = os.path.normpath(os.path.abspath(session_path))
