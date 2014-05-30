@@ -123,6 +123,8 @@ class WebSocket(websocket.WebSocketHandler):
     ws_key = None
     def open(self):
         self.set_nodelay(True)
+        if self.ws_key in self.server_app_websockets:
+            print "View Server WARNING: WebSocket type %s already exists. Only one ws per type is currently supported."
         self.server_app_websockets[self.ws_key] = self
 
     def on_message(self, message):
@@ -178,6 +180,40 @@ class UIWebSocket(WebSocket):
             print("WARNING: Data Collection Web Socket is not Running. Msg not sent. Is the Data Collection application running?")
             print("")
 
+class TrackBrowserWebSocket(WebSocket):
+    ws_key = "TRACK_CLIENT"
+    def open(self):
+        print('TrackBrowserWebSocket created.')
+        WebSocket.open(self)
+        dc_ws = self.server_app_websockets.get('DATA_COLLECTION')
+        if not dc_ws:
+            pass
+        else:
+            self.event_filter = dc_ws.data_collection_state.setdefault('confero_track_ws_device_filter',[])
+
+    def on_message(self, message):
+        dc_sw = self.server_app_websockets.get("DATA_COLLECTION")
+        if dc_sw:
+            msg_dict = ujson.loads(message)
+            msg_type = msg_dict.get('msg_type', 'UNKNOWN')
+            if msg_type is 'UNKNOWN':
+                msg_type = msg_dict.get('type', 'UNKNOWN')
+
+            if msg_type == 'ECHO':
+                self.write_message(message)
+            elif msg_type == 'device_filter':
+                self.device_filter=msg_dict['device_list']
+                dc_sw.data_collection_state['confero_track_ws_device_filter'] = self.device_filter
+
+            elif msg_type == 'UNKNOWN':
+                self.write_message(self.createErrorMsgmessage(msg_dict, "Unknown Message Type"))
+        else:
+            print("")
+            print("WARNING: Data Collection Web Socket is not Running.")
+            print("")
+
+    def createErrorMsg(self,msg,reason):
+        return ujson.dump(dict(type='ERROR', rx_msg=msg, reason=reason))
 
 def createLeftEyeInfo(dev_data):
 #    dev_data["left_eye_status"] = [None,'']
@@ -255,6 +291,23 @@ class DataCollectionWebSocket(WebSocket):
             ws_ui = self.server_app_websockets.get("WEB_UI")
             if ws_ui:
                 ws_ui.write_message(ujson.dumps(to_send))
+
+            ws_tc = self.server_app_websockets.get("TRACK_CLIENT")
+            if ws_tc:
+                dev_filter = self.data_collection_state.get('confero_track_ws_device_filter')
+                if dev_filter is None:
+                    ws_tc.write_message(ujson.dumps(to_send))
+                else:
+                    filtered_to_send=[]
+                    for msg in to_send:
+                        if msg['msg_type'] == 'DataCollection':
+                            msg_dict = dict(msg_type = 'DataCollection')
+                            for dev_name, dev_stats in msg.items():
+                                if dev_name in dev_filter:
+                                    msg_dict[dev_name]  =  dev_stats
+                            filtered_to_send.append(msg_dict)
+                    if filtered_to_send:
+                        ws_tc.write_message(ujson.dumps(filtered_to_send))
 
     def processEyeTrackerData(self, dev_data):
         current_et_data = self.data_collection_state.get('eyetracker')
@@ -437,6 +490,7 @@ class ControlFeedbackServer(object):
             #(r"/sandbox/(.*)",SandboxHandler),
             (r"/ui_websocket",UIWebSocket),
             (r"/data_websocket",DataCollectionWebSocket),
+            (r"/track_client_ws",TrackBrowserWebSocket),
             (r"/rest_app/rpc/(.*)",RestAppRpcHandler),
             (r"/(apple-touch-icon\.png)", tornado.web.StaticFileHandler,
              dict(path=settings['static_path'])),
@@ -455,6 +509,7 @@ class ControlFeedbackServer(object):
         ControlFeedbackServer.app_config = app_config
         UIWebSocket.server_app_websockets = self.web_sockets
         DataCollectionWebSocket.server_app_websockets = self.web_sockets
+        TrackBrowserWebSocket.server_app_websockets = self.web_sockets
         RestAppRpcHandler.server_app = self
 
     def serveForever(self):

@@ -1,21 +1,16 @@
 ###############################################################################
 #
 # PLEASE READ:
-# Four settings in this file MUST BE UPDATED when the software is first being
-# setup for a given computer / screen resolution. The following config settings
-# must be modified for the software to function correctly:
+#
+# TWO settings in this file MUST BE UPDATED when the software is first being
+# setup for a given computer / screen resolution; if they are incorrect
+# the software will generate bad data and not function correctly:
 #
 # 1. ioHub -> config : Relative path of the iohub config file, including the
 #   file name. Path must be relative to the application run.py script location.
 #
 # 2. screen_capture->screen_resolution : Resolution of the *data collection*
 #   app. display that screen capture video will be coming from.
-#
-# 3. screen_capture -> http_stream -> host : The ip address of the web server 
-#    application PC.
-#
-# 4. screen_capture -> experimenter_server -> address : The ip address of the 
-#    web server application PC.
 #
 ###############################################################################
   
@@ -28,9 +23,9 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    #config: ..\iohub_config_no_eyetracker.yaml
+    config: ..\iohub_config_no_eyetracker.yaml
     #config: ..\iohub_config_tobii.yaml
-    config: ..\iohub_config_smi.yaml
+    #config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -95,8 +90,7 @@ screen_capture:
     #params related to the realtime stream to the experimenter app. 
     #
     http_stream:
-        host: AUTO #127.0.0.1
-#        host: 192.168.1.22
+        host: AUTO
         write_port: 8082
         read_port: 8084
         uri: screenstream
@@ -113,9 +107,8 @@ screen_capture:
 ################# ETS Experimenter Control & Monitoring Server #################
 
 experimenter_server:
-    address: AUTO #127.0.0.1
-#    address: 192.168.1.22
-    port: AUTO #8888
+    address: AUTO
+    port: AUTO
 
 web_application:
     notifications:
@@ -125,7 +118,6 @@ web_application:
                     threshold: 85
                     edges:
                         falling: True
-                        #rising: False
                     minimum_time_period: 2.5
                     growl:
                         text: "Warning: Valid Samples below 85%."
@@ -150,7 +142,6 @@ web_application:
                 warning:
                     threshold: 20
                     edges:
-                        #falling: False
                         rising: True
                     minimum_time_period: 1
 
@@ -159,7 +150,6 @@ web_application:
                 warning:
                     threshold: 80
                     edges:
-                        #falling: False
                         rising: True
                     minimum_time_period: 0.5
 
@@ -168,7 +158,6 @@ web_application:
                 warning:
                     threshold: 80
                     edges:
-                        #falling: False
                         rising: True
                     minimum_time_period: 0.5
 
