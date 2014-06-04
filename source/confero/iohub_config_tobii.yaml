@@ -33,6 +33,7 @@ monitor_devices:
         auto_report_events: False
         model_name:
         serial_number:
+        monitor_event_types: [ MonocularEyeSampleEvent, BinocularEyeSampleEvent, FixationStartEvent, FixationEndEvent, SaccadeStartEvent, SaccadeEndEvent, BlinkStartEvent, BlinkEndEvent]
         runtime_settings:
             sampling_rate: 60
         calibration:

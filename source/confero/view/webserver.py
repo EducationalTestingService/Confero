@@ -216,47 +216,51 @@ class TrackBrowserWebSocket(WebSocket):
         return ujson.dump(dict(type='ERROR', rx_msg=msg, reason=reason))
 
 def createLeftEyeInfo(dev_data):
-#    dev_data["left_eye_status"] = [None,'']
     dev_data["left_eye_gaze"] = [None,'']
     dev_data["left_eye_pos"] = [None,'']
     dev_data["left_eye_pupil"] = [None,'']
-#    dev_data["left_eye_noise"] = [None,'']
 
 def createRightEyeInfo(dev_data):
-#    dev_data["right_eye_status"] = [None,'']
     dev_data["right_eye_gaze"] = [None,'']
     dev_data["right_eye_pos"] = [None,'']
     dev_data["right_eye_pupil"] = [None,'']
-#    dev_data["right_eye_noise"] = [None,'']
-    
+
+def createAveragedEyeInfo(dev_data):
+    # just right eye cells for now
+    dev_data["right_eye_gaze"] = [None,'']
+    dev_data["right_eye_pos"] = [None,'']
+    dev_data["right_eye_pupil"] = [None,'']
+
 def clearLeftEyeInfo(dev_data):
-#    dev_data["left_eye_status"][0] = None
     dev_data["left_eye_gaze"][0] = None
     dev_data["left_eye_pos"][0] = None
     dev_data["left_eye_pupil"][0] = None
-#    dev_data["left_eye_noise"][0] = None
 
 def clearRightEyeInfo(dev_data):
-#    dev_data["right_eye_status"][0] = None
     dev_data["right_eye_gaze"][0] = None
     dev_data["right_eye_pos"][0] = None
     dev_data["right_eye_pupil"][0] = None
-#    dev_data["right_eye_noise"][0] = None
+
+def clearAveragedEyeInfo(dev_data):
+    dev_data["right_eye_gaze"][0] = None
+    dev_data["right_eye_pos"][0] = None
+    dev_data["right_eye_pupil"][0] = None
 
 def setLeftEyeInfo(dev_data, status, sample):
-#    dev_data["left_eye_status"][0] = status
     dev_data["left_eye_gaze"][0] = int(sample['left_gaze_x']), int(sample['left_gaze_y'])
     dev_data["left_eye_pos"][0] = int(sample['left_eye_cam_x']), int(sample['left_eye_cam_y']), int(sample['left_eye_cam_z'])
     dev_data["left_eye_pupil"][0] = sample['left_pupil_measure1']
-#    dev_data["left_eye_noise"][0] = 'TBC'
 
 def setRightEyeInfo(dev_data, status, sample):
-#    dev_data["right_eye_status"][0] = status
     dev_data["right_eye_gaze"][0] = int(sample['right_gaze_x']), int(sample['right_gaze_y'])
     dev_data["right_eye_pos"][0] = int(sample['right_eye_cam_x']), int(sample['right_eye_cam_y']), int(sample['right_eye_cam_z'])
     dev_data["right_eye_pupil"][0] = sample['right_pupil_measure1']
-#    dev_data["right_eye_noise"][0] = 'TBC'
-            
+
+def setAveragedEyeInfo(dev_data, status, sample):
+    dev_data["right_eye_gaze"][0] = int(sample['gaze_x']), int(sample['gaze_y'])
+    dev_data["right_eye_pos"][0] = int(sample['eye_cam_x']), int(sample['eye_cam_y']), int(sample['eye_cam_z'])
+    dev_data["right_eye_pupil"][0] = sample['pupil_measure1']
+
 class DataCollectionWebSocket(WebSocket):
     ws_key = "DATA_COLLECTION"
     def open(self):
@@ -316,7 +320,6 @@ class DataCollectionWebSocket(WebSocket):
             new_fields = {
                 "eye_sample_type": [None, ''],
                 "proportion_valid_samples": [None, ' %'],
-#                "status": [None, ''],
                 "time": [None, ' sec'],    # time of last sample received
                 "rms_noise": [None, ' RMS'], 
                 "stdev_noise": [None, ' STDEV'], 
@@ -326,12 +329,10 @@ class DataCollectionWebSocket(WebSocket):
             self.data_collection_state['proportion_valid_samples']=NumPyRingBuffer(int(current_et_data["sampling_rate"][0]), dtype=np.int8)
         else:
              current_et_data.update(dev_data)
-             
         dcapp_config=self.data_collection_state['data_collection_config']
-        
         new_samples = current_et_data.get('samples')[0]
-
         sampling_rate=float(current_et_data["sampling_rate"][0])
+
         if new_samples:
             latest_sample_event = new_samples[-1]
             current_et_data['time'][0]=latest_sample_event['time']
@@ -340,8 +341,18 @@ class DataCollectionWebSocket(WebSocket):
             sample_type = current_et_data.get('eye_sample_type')[0]
             noise_win_size=dcapp_config.get('noise_calculation',{}).get("win_size",0.2)
             noise_sample_count=int(sampling_rate*noise_win_size)
-            
-            if tracking_eyes == EyeTrackerConstants.LEFT_EYE:
+
+            if tracking_eyes == 'BINOCULAR_AVERAGED':
+                sample_type = "Monocular"
+                eyename='AVERAGED'
+                if self.data_collection_state.get('right_eye') is None:
+                    self.data_collection_state['right_eye']=dict(x=NumPyRingBuffer(noise_sample_count,
+                                dtype=np.float64),y=NumPyRingBuffer(noise_sample_count,
+                                dtype=np.float64),pupil=NumPyRingBuffer(noise_sample_count, dtype=np.float64))
+                createAveragedEyeInfo(current_et_data)
+            #----
+
+            elif tracking_eyes == EyeTrackerConstants.LEFT_EYE:
                 if self.data_collection_state.get('left_eye') is None:
                     createLeftEyeInfo(current_et_data)
                     self.data_collection_state['left_eye']=dict(x=NumPyRingBuffer(noise_sample_count, dtype=np.float64),
@@ -371,20 +382,32 @@ class DataCollectionWebSocket(WebSocket):
                                 dtype=np.float64),pupil=NumPyRingBuffer(noise_sample_count, dtype=np.float64)) 
                 if sample_type is None:
                     sample_type = "Binocular"
-            
+
+            #----
+
             if sample_type is None:
                 current_et_data['eye_sample_type'][0] = sample_type   
 
             new_sample_count=len(new_samples)
-            valid_samples=[v for v in new_samples if v['status']==0]
+            if tracking_eyes == 'BINOCULAR_AVERAGED':
+                valid_samples=[v for v in new_samples if v['status']!=22]
+            else:
+                valid_samples=[v for v in new_samples if v['status']==0]
             valid_sample_count=len(valid_samples)
             invalid_sample_count=new_sample_count-valid_sample_count
-            
+
+            #----
+
             s=None
             right_eye_buffers=None
             left_eye_buffers=None
             for s in valid_samples:
-                if eyename == 'BOTH':
+                if eyename == 'AVERAGED':
+                    right_eye_buffers = self.data_collection_state['right_eye']
+                    right_eye_buffers['x'].append(s['gaze_x'])
+                    right_eye_buffers['y'].append(s['gaze_y'])
+                    right_eye_buffers['pupil'].append(s['pupil_measure1'])
+                elif eyename == 'BOTH':
                     rgx,rgy=s['right_gaze_x'],s['right_gaze_y']
                     lgx,lgy=s['left_gaze_x'],s['left_gaze_y']
                     right_eye_buffers = self.data_collection_state['right_eye']
@@ -463,7 +486,10 @@ class DataCollectionWebSocket(WebSocket):
             if valid_samples:
                 s=valid_samples[-1]
                 status='TBC'
-                if eyename == 'BOTH':                       
+
+                if eyename == 'AVERAGED':
+                    setAveragedEyeInfo(current_et_data,status,s)
+                elif eyename == 'BOTH':
                     setLeftEyeInfo(current_et_data,status,s)
                     setRightEyeInfo(current_et_data,status,s)
                 elif eyename == 'LEFT':

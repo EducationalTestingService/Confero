@@ -2,15 +2,13 @@
 from __future__ import division
 from psychopy.iohub import EventConstants
 
-IOHUB_DATA_FOLDER_PATH = r'..\event_filters\test'
-IOHUB_DATA_FILE_NAME = 'default_exp.hdf5'
-SESSION_CODE = 'S_2014_Jun_03_2014'
+IOHUB_DATA_FOLDER_PATH = r'..\..\track\results\first_exp'
+IOHUB_DATA_FILE_NAME = 'iohub_events.hdf5'
+SESSION_CODE = 'calc_evt_fields'
 
 UNFILTERED_SAMPLE_TYPE = EventConstants.BINOCULAR_EYE_SAMPLE
 FILTERED_SAMPLE_TYPE =  EventConstants.MONOCULAR_EYE_SAMPLE
 FILTER_ID = 23
-
-VELOCITY_THRESH = 20
 
 from psychopy.iohub.datastore.util import ExperimentDataAccessUtility
 import numpy as np
@@ -116,12 +114,6 @@ def plotSampleFieldTraces(sample_traces,session_code, recording_id):
     ax.fill_between(time, 0, 1, where=sample_traces['status']==22, facecolor=(0,0,0), edgecolor=(0,0,0),
                     alpha=.95, transform=trans)
 
-    # Event Parsing not yet online.
-#    ax.fill_between(time, 0, 1, where=sample_traces['velocity']['thresh'] is np.NaN, facecolor=(0.25,.25,.25), edgecolor=(0.25,.25,.25),
-#                    alpha=1, transform=trans)
-
-#    plt.axhline(y=trial_traces_dict['velocity_threshold_points'][0],color='g', lw=2, alpha=0.5))
-#    plt.axhline(y=VELOCITY_THRESH, color='r', lw=2, alpha=0.5)
 
     handles, labels = ax.get_legend_handles_labels()
     handles2, labels2 = ax2.get_legend_handles_labels()

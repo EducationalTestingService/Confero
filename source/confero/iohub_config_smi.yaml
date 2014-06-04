@@ -33,7 +33,7 @@ monitor_devices:
         save_events: True
         stream_events: True
         event_buffer_length: 1024
-        #monitor_event_types: [ BinocularEyeSampleEvent,]
+        monitor_event_types: [ MonocularEyeSampleEvent, BinocularEyeSampleEvent, FixationStartEvent, FixationEndEvent, SaccadeStartEvent, SaccadeEndEvent, BlinkStartEvent, BlinkEndEvent]
         network_settings:
             send_ip_address: 127.0.0.1
             send_port: 4444

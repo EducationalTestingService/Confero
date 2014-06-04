@@ -60,11 +60,26 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         # Add filters if needed:
         event_filters = self.keyChainValue(appcfg, 'data_collection', 'event_filters')
         if event_filters:
-            for device_name, event_filter_config in event_filters:
+            for device_name, event_filter_config in event_filters.items():
+                if self.hub.getDevice(device_name) is None:
+                    continue
                 filter_file_path = event_filter_config.get('file_path', '.')
                 filter_class_name = event_filter_config.get('class_name')
                 filtered_events_only = event_filter_config.get('stream_filtered_only', False)
-                filter_id = self.hub.getDevice(device_name).addFilter(filter_file_path, filter_class_name)
+                filter_kwargs = event_filter_config.get('params', {})
+                filter_kwargs['display_device'] = dict(pixel_res=self.display.getPixelResolution(), mm_size=self.display.getPhysicalDimensions(), eye_distance=self.display.getDefaultEyeDistance())
+
+                et_config=self.eyetracker.getConfiguration()
+                runtime_settings=et_config.get('runtime_settings')
+                if runtime_settings:
+                    srate=runtime_settings.get('sampling_rate')
+                    if srate:
+                        filter_kwargs['sampling_rate'] = float(srate)
+                    else:
+                        raise ValueError("sampling_rate could not be read!")
+
+                filter_id = self.hub.getDevice(device_name).addFilter(filter_file_path, filter_class_name, filter_kwargs)
+                print("ADDED FILTER: ", filter_id)
                 if filter_id >= 0:
                     if filtered_events_only is True:
                         self._device_event_filter[device_name] = filter_id
@@ -348,16 +363,24 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             dev_data_update = True
 
         kwargs = dict(asType='dict')
-        filter_device_events = self._device_event_filter.get('eyetracker')
+        filter_device_events = self._device_event_filter.get('tracker')
         if filter_device_events is not None:
            kwargs['filter_id'] = filter_device_events
         new_events = self.eyetracker.getEvents(**kwargs)
-
         new_samples=[e for e in new_events if e['type'] in [EventConstants.BINOCULAR_EYE_SAMPLE, EventConstants.MONOCULAR_EYE_SAMPLE]]
         new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE, EventConstants.MONOCULAR_EYE_SAMPLE]]
         self.updateLocalEventsCache(new_events)
-
+        import math
         if new_samples:
+            #print("NEW SAMPLE COUNT: ",len(new_samples))
+            for s in new_samples:
+                for k, v in s.items():
+                    if isinstance(v, np.generic):
+                        s[k]=np.asscalar(v)
+                    if math.isnan(v):
+                        s[k] = 0
+                    elif math.isinf(v):
+                        s[k] = 0
             dev_data["samples"][0] = new_samples
             return dev_data
  
@@ -409,11 +432,12 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def sendToWebServer(self,*args):
         try:
-            self.ui_server_websocket.send(ujson.dumps(args))
+            tosend=ujson.dumps(args)
+            self.ui_server_websocket.send(tosend)
         except Exception, e:
             print(">>>")
             print("Error: sendToWebServer failed: ",e)
-            import traceback                
+            import traceback
             traceback.print_exc()
             print
             print("Attempting to send:",args)
@@ -674,6 +698,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
             self.hub.sendMessageEvent(start_msg_txt,"data_monitoring")
             for device_label,(iohub_device,device_msg_dict) in self.recording_devices.iteritems():
+                iohub_device.enableFilters()
                 iohub_device.enableEventReporting(True)
                 cntimer = CountdownTimer(device_msg_dict.get('countdown_time', [0.25,''])[0])
                 #cntimer._label = device_label
@@ -708,6 +733,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
             for device_label, (iohub_device, device_msg_dict) in self.recording_devices.iteritems():
                 iohub_device.enableEventReporting(False)
+                iohub_device.enableFilters(False)
                 del self.device_monitor_countdowns[device_label]
             session_info['recording_start_time'][0] = 0.0
             session_info['recording'][0] = False
@@ -803,57 +829,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def stopffmpeg(self):
         a,b = self._ffmpeg_proc.communicate(r"q\n\r")
-
-#    def quiteSubprocs(self,procs):
-#        import psutil
-#        import time
-#        import win32api
-#        import win32con
-#        def on_terminate(proc):
-#            if self.hub:
-#                try:
-#                    print("Process {0} Terminated OK.".format(proc))
-#                    self.hub.sendMessageEvent("Process {0} Terminated OK.".format(proc), "close_subproc")
-#                except:
-#                    pass
-#
-#        for p in procs:
-#            a,b=p.communicate(r"q\n\r")
-#
-#        try
-#        for p in procs:
-#            p=psutil.Process(p.pid)
-#
-#            try:
-#                p.terminate()
-#            except Exception, e:
-#                print('Error during quiteSubprocs:',e)
-#
-#        gone, alive = psutil.wait_procs(procs=procs, timeout=10, callback=on_terminate)
-#        for p in alive:
-#                try:
-#                    p.kill()
-#                    print("Process {0} had to be KILLED.".format(proc))
-#                    if self.hub:
-#                        self.hub.sendMessageEvent("Process {0} had to be KILLED.".format(p), "close_subproc")
-#                except Exception, e:
-#                    print ('Error2 during quiteSubprocs:',e)
-#            #print('post communicate.....')
-#            try:
-#                ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
-#                p.wait()
-#            except KeyboardInterrupt:
-#                print("ignoring ctrlc")
-#            print("still running")
-#            print("sending ctrl c")
-#            try:
-#                win32api.GenerateConsoleCtrlEvent(win32con.CTRL_C_EVENT, 0)
-#                p.wait()
-#            except KeyboardInterrupt:
-#                print("ignoring ctrl c")
-#
-#            print("still running")
-#            return
 
     def runVisualSyncProcedure(self):
         sync_config = self.getConfiguration().get('data_collection', {}).get('video_event_sync', {})

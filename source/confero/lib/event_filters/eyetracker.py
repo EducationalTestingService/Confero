@@ -22,17 +22,6 @@ for a sample, the positions are averaged together. If only one of the two eyes
 has valid data, then that eye data is used for the sample. So the only case
 where a sample will be tagged as missing data is when both eyes do not have
 valid eye position / pupil size data.
-* Currently, the following constants need to be set within this file. These will
-be moved into a config file, or read from existing config data, at a later
-point in development.
-
-DISPLAY_SIZE_MM = (540, 300)
-DISPLAY_RES_PIX = (1920, 1080)
-DEFAULT_EYE_DISTANCE = 550
-SAMPLING_RATE = 60
-ADAPTIVE_VELOCITY_HISTORY_DURATION = 5.0 # 5 seconds of valid data is needed.
-POSITION_FILTER = eventfilters.PassThroughFilter, {}
-VELOCITY_FILTER = eventfilters.PassThroughFilter, {}
 
 POSITION_FILTER and VELOCITY_FILTER can be set to one of the following event
 field filter types. Example values for any input arguments are given. The filter
@@ -143,22 +132,9 @@ Data is filtered once, similar to what a 'normal' filter level would be in the
 import psychopy.iohub.devices.eventfilters as eventfilters
 from psychopy.iohub import EventConstants, DeviceEvent, print2err
 from psychopy.iohub.util import NumPyRingBuffer
-from scipy.ndimage.filters import gaussian_filter1d
-from scipy.signal import medfilt
-from numpy import convolve
 from timeit import default_timer as getTime
 from collections import deque, OrderedDict
 import numpy as np
-
-############################### Constants ######################################
-
-DISPLAY_SIZE_MM = (540, 300)
-DISPLAY_RES_PIX = (1920, 1080)
-DEFAULT_EYE_DISTANCE = 550
-SAMPLING_RATE = 60
-POSITION_FILTER = eventfilters.PassThroughFilter, {}
-VELOCITY_FILTER = eventfilters.PassThroughFilter, {}
-ADAPTIVE_VELOCITY_HISTORY_DURATION = 5.0 # 5 seconds of valid data is needed.
 
 ################### Pixel to Visual Angle Calculation ##########################
 """
@@ -227,6 +203,7 @@ class VisualAngleCalc(object):
         return rad2deg(Ah), rad2deg(Av)
 
 ################################################################################
+
 MONOCULAR_EYE_SAMPLE = EventConstants.MONOCULAR_EYE_SAMPLE
 BINOCULAR_EYE_SAMPLE = EventConstants.BINOCULAR_EYE_SAMPLE
 FIXATION_START = EventConstants.FIXATION_START
@@ -241,32 +218,46 @@ LEFT_EYE = 1
 RIGHT_EYE = 2
 BOTH_EYE = 3
 
-# Event Filter Types:
-#   MovingWindowFilter(length, event_type, event_field_name, knot_pos='center', inplace = True)
-#   PassThroughFilter(event_type, event_field_name)
-#   MedianFilter(length, event_type, event_field_name, knot_pos='center', inplace = True)
-#   WeightedAverageFilter(weights, event_type, event_field_name, knot_pos='center', inplace = True)
-#   StampFilter(event_type, event_field_name, level=1, inplace = True)
-
 class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
     def __init__(self, **kwargs):
-        eventfilters.DeviceEventFilter.__init__(self)
+        eventfilters.DeviceEventFilter.__init__(self,**kwargs)
         self.sample_type = None
         self.io_sample_class = None
         self.io_event_ix = None
-
         self.last_valid_sample = None
         self.last_sample = None
         self.invalid_samples_run = []
         self._last_parser_sample = None
         self.open_parser_events = OrderedDict()
+        self.convertEvent = None
+        self.isValidSample = None
+        self.vel_thresh_history_dur = kwargs.get('adaptive_vel_thresh_history', 3.0)
+        position_filter = kwargs.get('position_filter')
+        velocity_filter = kwargs.get('velocity_filter')
+        display_device = kwargs.get('display_device')
+        sampling_rate = kwargs.get('sampling_rate')
 
-        self.adaptive_x_vthresh_buffer = np.zeros(ADAPTIVE_VELOCITY_HISTORY_DURATION*SAMPLING_RATE)
+        if position_filter:
+            pos_filter_class_name = position_filter.get('name', 'PassThroughFilter')
+            pos_filter_class = getattr(eventfilters, pos_filter_class_name)
+            del position_filter['name']
+            pos_filter_kwargs = position_filter
+        else:
+            pos_filter_class, pos_filter_kwargs = eventfilters.PassThroughFilter, {}
+
+        if velocity_filter:
+            vel_filter_class_name = position_filter.get('name', 'PassThroughFilter')
+            vel_filter_class = getattr(eventfilters,vel_filter_class_name)
+            del velocity_filter['name']
+            vel_filter_kwargs = velocity_filter
+        else:
+            vel_filter_class, vel_filter_kwargs = eventfilters.PassThroughFilter, {}
+
+        self.adaptive_x_vthresh_buffer = np.zeros(self.vel_thresh_history_dur*sampling_rate)
         self.x_vthresh_buffer_index = 0
-        self.adaptive_y_vthresh_buffer = np.zeros(ADAPTIVE_VELOCITY_HISTORY_DURATION*SAMPLING_RATE)
+        self.adaptive_y_vthresh_buffer = np.zeros(self.vel_thresh_history_dur*sampling_rate)
         self.y_vthresh_buffer_index = 0
 
-        pos_filter_class, pos_filter_kwargs = POSITION_FILTER
         pos_filter_kwargs['event_type'] = MONOCULAR_EYE_SAMPLE
         pos_filter_kwargs['inplace'] = True
         pos_filter_kwargs['event_field_name'] = 'gaze_x'
@@ -274,7 +265,6 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         pos_filter_kwargs['event_field_name'] = 'gaze_y'
         self.y_position_filter = pos_filter_class(**pos_filter_kwargs)
 
-        vel_filter_class, vel_filter_kwargs = VELOCITY_FILTER
         vel_filter_kwargs['event_type'] = MONOCULAR_EYE_SAMPLE
         vel_filter_kwargs['inplace'] = True
         vel_filter_kwargs['event_field_name'] = 'velocity_x'
@@ -284,14 +274,22 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         vel_filter_kwargs['event_field_name'] = 'velocity_xy'
         self.xy_velocity_filter = vel_filter_class(**vel_filter_kwargs)
 
+#        print2err('self.x_position_filter: ',self.x_position_filter)
+#        print2err('self.y_position_filter: ',self.y_position_filter)
+#        print2err('self.x_velocity_filter: ',self.x_velocity_filter)
+#        print2err('self.y_velocity_filter: ',self.y_velocity_filter)
+#        print2err('self.xy_velocity_filter: ',self.xy_velocity_filter)
         # function vars
-        self.convertEvent = None
-        self.isValidSample = None
-        ###
 
-        self.visual_angle_calc = VisualAngleCalc(DISPLAY_SIZE_MM,
-                                                 DISPLAY_RES_PIX,
-                                                 DEFAULT_EYE_DISTANCE)
+        ###
+        mm_size = display_device.get('mm_size')
+        if mm_size:
+            mm_size=mm_size['width'],mm_size['height'],
+        pixel_res = display_device.get('pixel_res')
+        eye_distance = display_device.get('eye_distance')
+        self.visual_angle_calc = VisualAngleCalc(mm_size,
+                                                 pixel_res,
+                                                 eye_distance)
         self.pix2deg = self.visual_angle_calc.pix2deg
 
     @property
@@ -366,6 +364,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                     self.addOutputEvent(start_event)
                 if end_event:
                     self.addOutputEvent(end_event)
+            else:
+                self.open_parser_events.setdefault(current_sec+'_SAMPLES',[]).append(sample)
         self._last_parser_sample = sample
 
     def getSampleEventCategory(self, sample):
@@ -388,24 +388,34 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         if last_sample_category == 'MIS':
             # Create end blink event
             existing_start_event = self.open_parser_events.get('MIS')
+            evt_samples = self.open_parser_events.get('MIS_SAMPLES')
+            if evt_samples:
+                del self.open_parser_events['MIS_SAMPLES']
+
             if existing_start_event:
-                end_event = self.createBlinkEndEventArray(last_sample, existing_start_event)
+                end_event = self.createBlinkEndEventArray(last_sample, existing_start_event, evt_samples)
                 del self.open_parser_events['MIS']
             else:
                 print2err("PARSER Warning: Blink Start Event not found; Blink End event being dropped: ", end_event)
         elif last_sample_category == 'FIX':
             # Create end fix event
             existing_start_event = self.open_parser_events.get('FIX')
+            evt_samples = self.open_parser_events.get('FIX_SAMPLES')
+            if evt_samples:
+                del self.open_parser_events['FIX_SAMPLES']
             if existing_start_event:
-                end_event = self.createFixationEndEventArray(last_sample, existing_start_event)
+                end_event = self.createFixationEndEventArray(last_sample, existing_start_event,evt_samples)
                 del self.open_parser_events['FIX']
             else:
                 print2err("PARSER Warning: Fixation Start Event not found; Fixation End event being dropped: ", end_event)
         elif last_sample_category == 'SAC':
             # Create end sac event
             existing_start_event = self.open_parser_events.get('SAC')
+            evt_samples = self.open_parser_events.get('SAC_SAMPLES')
+            if evt_samples:
+                del self.open_parser_events['SAC_SAMPLES']
             if existing_start_event:
-                end_event = self.createSaccadeEndEventArray(last_sample, existing_start_event)
+                end_event = self.createSaccadeEndEventArray(last_sample, existing_start_event,evt_samples)
                 del self.open_parser_events['SAC']
             else:
                 print2err("PARSER Warning: Saccade Start Event not found; Saccade End event being dropped: ", end_event)
@@ -413,6 +423,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         if current_sample_category == 'MIS':
             # Create start blink event
             start_event = self.createBlinkStartEventArray(current_sample)
+            self.open_parser_events['MIS_SAMPLES']=[current_sample,]
             existing_start_event = self.open_parser_events.get('MIS')
             if existing_start_event:
                 print2err("PARSER ERROR: Blink Start Event already Open and is being dropped: ", existing_start_event)
@@ -421,6 +432,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         elif current_sample_category == 'FIX':
             # Create start fix event
             start_event = self.createFixationStartEventArray(current_sample)
+            self.open_parser_events['FIX_SAMPLES']=[current_sample,]
             existing_start_event = self.open_parser_events.get('FIX')
             if existing_start_event:
                 print2err("PARSER ERROR: Fixation Start Event already Open and is being dropped: ", existing_start_event)
@@ -429,6 +441,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         elif current_sample_category == 'SAC':
             # Create start sac event
             start_event = self.createSaccadeStartEventArray(current_sample)
+            self.open_parser_events['SAC_SAMPLES']=[current_sample,]
             existing_start_event = self.open_parser_events.get('SAC')
             if existing_start_event:
                 print2err("PARSER ERROR: Saccade Start Event already Open and is being dropped: ", existing_start_event)
@@ -513,13 +526,13 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         x_interp = np.linspace(starting_gx, ending_gx, num=invalid_sample_count+2)[1:-1]
         y_interp = np.linspace(starting_gy, ending_gy, num=invalid_sample_count+2)[1:-1]
         p_interp = np.linspace(starting_ps, ending_ps, num=invalid_sample_count+2)[1:-1]
-        print2err('>>>>')
-        print2err('invalid_sample_count: ', invalid_sample_count)
-        print2err('starting_gx, ending_gx: ', starting_gx,', ',ending_gx)
-        print2err('x_interp: ', x_interp)
-        print2err('starting_gy, ending_gy: ', starting_gx,', ',ending_gx)
-        print2err('y_interp: ', y_interp)
-        print2err('<<<<')
+#       print2err('>>>>')
+#        print2err('invalid_sample_count: ', invalid_sample_count)
+#        print2err('starting_gx, ending_gx: ', starting_gx,', ',ending_gx)
+#        print2err('x_interp: ', x_interp)
+#        print2err('starting_gy, ending_gy: ', starting_gx,', ',ending_gx)
+#        print2err('y_interp: ', y_interp)
+#        print2err('<<<<')
 
         prev_samp = self.last_valid_sample
         # interpolate missing sample values, adding to pos and vel filters
@@ -573,6 +586,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 mono_evt.append(current_event[binoc_field_names.index(field)])
             elif field == 'eye':
                 mono_evt.append(LEFT_EYE)
+            elif field.endswith('_type'):
+                mono_evt.append(int(current_event[binoc_field_names.index('left_%s'%(field))]))
             else:
                 if status == 0:
                     lfv = float(current_event[binoc_field_names.index('left_%s'%(field))])
@@ -587,7 +602,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                     mono_evt.append(float(current_event[binoc_field_names.index('left_%s'%(field))]))
                 else:
                     ValueError("Unknown Sample Status: %d"%(status))
-        mono_evt[self.io_event_fields.index('type')] = MONOCULAR_EYE_SAMPLE
+        mono_evt[self.io_event_fields.index('type')] = EventConstants.MONOCULAR_EYE_SAMPLE
         if self.isValidSample(mono_evt):
             self._convertPosToAngles(mono_evt)
             if prev_event:
@@ -639,7 +654,13 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 ]
 
 
-    def createFixationEndEventArray(self, sample, existing_start_event):
+    def createFixationEndEventArray(self, sample, existing_start_event, event_samples):
+        evt_sample_array = np.asarray(event_samples)
+        vx = self.io_event_ix('velocity_x')
+        vy = self.io_event_ix('velocity_y')
+        vxy = self.io_event_ix('velocity_xy')
+        gx = self.io_event_ix('gaze_x')
+        gy = self.io_event_ix('gaze_y')
         return [sample[self.io_event_ix('experiment_id')],
                 sample[self.io_event_ix('session_id')],
                 sample[self.io_event_ix('device_id')],
@@ -653,8 +674,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 sample[self.io_event_ix('eye')],
                 sample[self.io_event_ix('time')]-existing_start_event[self.io_event_ix('time')],
-                existing_start_event[self.io_event_ix('gaze_x')],
-                existing_start_event[self.io_event_ix('gaze_y')],
+                existing_start_event[gx],
+                existing_start_event[gy],
                 0.0,
                 0.0,
                 0.0,
@@ -666,11 +687,11 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 0.0,
                 0.0,
-                existing_start_event[self.io_event_ix('velocity_x')],
-                existing_start_event[self.io_event_ix('velocity_y')],
-                existing_start_event[self.io_event_ix('velocity_xy')],
-                sample[self.io_event_ix('gaze_x')],
-                sample[self.io_event_ix('gaze_y')],
+                existing_start_event[vx],
+                existing_start_event[vy],
+                existing_start_event[vxy],
+                sample[gx],
+                sample[gy],
                 0.0,
                 0.0,
                 0.0,
@@ -682,28 +703,28 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 0.0,
                 0.0,
-                sample[self.io_event_ix('velocity_x')],
-                sample[self.io_event_ix('velocity_y')],
-                sample[self.io_event_ix('velocity_xy')],
-                -1.0,#average_gaze_x,
-                -1.0,#average_gaze_y,
+                sample[vx],
+                sample[vy],
+                sample[vxy],
+                evt_sample_array[:,gx].mean(),#average_gaze_x,
+                evt_sample_array[:,gy].mean(),#average_gaze_y,
                 0.0,
                 0.0,
                 0.0,
                 0.0,
                 0.0,
-                -1.0,#average_pupil_measure1,
-                0,#average_pupil_measure1_type,
+                evt_sample_array[:,self.io_event_ix('pupil_measure1')].mean(),#average_pupil_measure1,
+                sample[self.io_event_ix('pupil_measure1_type')],#average_pupil_measure1_type,
                 0.0,
                 0.0,
                 0.0,
                 0.0,
-                -1.0,#average_velocity_x,
-                -1.0,#average_velocity_y,
-                -1.0,#average_velocity_xy,
-                -1.0,#peak_velocity_x,
-                -1.0,#peak_velocity_y,
-                -1.0,#peak_velocity_xy,
+                evt_sample_array[:, vx].mean(),#average_velocity_x,
+                evt_sample_array[:, vy].mean(),#average_velocity_y,
+                evt_sample_array[:, vxy].mean(),#average_velocity_xy,
+                evt_sample_array[:, vx].max(),#peak_velocity_x,
+                evt_sample_array[:, vy].max(),#peak_velocity_y,
+                evt_sample_array[:, vxy].max(),#peak_velocity_xy,
                 sample[self.io_event_ix('status')]
                 ]
 
@@ -741,7 +762,19 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[self.io_event_ix('status')]
                 ]
 
-    def createSaccadeEndEventArray(self, sample, existing_start_event):
+    def createSaccadeEndEventArray(self, sample, existing_start_event, event_samples):
+        evt_sample_array = np.asarray(event_samples)
+        gx = self.io_event_ix('gaze_x')
+        gy = self.io_event_ix('gaze_y')
+        x1 = existing_start_event[gx]
+        y1 = existing_start_event[gy]
+        x2 = sample[gx]
+        y2 = sample[gy]
+        xDiff = x2-x1
+        yDiff = y2-y1
+        vx = self.io_event_ix('velocity_x')
+        vy = self.io_event_ix('velocity_y')
+        vxy = self.io_event_ix('velocity_xy')
         return [sample[self.io_event_ix('experiment_id')],
                 sample[self.io_event_ix('session_id')],
                 sample[self.io_event_ix('device_id')],
@@ -755,11 +788,11 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 sample[self.io_event_ix('eye')],
                 sample[self.io_event_ix('time')]-existing_start_event[self.io_event_ix('time')],
-                sample[self.io_event_ix('gaze_x')] - existing_start_event[self.io_event_ix('gaze_x')],
-                sample[self.io_event_ix('gaze_y')] - existing_start_event[self.io_event_ix('gaze_y')],
-                -1.0,#angle,
-                existing_start_event[self.io_event_ix('gaze_x')],
-                existing_start_event[self.io_event_ix('gaze_y')],
+                xDiff,
+                yDiff,
+                rad2deg(arctan(yDiff, xDiff)),
+                existing_start_event[gx],
+                existing_start_event[gy],
                 0.0,
                 0.0,
                 0.0,
@@ -771,11 +804,11 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 0.0,
                 0.0,
-                existing_start_event[self.io_event_ix('velocity_x')],
-                existing_start_event[self.io_event_ix('velocity_y')],
-                existing_start_event[self.io_event_ix('velocity_xy')],
-                sample[self.io_event_ix('gaze_x')],
-                sample[self.io_event_ix('gaze_y')],
+                existing_start_event[vx],
+                existing_start_event[vy],
+                existing_start_event[vxy],
+                sample[gx],
+                sample[gy],
                 0.0,
                 0.0,
                 0.0,
@@ -787,15 +820,15 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 0,
                 0.0,
                 0.0,
-                sample[self.io_event_ix('velocity_x')],
-                sample[self.io_event_ix('velocity_y')],
-                sample[self.io_event_ix('velocity_xy')],
-                -1.0,#average_velocity_x,
-                -1.0,#average_velocity_y,
-                -1.0,#average_velocity_xy,
-                -1.0,#peak_velocity_x,
-                -1.0,#peak_velocity_y,
-                -1.0,#peak_velocity_xy,
+                sample[vx],
+                sample[vy],
+                sample[vxy],
+                evt_sample_array[:, vx].mean(),#average_velocity_x,
+                evt_sample_array[:, vy].mean(),#average_velocity_y,
+                evt_sample_array[:, vxy].mean(),#average_velocity_xy,
+                evt_sample_array[:, vx].max(),#peak_velocity_x,
+                evt_sample_array[:, vy].max(),#peak_velocity_y,
+                evt_sample_array[:, vxy].max(),#peak_velocity_xy,
                 sample[self.io_event_ix('status')]
                 ]
 
@@ -817,7 +850,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[self.io_event_ix('status')]
                 ]
 
-    def createBlinkEndEventArray(self, sample, existing_start_event):
+    def createBlinkEndEventArray(self, sample, existing_start_event, event_samples):
         return [sample[self.io_event_ix('experiment_id')],
                 sample[self.io_event_ix('session_id')],
                 sample[self.io_event_ix('device_id')],

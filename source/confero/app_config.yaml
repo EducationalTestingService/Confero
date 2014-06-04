@@ -23,9 +23,9 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    config: ..\iohub_config_no_eyetracker.yaml
+    #config: ..\iohub_config_no_eyetracker.yaml
     #config: ..\iohub_config_tobii.yaml
-    #config: ..\iohub_config_smi.yaml
+    config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -49,12 +49,22 @@ data_collection:
         end_msg: RECORDING_STOPPED
 
     event_filters:
-        eyetracker:
-            file_path: "..\lib\event_filters\eyetracker.py"
+        tracker:
+            file_path: '..\lib\event_filters\eyetracker.py'
             class_name: EyeTrackerEventParser
             stream_filtered_only: True
-
-
+            params:
+                adaptive_vel_thresh_history: 5.0
+                position_filter:
+                    name: MedianFilter
+                    length: 5
+                    knot_pos: center
+                    #weights:
+                velocity_filter:
+                    name:  PassThroughFilter
+                    #length:
+                    #knot_pos:
+                    #weights:
 screen_capture:
     screen_index: 0
     screen_resolution: [1920, 1080]
