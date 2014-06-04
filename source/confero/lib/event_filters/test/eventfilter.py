@@ -21,9 +21,12 @@ mouse = io.devices.mouse
 tracker = io.devices.tracker
 experiment = io.devices.experiment
 
-filter_path_and_file=r'D:\Dropbox\WinPython-32bit-2.7.6.0\my-code\UserMonitor\source\confero\lib\event_filters\eyetracker.py','EyeTrackerEventParser'
-tracker.addFilter(*filter_path_and_file)
-
+filter_path_and_file=r'..\eyetracker.py','EyeTrackerEventParser'
+filter_id = tracker.addFilter(*filter_path_and_file)
+if filter_id == -1:
+    print "** Error, filter not installed:",filter_path_and_file
+else:
+    print "Filter installed. filter_id =",filter_id
 
 exp_conditions= [
     {'session_id': 1,
@@ -49,8 +52,9 @@ for trial in trials:
         win.flip()
         evts = tracker.getEvents(filter_id = 23)
         for evt in evts:
-            print evt.time, evt.time - prev_evt_time, evt.event_id, evt.filter_id, evt.gaze_x, evt.gaze_y, evt.pupil_measure1, evt.velocity_x, evt.velocity_y, evt.velocity_xy, evt.status
-            prev_evt_time = evt.time
+            if evt.type not in [EventConstants.MONOCULAR_EYE_SAMPLE, EventConstants.BINOCULAR_EYE_SAMPLE]:
+                print evt.time, evt.time - prev_evt_time, EventConstants.getName(evt.type), evt.event_id#, evt.filter_id, evt.gaze_x, evt.gaze_y, evt.pupil_measure1, evt.velocity_x, evt.velocity_y, evt.velocity_xy, evt.status
+                prev_evt_time = evt.time
     trial['TRIAL_END']=getTime()
     io.addRowToConditionVariableTable(trial.values())
     tracker.setRecordingState(False)

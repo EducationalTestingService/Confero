@@ -1,5 +1,144 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+"""
+ioHub Eye Tracker Sample Event Parser
+
+.. file: [TO BE MOVED INTO IOHUB MODULE AFTER DEVELOPMENT IS STABLE)
+
+Copyright (C) 2012-2014 iSolver Software Solutions
+Distributed under the terms of the GNU General Public License
+(GPL version 3 or any later version).
+
+.. moduleauthor:: Sol Simpson <sol@isolver-software.com>
+.. fileauthor:: Sol Simpson <sol@isolver-software.com>
+
+NOTES:
+
+* The parser is designed to work with monocular and binocular eye data,
+but only binocular input samples have been tested so far.
+* If binocular input samples are being used, they are converted to monocular
+samples for parsing. If both left and right eye position data is available
+for a sample, the positions are averaged together. If only one of the two eyes
+has valid data, then that eye data is used for the sample. So the only case
+where a sample will be tagged as missing data is when both eyes do not have
+valid eye position / pupil size data.
+* Currently, the following constants need to be set within this file. These will
+be moved into a config file, or read from existing config data, at a later
+point in development.
+
+DISPLAY_SIZE_MM = (540, 300)
+DISPLAY_RES_PIX = (1920, 1080)
+DEFAULT_EYE_DISTANCE = 550
+SAMPLING_RATE = 60
+ADAPTIVE_VELOCITY_HISTORY_DURATION = 5.0 # 5 seconds of valid data is needed.
+POSITION_FILTER = eventfilters.PassThroughFilter, {}
+VELOCITY_FILTER = eventfilters.PassThroughFilter, {}
+
+POSITION_FILTER and VELOCITY_FILTER can be set to one of the following event
+field filter types. Example values for any input arguments are given. The filter
+is selected by giving the filter class name followed by a dictionary of values
+to use for the filter. Valid filter options depend on the filter selected.
+
+eventfilters.MovingWindowFilter
+--------------------------------
+
+This is a standard averaging filter. Any samples within the window buffer are
+simply averaged together to give the filtered value for a given sample.
+
+Parameters:
+    * length: The size of the moving window in samples. Minimum of 2 required.
+    * knot_pos: The index within the moving window that should be used to extract
+                a sample from and apply the current window filtered value.
+
+Example:
+
+POSITION_FILTER = eventfilters.MovingWindowFilter, {length: 3, knot_pos:'center'}
+
+Applies the MovingWindowFilter to x and y gaze data fields of eye samples. The
+window size is three, and each sample position is filtered using data from the
+previous and next samples as well as itself.
+
+eventfilters.PassThroughFilter
+---------------------------------
+
+A NULL filter. In other words, the filter does not do any filtering.
+
+Parameters: None
+
+Example:
+
+VELOCITY_FILTER = eventfilters.PassThroughFilter, {}
+
+Velocity data is calculated from (filtered) sample positions, but is not
+filtered itself.
+
+eventfilters.MedianFilter
+-----------------------------
+
+MedianFilter applies the median value of the filter window to the knot_pos
+window sample.
+
+Parameters:
+    * length: The size of the moving window in samples. Minimum of 3 is
+      required and the length must be odd.
+    * knot_pos: The index within the moving window that should be used to extract
+                a sample from and apply the current window filtered value.
+Example:
+
+POSITION_FILTER = eventfilters.MedianFilter, {length: 3, knot_pos: 0}
+
+Sample position fields are filtered by the median value of three samples, those
+being the current sample and the two following samples (so the current sample is
+at index 0.
+
+eventfilters.WeightedAverageFilter
+-----------------------------------
+
+WeightedAverageFilter is similar to the standard MovingWindowFilter field filter,
+however each element in the window is assigned a weighting factor that is used
+during averaging.
+
+Parameters:
+    * weights: A list of weights to be applied to the window values. The window
+    length is == len(weights). The weight values are all normalized to sum to 1
+    before use in the filter. For example, a weight list of (25,50,25) will be
+    converted to (0.25,0.50,0.25) for use in the filter, with window value index
+    i being multiplied by weith list index i.
+    * knot_pos: The index within the moving window that should be used to extract
+                a sample from and apply the current window filtered value.
+
+Example:
+
+VELOCITY_FILTER = eventfilters.WeightedAverageFilter, {weights: (25,50,25), knot_pos: 1}
+
+A weighted average window filter will be applied to x and y velocity fields.
+The length of the window is 3 samples, and the filtered sample index retrieved
+is 1, the same as using 'center' in this case. The filtered sample index will
+count toward 1/2 the weighted average, with the previous and next samples
+contributing 1/4 of the weighted average each.
+
+eventfilters.StampFilter
+--------------------------
+
+A variant of the filter proposed by Dr. David Stampe (1993 ???). A window of
+length 3 is used, with the knot_pos centered, or at index 1. If the current
+3 values in the window list are monotonic, then the sample is not filtered.
+If the values are non-monotonic, then v[1] = (v[0]+v[2])/2.0
+
+Parameters:
+    * levels: The number of iterations (recursive) that should be applied to the
+              windowed data. Minimum value is 1. The number of levels equals
+              the number of samples the filtered sample will be delayed
+              compared to the non filtered sample time.
+
+Example:
+
+POSITION_FILTER = eventfilters.StampFilter, {level: 1}
+
+Data is filtered once, similar to what a 'normal' filter level would be in the
+  eyelink<tm> system. Level = 2 would be similar to the 'extra' filter level
+  setting of eyelink<tm>.
+"""
 
 import psychopy.iohub.devices.eventfilters as eventfilters
 from psychopy.iohub import EventConstants, DeviceEvent, print2err
@@ -16,37 +155,26 @@ import numpy as np
 DISPLAY_SIZE_MM = (540, 300)
 DISPLAY_RES_PIX = (1920, 1080)
 DEFAULT_EYE_DISTANCE = 550
-
-# Possible Event Filter Type Def's:
-#
-#   eventfilters.MovingWindowFilter, {length: 3, knot_pos:'center'}
-#
-#   eventfilters.PassThroughFilter, {}
-#
-#   eventfilters.MedianFilter, {length: 3, knot_pos:'center'}
-#
-#   eventfilters.WeightedAverageFilter, {weights: (25,50,25), knot_pos:'center'}
-#
-#   eventfilters.StampFilter, {level: 1}
-
+SAMPLING_RATE = 60
 POSITION_FILTER = eventfilters.PassThroughFilter, {}
 VELOCITY_FILTER = eventfilters.PassThroughFilter, {}
+ADAPTIVE_VELOCITY_HISTORY_DURATION = 5.0 # 5 seconds of valid data is needed.
 
 ################### Pixel to Visual Angle Calculation ##########################
 """
-Pixel to Visual Angle Calculation.
+Pixel to Visual Angle Calculation. This is a copy of code in psychopy.iohub and
+can be replaced with that code when this file is moved to the iohub module.
 
-Uses "symmetric angles" formula provided by Dr. Josh Borah
-(jborah AT asleyetracking.com), via email corespondance in 2012.
+Uses "symmetric angles" sudo-code formula provided by Dr. Josh Borah
+(jborah AT asleyetracking.com), via email correspondence in 2012. Optimized
+for use in iohub using numpy methods.
 
 Assumptions:
    1) unit origin == position 0.0, 0.0 == screen center
-   2) Eye is orthoganal to origin of 2D plane
-
+   2) Eye is orthogonal to origin of 2D plane
 """
 
 import numpy as np
-
 arctan = np.arctan2
 rad2deg = np.rad2deg
 hypot = np.hypot
@@ -121,7 +249,7 @@ BOTH_EYE = 3
 #   StampFilter(event_type, event_field_name, level=1, inplace = True)
 
 class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
-    def __init__(self):
+    def __init__(self, **kwargs):
         eventfilters.DeviceEventFilter.__init__(self)
         self.sample_type = None
         self.io_sample_class = None
@@ -130,6 +258,13 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         self.last_valid_sample = None
         self.last_sample = None
         self.invalid_samples_run = []
+        self._last_parser_sample = None
+        self.open_parser_events = OrderedDict()
+
+        self.adaptive_x_vthresh_buffer = np.zeros(ADAPTIVE_VELOCITY_HISTORY_DURATION*SAMPLING_RATE)
+        self.x_vthresh_buffer_index = 0
+        self.adaptive_y_vthresh_buffer = np.zeros(ADAPTIVE_VELOCITY_HISTORY_DURATION*SAMPLING_RATE)
+        self.y_vthresh_buffer_index = 0
 
         pos_filter_class, pos_filter_kwargs = POSITION_FILTER
         pos_filter_kwargs['event_type'] = MONOCULAR_EYE_SAMPLE
@@ -200,6 +335,9 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 filtered_event = self.addToFieldFilters(current_mono_evt)
                 if filtered_event:
                     filtered_event, _ = filtered_event
+                    x_vel_thresh, y_vel_thresh = self.addVelocityToAdaptiveThreshold(filtered_event)
+                    filtered_event[self.io_event_ix('raw_x')] = x_vel_thresh
+                    filtered_event[self.io_event_ix('raw_y')] = y_vel_thresh
                     samples_for_processing.append(filtered_event)
                 self.last_valid_sample = current_mono_evt
             else:
@@ -209,24 +347,143 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
 
             self.last_sample = current_mono_evt
 
-        # TODO: Parse filtered events, output as created.!!
-        # .....
-
         # Add any new filtered samples to be output.
+        # Also create parsed events with no heuristics being used
+        # at this point.
         for s in samples_for_processing:
+            self.parseEvent(s)
             self.addOutputEvent(s)
+
         self.clearInputEvents()
+
+    def parseEvent(self, sample):
+        if self._last_parser_sample:
+            last_sec = self.getSampleEventCategory(self._last_parser_sample)
+            current_sec = self.getSampleEventCategory(sample)
+            if last_sec and last_sec != current_sec:
+                start_event, end_event = self.createEyeEvents(last_sec, current_sec, self._last_parser_sample, sample)
+                if start_event:
+                    self.addOutputEvent(start_event)
+                if end_event:
+                    self.addOutputEvent(end_event)
+        self._last_parser_sample = sample
+
+    def getSampleEventCategory(self, sample):
+        if self.isValidSample(sample):
+            x_velocity_threshold = sample[self.io_event_ix('raw_x')]
+            y_velocity_threshold = sample[self.io_event_ix('raw_y')]
+            if x_velocity_threshold == np.NaN:
+                return None
+            sample_vx = sample[self.io_event_ix('velocity_x')]
+            sample_vy = sample[self.io_event_ix('velocity_y')]
+            if sample_vx >= x_velocity_threshold or sample_vy >= y_velocity_threshold:
+                return 'SAC'
+            return 'FIX'
+        return 'MIS'
+
+    def createEyeEvents(self, last_sample_category, current_sample_category, last_sample, current_sample):
+        start_event = None
+        end_event = None
+
+        if last_sample_category == 'MIS':
+            # Create end blink event
+            existing_start_event = self.open_parser_events.get('MIS')
+            if existing_start_event:
+                end_event = self.createBlinkEndEventArray(last_sample, existing_start_event)
+                del self.open_parser_events['MIS']
+            else:
+                print2err("PARSER Warning: Blink Start Event not found; Blink End event being dropped: ", end_event)
+        elif last_sample_category == 'FIX':
+            # Create end fix event
+            existing_start_event = self.open_parser_events.get('FIX')
+            if existing_start_event:
+                end_event = self.createFixationEndEventArray(last_sample, existing_start_event)
+                del self.open_parser_events['FIX']
+            else:
+                print2err("PARSER Warning: Fixation Start Event not found; Fixation End event being dropped: ", end_event)
+        elif last_sample_category == 'SAC':
+            # Create end sac event
+            existing_start_event = self.open_parser_events.get('SAC')
+            if existing_start_event:
+                end_event = self.createSaccadeEndEventArray(last_sample, existing_start_event)
+                del self.open_parser_events['SAC']
+            else:
+                print2err("PARSER Warning: Saccade Start Event not found; Saccade End event being dropped: ", end_event)
+
+        if current_sample_category == 'MIS':
+            # Create start blink event
+            start_event = self.createBlinkStartEventArray(current_sample)
+            existing_start_event = self.open_parser_events.get('MIS')
+            if existing_start_event:
+                print2err("PARSER ERROR: Blink Start Event already Open and is being dropped: ", existing_start_event)
+            self.open_parser_events['MIS']=current_sample
+
+        elif current_sample_category == 'FIX':
+            # Create start fix event
+            start_event = self.createFixationStartEventArray(current_sample)
+            existing_start_event = self.open_parser_events.get('FIX')
+            if existing_start_event:
+                print2err("PARSER ERROR: Fixation Start Event already Open and is being dropped: ", existing_start_event)
+            self.open_parser_events['FIX']=current_sample
+
+        elif current_sample_category == 'SAC':
+            # Create start sac event
+            start_event = self.createSaccadeStartEventArray(current_sample)
+            existing_start_event = self.open_parser_events.get('SAC')
+            if existing_start_event:
+                print2err("PARSER ERROR: Saccade Start Event already Open and is being dropped: ", existing_start_event)
+            self.open_parser_events['SAC']=current_sample
+
+        return end_event, start_event
+
+    def addVelocityToAdaptiveThreshold(self, sample):
+        velocity_x = sample[self.io_event_ix('velocity_x')]
+        velocity_y = sample[self.io_event_ix('velocity_y')]
+        velocity_buffers = [self.adaptive_x_vthresh_buffer, self.adaptive_y_vthresh_buffer]
+        velocity_buffer_indexs = [self.x_vthresh_buffer_index, self.y_vthresh_buffer_index]
+        vthresh_values=[]
+        for v, velocity in enumerate([velocity_x, velocity_y]):
+            current_velocity_buffer = velocity_buffers[v]
+            current_vbuffer_index = velocity_buffer_indexs[v]
+            blen = len(current_velocity_buffer)
+            if velocity > 0.0:
+                i = current_vbuffer_index%blen
+                current_velocity_buffer[i] = velocity
+                full = current_vbuffer_index >= blen
+                if v == 0:
+                    self.x_vthresh_buffer_index+=1
+                else:
+                    self.y_vthresh_buffer_index+=1
+                if full:
+                    PT = current_velocity_buffer.min()+current_velocity_buffer.std()*3.0
+                    velocity_below_thresh = current_velocity_buffer[current_velocity_buffer < PT]
+                    PTd = 2.0
+                    pt_list = [PT,]
+                    while PTd >= 1.0:
+                        if len(pt_list) > 0:
+                            PT = velocity_below_thresh.mean()+3.0*velocity_below_thresh.std()
+                            velocity_below_thresh =current_velocity_buffer[current_velocity_buffer < PT]
+                            PTd=np.abs(PT-pt_list[-1])
+                        pt_list.append(PT)
+                    vthresh_values.append(PT)
+            if len(vthresh_values) != v+1:
+                vthresh_values.append(np.NaN)
+        return vthresh_values
 
     def reset(self):
         eventfilters.DeviceEventFilter.reset(self)
+        self._last_parser_sample = None
         self.last_valid_sample = None
         self.last_sample = None
         self.invalid_samples_run = []
+        self.open_parser_events.clear()
         self.x_position_filter.clear()
         self.y_position_filter.clear()
         self.x_velocity_filter.clear()
         self.y_velocity_filter.clear()
         self.xy_velocity_filter.clear()
+        self.x_vthresh_buffer_index = 0
+        self.y_vthresh_buffer_index = 0
 
     def initializeForSampleType(self,in_evt):
         self.sample_type = MONOCULAR_EYE_SAMPLE  #in_evt[DeviceEvent.EVENT_TYPE_ID_INDEX]
@@ -349,736 +606,231 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         elif evt_status == 22: # both eye data missing
             return NO_EYE
 
-'''
-################################################################################
-MONO_EYE = 0
-LEFT_EYE = 0
-RIGHT_EYE = 1
+    def createFixationStartEventArray(self, sample):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.FIXATION_START,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('gaze_x')],
+                sample[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                sample[self.io_event_ix('pupil_measure1')],
+                sample[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('velocity_x')],
+                sample[self.io_event_ix('velocity_y')],
+                sample[self.io_event_ix('velocity_xy')],
+                sample[self.io_event_ix('status')]
+                ]
+
+
+    def createFixationEndEventArray(self, sample, existing_start_event):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.FIXATION_END,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('time')]-existing_start_event[self.io_event_ix('time')],
+                existing_start_event[self.io_event_ix('gaze_x')],
+                existing_start_event[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                existing_start_event[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                existing_start_event[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                existing_start_event[self.io_event_ix('pupil_measure1')],
+                existing_start_event[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                existing_start_event[self.io_event_ix('velocity_x')],
+                existing_start_event[self.io_event_ix('velocity_y')],
+                existing_start_event[self.io_event_ix('velocity_xy')],
+                sample[self.io_event_ix('gaze_x')],
+                sample[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                sample[self.io_event_ix('pupil_measure1')],
+                sample[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('velocity_x')],
+                sample[self.io_event_ix('velocity_y')],
+                sample[self.io_event_ix('velocity_xy')],
+                -1.0,#average_gaze_x,
+                -1.0,#average_gaze_y,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                -1.0,#average_pupil_measure1,
+                0,#average_pupil_measure1_type,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                -1.0,#average_velocity_x,
+                -1.0,#average_velocity_y,
+                -1.0,#average_velocity_xy,
+                -1.0,#peak_velocity_x,
+                -1.0,#peak_velocity_y,
+                -1.0,#peak_velocity_xy,
+                sample[self.io_event_ix('status')]
+                ]
+
+    ################### Saccade Event Types ##########################
+
+    def createSaccadeStartEventArray(self, sample):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.SACCADE_START,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('gaze_x')],
+                sample[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                sample[self.io_event_ix('pupil_measure1')],
+                sample[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('velocity_x')],
+                sample[self.io_event_ix('velocity_y')],
+                sample[self.io_event_ix('velocity_xy')],
+                sample[self.io_event_ix('status')]
+                ]
+
+    def createSaccadeEndEventArray(self, sample, existing_start_event):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.SACCADE_END,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('time')]-existing_start_event[self.io_event_ix('time')],
+                sample[self.io_event_ix('gaze_x')] - existing_start_event[self.io_event_ix('gaze_x')],
+                sample[self.io_event_ix('gaze_y')] - existing_start_event[self.io_event_ix('gaze_y')],
+                -1.0,#angle,
+                existing_start_event[self.io_event_ix('gaze_x')],
+                existing_start_event[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                existing_start_event[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                existing_start_event[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                existing_start_event[self.io_event_ix('pupil_measure1')],
+                existing_start_event[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                existing_start_event[self.io_event_ix('velocity_x')],
+                existing_start_event[self.io_event_ix('velocity_y')],
+                existing_start_event[self.io_event_ix('velocity_xy')],
+                sample[self.io_event_ix('gaze_x')],
+                sample[self.io_event_ix('gaze_y')],
+                0.0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
+                sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
+                sample[self.io_event_ix('pupil_measure1')],
+                sample[self.io_event_ix('pupil_measure1_type')],
+                0.0,
+                0,
+                0.0,
+                0.0,
+                sample[self.io_event_ix('velocity_x')],
+                sample[self.io_event_ix('velocity_y')],
+                sample[self.io_event_ix('velocity_xy')],
+                -1.0,#average_velocity_x,
+                -1.0,#average_velocity_y,
+                -1.0,#average_velocity_xy,
+                -1.0,#peak_velocity_x,
+                -1.0,#peak_velocity_y,
+                -1.0,#peak_velocity_xy,
+                sample[self.io_event_ix('status')]
+                ]
+
+    ################### Blink Event Types ##########################
+
+    def createBlinkStartEventArray(self, sample):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.BLINK_START,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('status')]
+                ]
+
+    def createBlinkEndEventArray(self, sample, existing_start_event):
+        return [sample[self.io_event_ix('experiment_id')],
+                sample[self.io_event_ix('session_id')],
+                sample[self.io_event_ix('device_id')],
+                sample[self.io_event_ix('event_id')],
+                EventConstants.BLINK_END,
+                sample[self.io_event_ix('device_time')],
+                sample[self.io_event_ix('logged_time')],
+                sample[self.io_event_ix('time')],
+                0.0,
+                0.0,
+                0,
+                sample[self.io_event_ix('eye')],
+                sample[self.io_event_ix('time')]-existing_start_event[self.io_event_ix('time')],
+                sample[self.io_event_ix('status')]
+                ]
 
-
-FIXATION_START = 1
-FIXATION_END = 2
-SACCADE_START = 3
-SACCADE_END = 4
-MISSING_START = 5
-MISSING_END = 6
-
-
-DISPLAY_SIZE_MM = (540, 300)
-DISPLAY_RES_PIX = (1920, 1080)
-DEFAULT_EYE_DISTANCE = 550
-
-#TRACKER_FPS = 30
-TRACKER_FPS = 60
-#TRACKER_FPS = 120
-
-# Buffer Sizes....
-MAX_FILTER_WIN_SIZE = 10
-
-SAMPLE_ARRAY_ROWS = TRACKER_FPS*60
-print2err("\n*SAMPLE_ARRAY_ROWS: ", SAMPLE_ARRAY_ROWS)
-
-
-VELOCITY_HISTORY_LENGTH = int(TRACKER_FPS * 15)
-print2err("\n*VELOCITY_HISTORY_LENGTH: ", VELOCITY_HISTORY_LENGTH)
-
-# Filtering Settings....
-VELOCITY_FILTER_DURATION = 0.03333333 # in sec
-VELOCITY_FILTER_WIN_SIZE = int(TRACKER_FPS * VELOCITY_FILTER_DURATION)  # in samples
-if VELOCITY_FILTER_WIN_SIZE%2==0:
-    VELOCITY_FILTER_WIN_SIZE+=1
-if VELOCITY_FILTER_WIN_SIZE != 0 and VELOCITY_FILTER_WIN_SIZE < 3:
-    VELOCITY_FILTER_WIN_SIZE = 3
-VELOCITY_FILTER_TYPE = 'median'
-print2err("\nVELOCITY_FILTER_DURATION: ", VELOCITY_FILTER_DURATION)
-print2err("*VELOCITY_FILTER_WIN_SIZE: ", VELOCITY_FILTER_WIN_SIZE)
-print2err("*VELOCITY_FILTER_TYPE: ", VELOCITY_FILTER_TYPE)
-
-POSITION_FILTER_DURATION = 0.05 # in sec
-POSITION_FILTER_WIN_SIZE = int(TRACKER_FPS * POSITION_FILTER_DURATION)  # in samples
-if POSITION_FILTER_WIN_SIZE%2 == 0:
-    POSITION_FILTER_WIN_SIZE += 1
-if POSITION_FILTER_DURATION != 0 and POSITION_FILTER_WIN_SIZE < 3:
-    POSITION_FILTER_WIN_SIZE = 3
-POSITION_FILTER_TYPE = 'median'
-print2err("\nPOSITION_FILTER_DURATION: ", POSITION_FILTER_DURATION)
-print2err("*POSITION_FILTER_WIN_SIZE: ", POSITION_FILTER_WIN_SIZE)
-print2err("*POSITION_FILTER_TYPE: ", POSITION_FILTER_TYPE)
-# Heuristics
-
-INTERP_MISSING_DATA = max(VELOCITY_FILTER_WIN_SIZE, POSITION_FILTER_WIN_SIZE)
-
-MIN_PARSER_SAMPLE_BLOCK = TRACKER_FPS*2.0
-
-MIN_BLINK_SAMPLES = 2
-
-MIN_SACCADE_DURATION = 0.01
-MIN_SACCADE_SAMPLES = int(max(TRACKER_FPS*MIN_SACCADE_DURATION,1))
-#Thresholds
-
-MIN_FIXATION_DURATION = 0.025
-MIN_FIXATION_SAMPLES = int(max(TRACKER_FPS*MIN_FIXATION_DURATION,2))
-
-MIN_EVENT_SAMPLES = dict(SAC=MIN_SACCADE_SAMPLES, FIX=MIN_FIXATION_SAMPLES, MIS=MIN_BLINK_SAMPLES)
-print2err("*MIN_EVENT_SAMPLES: ", MIN_EVENT_SAMPLES)
-VELOCITY_THRESHOLD = 30.0
-#####################################################
-
-PROC_SAMPLE_ID_INDEX = 0
-PROC_SAMPLE_TIME_INDEX = 1
-PROC_SAMPLE_X_INDEX = 2
-PROC_SAMPLE_Y_INDEX = 3
-PROC_SAMPLE_PS_INDEX = 4
-PROC_SAMPLE_VX_INDEX = 5
-PROC_SAMPLE_VY_INDEX = 6
-PROC_SAMPLE_VXY_INDEX = 7
-PROC_SAMPLE_AX_INDEX = 8
-PROC_SAMPLE_AY_INDEX = 9
-PROC_SAMPLE_VEL_THRESH_INDEX = 10
-PROC_SAMPLE_VALID_INDEX = 11
-PROC_SAMPLE_ARRAY_SIZE = PROC_SAMPLE_VALID_INDEX+1
-
-class ParserDataCache(object):
-    """
-    Holds data needed for parsing of a single eye data stream.
-    Binoc data will have 2.
-    """
-    def __init__(self, eye, iosample_class):
-        self.eye_index = eye
-        self.iosample_class = iosample_class
-        self.iosample_type_id = iosample_class.EVENT_TYPE_ID
-        self.io_ix = self.iosample_class.CLASS_ATTRIBUTE_NAMES.index
-        self.current_sample_index = -1
-        self.sample_array = np.zeros((SAMPLE_ARRAY_ROWS, PROC_SAMPLE_ARRAY_SIZE),
-                                     dtype=np.float64)
-        self.missing_data_sample_ixs = []
-
-        self.last_velocity_filtered_index = 0
-        self.last_position_filtered_index = 0
-
-        self.velocity_history = np.zeros(VELOCITY_HISTORY_LENGTH, dtype=np.float64)
-        self.velocity_history_index = -1
-        self.velocity_threshold = 30.0
-
-        self.last_parsed_index = 0
-        self.prev_event_category = None
-
-        self.iosample_ix_mapping = None
-        if self.iosample_type_id == EventConstants.MONOCULAR_EYE_SAMPLE:
-            self.iosample_ix_mapping = (self.io_ix('event_id'),
-                                        self.io_ix('time'),
-                                        self.io_ix('gaze_x'),
-                                        self.io_ix('gaze_y'),
-                                        self.io_ix('pupil_measure1'),
-                                        self.io_ix('velocity_x'),
-                                        self.io_ix('velocity_y'),
-                                        self.io_ix('velocity_xy'),
-                                        -1,
-                                        -1,
-                                        -1,
-                                        self.io_ix('status'))
-        elif self.iosample_type_id == EventConstants.BINOCULAR_EYE_SAMPLE:
-            if self.eye_index == LEFT_EYE:
-                self.iosample_ix_mapping = (self.io_ix('event_id'),
-                                            self.io_ix('time'),
-                                            self.io_ix('left_gaze_x'),
-                                            self.io_ix('left_gaze_y'),
-                                            self.io_ix('left_pupil_measure1'),
-                                            self.io_ix('left_velocity_x'),
-                                            self.io_ix('left_velocity_y'),
-                                            self.io_ix('left_velocity_xy'),
-                                            -1,
-                                            -1,
-                                            -1,
-                                            self.io_ix('status'))
-            else:
-                self.iosample_ix_mapping = (self.io_ix('event_id'),
-                                            self.io_ix('time'),
-                                            self.io_ix('right_gaze_x'),
-                                            self.io_ix('right_gaze_y'),
-                                            self.io_ix('right_pupil_measure1'),
-                                            self.io_ix('right_velocity_x'),
-                                            self.io_ix('right_velocity_y'),
-                                            self.io_ix('right_velocity_xy'),
-                                            -1,
-                                            -1,
-                                            -1,
-                                            self.io_ix('status'))
-
-    def addSampleEvent(self, iosample, valid):
-        return_samples = []
-        eye_label='RIGHT'
-        if self.eye_index==0:
-            eye_label='LEFT'
-
-        if self.current_sample_index < 0 and not valid:
-            print2err("Dropping %s Parsing Sample. Not valid sample before it."%(eye_label))
-            return []
-
-        # Check sample index relative to SAMPLE_ARRAY_ROWS. If close to end,
-        # shift and data earlier and update all index references.
-        self.shiftSampleData()
-
-        self.current_sample_index += 1
-        ioix = self.iosample_ix_mapping
-        #if self.eye_index==0:
-            #print2err("Adding %s Parsing Sample ID: %d to index %d."%(eye_label,iosample[ioix[PROC_SAMPLE_ID_INDEX]],self.current_sample_index))
-        if valid:
-            self.sample_array[self.current_sample_index, :] = (
-                                        iosample[ioix[PROC_SAMPLE_ID_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_TIME_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_X_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_Y_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_PS_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_VX_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_VY_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_VXY_INDEX]],
-                                        np.NaN, np.NaN, np.NaN, valid)
-            #if self.eye_index==0:
-            #    print2err("%s Parsing Sample is Valid."%(eye_label))
-        else:
-            #if self.eye_index==0:
-            #    print2err("%s Parsing Sample is INVALID."%(eye_label))
-
-            self.sample_array[self.current_sample_index, :] = (
-                                        iosample[ioix[PROC_SAMPLE_ID_INDEX]],
-                                        iosample[ioix[PROC_SAMPLE_TIME_INDEX]],
-                                        np.NaN, np.NaN, np.NaN, np.NaN, np.NaN,
-                                        np.NaN, np.NaN, np.NaN, np.NaN, valid)
-            self.missing_data_sample_ixs.append(self.current_sample_index)
-
-        # Velocity Calc.
-        if self.current_sample_index > 0 and valid:
-            if not self.isPreviousSampleValid() and len(self.missing_data_sample_ixs)>0:
-                # Missing data sample handling
-                msamps = self.fillMissingDataGap()
-                return_samples.extend(msamps)
-
-            # Filter position Data
-            self.filterPositionData()
-            #self.last_position_filtered_index = self.current_sample_index
-            #if self.eye_index==0:
-            #    print2err("%s Sample, index %d Velocity Calc..."%(eye_label, self.current_sample_index))
-            current_sample = self.getCurrentSample()
-            prev_sample = self.getPreviousSample()
-            dx = np_abs(current_sample[PROC_SAMPLE_X_INDEX]-prev_sample[PROC_SAMPLE_X_INDEX])
-            dy = np_abs(current_sample[PROC_SAMPLE_Y_INDEX]-prev_sample[PROC_SAMPLE_Y_INDEX])
-            dt = current_sample[PROC_SAMPLE_TIME_INDEX]-prev_sample[PROC_SAMPLE_TIME_INDEX]
-            current_sample[PROC_SAMPLE_VX_INDEX] = dx / dt
-            current_sample[PROC_SAMPLE_VY_INDEX] = dy / dt
-            vxy = np.hypot(current_sample[PROC_SAMPLE_VX_INDEX],
-                       current_sample[PROC_SAMPLE_VY_INDEX])
-            current_sample[PROC_SAMPLE_VXY_INDEX] = vxy
-            self.filterVelocityData()
-            #self.last_velocity_filtered_index = self.current_sample_index
-
-            vt = self.updateVelocityThreshold(vxy)
-            if vt:
-                current_sample[PROC_SAMPLE_VEL_THRESH_INDEX]=vt
-            #if self.eye_index==0:
-            #    print2err('vx: %.3f, vy: %.3f, vxy: %.3f '%(current_sample[PROC_SAMPLE_VX_INDEX],
-            #           current_sample[PROC_SAMPLE_VY_INDEX], vxy))
-
-            return_samples.append(current_sample)
-            return return_samples
-        return []
-
-    def shiftSampleData(self):
-        #Ideally, shift shen there are no indexes in the missing_data_sample_ixs
-        if self.current_sample_index >= int(SAMPLE_ARRAY_ROWS*0.8):
-            if len(self.missing_data_sample_ixs) == 0:
-                print2err("$$ Shifting samples:\nPRE:")
-                print2err("\tcurrent_sample_index: ", self.current_sample_index)
-                print2err("\tlast_parsed_index: ", self.last_parsed_index)
-                print2err("\tlast_velocity_filtered_index: ", self.last_velocity_filtered_index)
-                print2err("\tlast_position_filtered_index: ", self.last_position_filtered_index)
-                print2err("\tlen(missing_data_sample_ixs): ", len(self.missing_data_sample_ixs))
-
-                shift_by = min(self.last_velocity_filtered_index,self.last_position_filtered_index, self.last_parsed_index)
-                new_ci = self.current_sample_index - shift_by
-                print2err("\tshift_by: ", shift_by)
-                print2err("\tnew_ci: ", new_ci)
-                self.sample_array[:new_ci] = self.sample_array[shift_by:self.current_sample_index]
-                self.current_sample_index = new_ci
-                self.last_parsed_index -= shift_by
-                self.last_velocity_filtered_index -= shift_by
-                self.last_position_filtered_index -= shift_by
-                print2err("POST, shift by: ", shift_by)
-                print2err("\tcurrent_sample_index: ", self.current_sample_index)
-                print2err("\tlast_parsed_index: ", self.last_parsed_index)
-                print2err("\tlast_velocity_filtered_index: ", self.last_velocity_filtered_index)
-                print2err("\tlast_position_filtered_index: ", self.last_position_filtered_index)
-                print2err("\tlen(missing_data_sample_ixs): ", len(self.missing_data_sample_ixs))
-                print2err("\n\n")
-        if self.current_sample_index >= SAMPLE_ARRAY_ROWS:
-            print2err("********** PARSER FAILURE ************")
-            print2err("current_sample_index: ", self.current_sample_index)
-            print2err("last_parsed_index: ", self.last_parsed_index)
-            print2err("last_velocity_filtered_index: ", self.last_velocity_filtered_index)
-            print2err("last_position_filtered_index: ", self.last_position_filtered_index)
-            print2err("len(missing_data_sample_ixs): ", len(self.missing_data_sample_ixs))
-            print2err("**** ALL BUFFERED SAMPLES DROPPED ****")
-            self.current_sample_index = -1
-            self.last_parsed_index = 0
-            self.last_velocity_filtered_index = 0
-            self.last_position_filtered_index = 0
-
-    def filterPositionData(self):
-        findex = self.last_position_filtered_index
-        cindex = self.current_sample_index
-        if cindex-findex >= POSITION_FILTER_WIN_SIZE*2:
-            x = self.sample_array[findex:cindex, PROC_SAMPLE_X_INDEX]
-            y = self.sample_array[findex:cindex, PROC_SAMPLE_Y_INDEX]
-            if POSITION_FILTER_TYPE == 'gauss':
-                self.sample_array[findex:cindex, PROC_SAMPLE_X_INDEX] = gaussian_filter1d(x,POSITION_FILTER_WIN_SIZE)
-                self.sample_array[findex:cindex, PROC_SAMPLE_Y_INDEX] = gaussian_filter1d(y,POSITION_FILTER_WIN_SIZE)
-            elif POSITION_FILTER_TYPE == 'median':
-                self.sample_array[findex:cindex, PROC_SAMPLE_X_INDEX] = medfilt(x,POSITION_FILTER_WIN_SIZE)
-                self.sample_array[findex:cindex, PROC_SAMPLE_Y_INDEX] = medfilt(y,POSITION_FILTER_WIN_SIZE)
-            elif POSITION_FILTER_TYPE == 'average':
-                weights = np.asarray([1.0,]*POSITION_FILTER_WIN_SIZE)#kwargs.get('weights',[1.,2.,3.,2.,1.]))
-                #weights= weights/np.sum(weights)
-                self.sample_array[findex:cindex, PROC_SAMPLE_X_INDEX] = np.convolve(x, weights, 'same')
-                self.sample_array[findex:cindex, PROC_SAMPLE_Y_INDEX] = np.convolve(y, weights, 'same')
-            self.last_position_filtered_index = cindex
-
-    def filterVelocityData(self):
-        findex = self.last_velocity_filtered_index
-        cindex = self.current_sample_index
-        if cindex-findex >= VELOCITY_FILTER_WIN_SIZE*2:
-            x = self.sample_array[findex:cindex, PROC_SAMPLE_VX_INDEX]
-            y = self.sample_array[findex:cindex, PROC_SAMPLE_VY_INDEX]
-            if POSITION_FILTER_TYPE=='gauss':
-                self.sample_array[findex:cindex, PROC_SAMPLE_VX_INDEX] = gaussian_filter1d(x,VELOCITY_FILTER_WIN_SIZE)
-                self.sample_array[findex:cindex, PROC_SAMPLE_VY_INDEX] = gaussian_filter1d(y,VELOCITY_FILTER_WIN_SIZE)
-            elif POSITION_FILTER_TYPE=='median':
-                self.sample_array[findex:cindex, PROC_SAMPLE_VX_INDEX] = medfilt(x,VELOCITY_FILTER_WIN_SIZE)
-                self.sample_array[findex:cindex, PROC_SAMPLE_VY_INDEX] = medfilt(y,VELOCITY_FILTER_WIN_SIZE)
-            elif POSITION_FILTER_TYPE=='average':
-                weights = np.asarray([1.0,]*VELOCITY_FILTER_WIN_SIZE)#kwargs.get('weights',[1.,2.,3.,2.,1.]))
-                #weights= weights/np.sum(weights)
-                self.sample_array[findex:cindex, PROC_SAMPLE_VX_INDEX] = np.convolve(x, weights, 'same')
-                self.sample_array[findex:cindex, PROC_SAMPLE_VY_INDEX] = np.convolve(y, weights, 'same')
-            else:
-                raise ValueError('Unknown Filter Type: %s. Must be one of %s'%(POSITION_FILTER_TYPE,str(['average','gauss','median'])))
-            self.last_velocity_filtered_index = cindex
-
-
-    def fillMissingDataGap(self):
-        return_samples=[]
-        invalid_sample_count = len(self.missing_data_sample_ixs)
-        #if self.eye_index==0:
-        #    print2err("MISSING SAMPLE GAP FILL: ",invalid_sample_count)
-        start_valid_sample_index = self.missing_data_sample_ixs[0]-1
-        last_valid_sample = self.sample_array[start_valid_sample_index]
-        current_sample = self.getCurrentSample()
-        starting_gx = last_valid_sample[PROC_SAMPLE_X_INDEX]
-        starting_gy = last_valid_sample[PROC_SAMPLE_Y_INDEX]
-        starting_ps = last_valid_sample[PROC_SAMPLE_PS_INDEX]
-        ending_gx = current_sample[PROC_SAMPLE_X_INDEX]
-        ending_gy = current_sample[PROC_SAMPLE_Y_INDEX]
-        ending_ps = current_sample[PROC_SAMPLE_PS_INDEX]
-        x_interp = np.linspace(starting_gx, ending_gx, num=invalid_sample_count+2)[1:-1]
-        y_interp = np.linspace(starting_gy, ending_gy, num=invalid_sample_count+2)[1:-1]
-        p_interp = np.linspace(starting_ps, ending_ps, num=invalid_sample_count+2)[1:-1]
-
-        for i, sample_index in enumerate(self.missing_data_sample_ixs):
-            #if self.eye_index==0:
-            #    print2err("\tFill Sample index %d: ",sample_index)
-
-            csample = self.sample_array[sample_index]
-            csample[PROC_SAMPLE_X_INDEX] = x_interp[i]
-            csample[PROC_SAMPLE_Y_INDEX] = y_interp[i]
-            csample[PROC_SAMPLE_PS_INDEX] = p_interp[i]
-            if sample_index > 0:
-                #if self.eye_index==0:
-                #    print2err("\tVel calc for missing data index %d: ",sample_index)
-                psample = self.sample_array[sample_index-1]
-                dx = np_abs(csample[PROC_SAMPLE_X_INDEX]-psample[PROC_SAMPLE_X_INDEX])
-                dy = np_abs(csample[PROC_SAMPLE_Y_INDEX]-psample[PROC_SAMPLE_Y_INDEX])
-                dt = csample[PROC_SAMPLE_TIME_INDEX]-psample[PROC_SAMPLE_TIME_INDEX]
-                csample[PROC_SAMPLE_VX_INDEX] = dx / dt
-                csample[PROC_SAMPLE_VY_INDEX] = dy / dt
-                #if self.eye_index==0:
-                #    print2err("\tVel calc for miss: ",csample[PROC_SAMPLE_VX_INDEX]," , ",csample[PROC_SAMPLE_VY_INDEX])
-            return_samples.append(csample)
-
-        self.missing_data_sample_ixs = []
-
-        return return_samples
-
-    def getCurrentSample(self):
-        return self.sample_array[self.current_sample_index]
-
-    def getCurrentSampleID(self):
-        return self.sample_array[self.current_sample_index][PROC_SAMPLE_ID_INDEX]
-
-    def isCurrentSampleValid(self):
-        return self.sample_array[self.current_sample_index][PROC_SAMPLE_VALID_INDEX] > 0.0
-
-    def getPreviousSample(self):
-        if self.current_sample_index>=1:
-            return self.sample_array[self.current_sample_index-1]
-        return None
-
-    def isPreviousSampleValid(self):
-        if self.current_sample_index>=1:
-            return self.sample_array[self.current_sample_index-1][PROC_SAMPLE_VALID_INDEX] > 0.0
-        return None
-
-    def getLastValidSample(self):
-        if self.last_valid_sample_index >= 0:
-            return self.sample_array[self.last_valid_sample_index]
-        return None
-
-    def canParse(self):
-        return self.velocity_history_index > VELOCITY_HISTORY_LENGTH
-
-    def getVelocityThreshold(self):
-        return self.velocity_threshold
-
-    def updateVelocityThreshold(self, v):
-        #t1=getTime()
-        self.velocity_history_index += 1
-        vi = self.velocity_history_index%VELOCITY_HISTORY_LENGTH
-        vel_array = self.velocity_history
-        vel_array[vi] = v
-
-        if self.velocity_history_index > VELOCITY_HISTORY_LENGTH:
-            PT = vel_array.min()+vel_array.std()*3.0
-            velocity_below_thresh = vel_array[vel_array < PT]
-            PTd = 2.0
-            pt_list = [PT,]
-            while PTd >= 1.0:
-                if len(pt_list) > 0:
-                    PT = velocity_below_thresh.mean()+3.0*velocity_below_thresh.std()
-                    velocity_below_thresh = vel_array[vel_array < PT]
-                    PTd=np.abs(PT-pt_list[-1])
-                pt_list.append(PT)
-            self.velocity_threshold = PT
-            #t2=getTime()
-            #if self.eye_index==0:
-            #    print2err("ADAPTED VELOCITY: iterations %d. Values: "%(len(pt_list)),pt_list)
-            return PT
-        return None
-
-class EyeSamplePositionFilter(object):
-    """
-    Input: Non filtered eye tracker samples (one at a time)
-    output: Eye tracker samples with the following changes:
-        - position converted to visual angles
-        - position filtered based on fiter settings ( 0 - N samples can be returned)
-    Input and output samples are toi be in iohub event list format.
-    """
-    def __init__(self, filter_type, window_size):
-        self.visual_angle_calc = VisualAngleCalc(DISPLAY_SIZE_MM,
-                                                 DISPLAY_RES_PIX,
-                                                 DEFAULT_EYE_DISTANCE)
-        self.pix2deg = self.visual_angle_calc.pix2deg
-
-
-        self.input_samples = deque(maxlen=window_size)
-        self.x_pos_window = NumPyRingBuffer(window_size)
-        self.y_pos_window = NumPyRingBuffer(window_size)
-
-        self.missing_data_samples=[]
-
-    def addSample(self, sample):
-        pass
-
-    def getAvailableSampleOutput(self):
-        pass
-
-
-
-class EyeSampleFilter(DeviceEventFilter):
-    """
-    General design:
-        I) iohub sample event intake:
-            1) Filter takes in 1 eye sample at a time
-                a) if binocular, split into left and right sample data dicts
-                   for filtering.
-                b) if mono, create single sample data dict for filtering.
-            <!! DONE TO HERE !!>
-            2) sample is stored in internal list
-            3) if sample is missing data:
-                  a) store prev sample as last sample before gap
-                  b) go to I.1.
-            4) if sample is ok:
-                  a) convert pix to angles
-                  b) if prev sample was OK:
-                        i) move sample to "angle_units_sample_list".
-                  c) if prev sample was missing data:
-                        i) interpolate x,y pos for samples during gap (in angle units)
-                       ii) move each interpolated sample to "angle_units_sample_list"
-
-        II) angle_units_sample_list processing:
-            1) For each sample in angle_units_sample_list
-                a) add to 'filter_pos_window_buffer'
-                b) if 'filter_pos_window_buffer' is not full
-                    i) go to II.1
-                c) if 'filter_pos_window_buffer' is full:
-                    i) Get pos filtered sample
-                    ii) Add pos filtered sample to 'filtering_vel_accel_buffer'
-            2) If angle_units_sample_list is empty:
-                a) go to III.
-        III) filtering_vel_accel_buffer processing:
-            1) If not full, go to I.
-            2) If full
-                a) Get fully filtered sample from buffer
-                b) If fully filtered sample is valid (i.e. was not interpolated):
-                    i) Adjust adaptive vel (and accell?) thresholds.
-                c) Add fully filtered sample to event_parser_sample_list
-        IV) event_parser_sample_list processing:
-            General notes:
-               - this is the list ( no max length ) that events are parsed from.
-               - event types: FIX, SACC, BLINK_MISSING
-               - each event type has a START and END event version
-               - samples are not removed from list until an END event is detected.
-               - consecutive invalid sample length must be > a thresh to result
-                 in BLINK_START / END events. If under threshold length, they are
-                 included in saccade / fix parsing, using their interpolated values.
-            Rest of sudo logic TBC....
-    """
-    MONOC_SAMPLE = EventConstants.MONOCULAR_EYE_SAMPLE
-    BINOC_SAMPLE = EventConstants.BINOCULAR_EYE_SAMPLE
-    def __init__(self):
-        DeviceEventFilter.__init__(self)
-        self.sample_type = None
-        self.io_sample_class = None
-        self.io_sample_events = OrderedDict()
-        self.eye_data = [None, None]
-        self.visual_angle_calc = VisualAngleCalc(DISPLAY_SIZE_MM,
-                                                 DISPLAY_RES_PIX,
-                                                 DEFAULT_EYE_DISTANCE)
-        self.pix2deg = self.visual_angle_calc.pix2deg
-
-        if self.input_event_types.get(self.MONOC_SAMPLE):
-            from psychopy.iohub.devices.eyetracker import MonocularEyeSampleEvent
-            self.io_sample_class = MonocularEyeSampleEvent
-            self.ioevent_ix = self.io_sample_class.CLASS_ATTRIBUTE_NAMES.index
-            self.sample_type = self.MONOC_SAMPLE
-            self.process = self._handleMonoSamples
-            # TODO: Determine left or right correctly if possible, else default to 'Right'
-            self.eye_data = (ParserDataCache(MONO_EYE, self.io_sample_class),)
-
-        elif self.input_event_types.get(self.BINOC_SAMPLE):
-            from psychopy.iohub.devices.eyetracker import BinocularEyeSampleEvent
-            self.io_sample_class = BinocularEyeSampleEvent
-            self.ioevent_ix = self.io_sample_class.CLASS_ATTRIBUTE_NAMES.index
-            self.sample_type = self.BINOC_SAMPLE
-            self.process = self._handleBinocSamples
-            self.eye_data = (ParserDataCache(LEFT_EYE, self.io_sample_class),
-                             ParserDataCache(RIGHT_EYE, self.io_sample_class))
-        else:
-            print2err("EyeSampleFilter._input_event_types value is invalid: ",self._input_event_types)
-
-
-    @property
-    def filter_id(self):
-        return 1
-
-    @property
-    def input_event_types(self):
-        return {EventConstants.BINOCULAR_EYE_SAMPLE: (0,)}#, EventConstants.MONOCULAR_EYE_SAMPLE: (0,)}
-
-
-    def _handleBinocSamples(self):
-        #print2err("\n>>>>>>>>>>>>>>>>>>>")
-        for in_evt in self.getInputEvents():
-            t1=getTime()
-            evt_id = in_evt[self.ioevent_ix('event_id')]
-            evt_status = in_evt[self.ioevent_ix('status')]
-            #print2err("Handling iosample id %d, status: %d"%(evt_id, evt_status))
-            if evt_status == 0:
-                # createFilterSample also converts pix to visual degrees.
-                lgx_ix = self.ioevent_ix('left_gaze_x')
-                lgy_ix = self.ioevent_ix('left_gaze_y')
-                rgx_ix = self.ioevent_ix('right_gaze_x')
-                rgy_ix = self.ioevent_ix('right_gaze_y')
-                in_evt[lgx_ix], in_evt[lgy_ix] = self.pix2deg(in_evt[lgx_ix], in_evt[lgy_ix])
-                in_evt[rgx_ix], in_evt[rgy_ix] = self.pix2deg(in_evt[rgx_ix], in_evt[rgy_ix])
-                left_eye_samples = self.eye_data[LEFT_EYE].addSampleEvent(in_evt, 1)
-                right_eye_samples = self.eye_data[RIGHT_EYE].addSampleEvent(in_evt, 1)
-            elif evt_status == 20: # right eye data only
-                rgx_ix = self.ioevent_ix('right_gaze_x')
-                rgy_ix = self.ioevent_ix('right_gaze_y')
-                in_evt[rgx_ix], in_evt[rgy_ix] = self.pix2deg(in_evt[rgx_ix], in_evt[rgy_ix])
-                left_eye_samples = self.eye_data[LEFT_EYE].addSampleEvent(in_evt, 0)
-                right_eye_samples = self.eye_data[RIGHT_EYE].addSampleEvent(in_evt, 1)
-            elif evt_status == 2: # left eye data only
-                lgx_ix = self.ioevent_ix('left_gaze_x')
-                lgy_ix = self.ioevent_ix('left_gaze_y')
-                in_evt[lgx_ix], in_evt[lgy_ix] = self.pix2deg(in_evt[lgx_ix], in_evt[lgy_ix])
-                left_eye_samples = self.eye_data[LEFT_EYE].addSampleEvent(in_evt, 1)
-                right_eye_samples = self.eye_data[RIGHT_EYE].addSampleEvent(in_evt, 0)
-            elif evt_status == 22: # both eye data missing
-                left_eye_samples = self.eye_data[LEFT_EYE].addSampleEvent(in_evt, 0)
-                right_eye_samples = self.eye_data[RIGHT_EYE].addSampleEvent(in_evt, 0)
-            else:
-                print2err("ERROR: Sample status invalid: ", evt_status)
-
-            # add iohub sample to dict so it can be merged later
-            self.io_sample_events[in_evt[self.ioevent_ix('event_id')]] = [in_evt,0]
-
-            for left_proc_samp in left_eye_samples:
-                eid = left_proc_samp[PROC_SAMPLE_ID_INDEX]
-                evt_and_proc_cnt = self.io_sample_events.get(eid)
-                if evt_and_proc_cnt:
-                    evt, proc_cnt = evt_and_proc_cnt
-                    evt[self.ioevent_ix('left_gaze_x')] =  left_proc_samp[PROC_SAMPLE_X_INDEX]
-                    evt[self.ioevent_ix('left_gaze_y')] =  left_proc_samp[PROC_SAMPLE_Y_INDEX]
-                    evt[self.ioevent_ix('left_velocity_x')] =  left_proc_samp[PROC_SAMPLE_VX_INDEX]
-                    evt[self.ioevent_ix('left_velocity_y')] =  left_proc_samp[PROC_SAMPLE_VY_INDEX]
-                    evt[self.ioevent_ix('left_velocity_xy')] =  left_proc_samp[PROC_SAMPLE_VXY_INDEX]
-                    # use pupil measure 2 field to hold current vel thresh
-                    evt[self.ioevent_ix('left_pupil_measure2')] =  left_proc_samp[PROC_SAMPLE_VEL_THRESH_INDEX]
-                    evt_and_proc_cnt[1]+=1
-                    if evt_and_proc_cnt[1] == 2:
-                        self.addOutputEvent(evt)
-                        del self.io_sample_events[eid]
-
-            for right_proc_samp in right_eye_samples:
-                eid = right_proc_samp[PROC_SAMPLE_ID_INDEX]
-                evt_and_proc_cnt = self.io_sample_events.get(eid)
-                if evt_and_proc_cnt:
-                    evt, proc_cnt = evt_and_proc_cnt
-                    evt[self.ioevent_ix('right_gaze_x')] =  right_proc_samp[PROC_SAMPLE_X_INDEX]
-                    evt[self.ioevent_ix('right_gaze_y')] =  right_proc_samp[PROC_SAMPLE_Y_INDEX]
-                    evt[self.ioevent_ix('right_velocity_x')] =  right_proc_samp[PROC_SAMPLE_VX_INDEX]
-                    evt[self.ioevent_ix('right_velocity_y')] =  right_proc_samp[PROC_SAMPLE_VY_INDEX]
-                    evt[self.ioevent_ix('right_velocity_xy')] =  right_proc_samp[PROC_SAMPLE_VXY_INDEX]
-                    evt[self.ioevent_ix('right_pupil_measure2')] =  right_proc_samp[PROC_SAMPLE_VEL_THRESH_INDEX]
-                    evt_and_proc_cnt[1]+=1
-                    if evt_and_proc_cnt[1] == 2:
-                        self.addOutputEvent(evt)
-                        del self.io_sample_events[eid]
-
-            left_events = self.parse(self.eye_data[LEFT_EYE], LEFT_EYE)
-            right_events = self.parse(self.eye_data[RIGHT_EYE], RIGHT_EYE)
-
-            for left_event_type, left_sample_ix_list in left_events:
-                start_sample = self.io_sample_events.get(left_sample_ix_list[0])[0]
-                end_sample = self.io_sample_events.get(left_sample_ix_list[-1])[0]
-                self.createParsedEvent(start_sample, etype=left_event_type, start_event=True, eye=LEFT_EYE)
-                for eix in left_sample_ix_list:
-                    smpl_and_cnt =self.io_sample_events.get(eix)
-                    smpl_and_cnt[1]+=1
-                    if smpl_and_cnt[1] == 4:
-                        self.addOutputEvent(smpl_and_cnt[0])
-                        del self.io_sample_events[eix]
-                self.createParsedEvent(end_sample, etype=left_event_type, start_event=False, eye=LEFT_EYE)
-
-            for right_event_type, right_sample_ix_list in right_events:
-                start_sample = self.io_sample_events.get(right_sample_ix_list[0])[0]
-                end_sample = self.io_sample_events.get(right_sample_ix_list[-1])[0]
-                self.createParsedEvent(start_sample, etype=right_event_type, start_event=True, eye=RIGHT_EYE)
-                for eix in right_sample_ix_list:
-                    smpl_and_cnt =self.io_sample_events.get(eix)
-                    smpl_and_cnt[1]+=1
-                    if smpl_and_cnt[1] == 4:
-                        self.addOutputEvent(smpl_and_cnt[0])
-                        del self.io_sample_events[eix]
-                self.createParsedEvent(end_sample, etype=right_event_type, start_event=False, eye=RIGHT_EYE)
-
-        self.clearInputEvents()
-        #print2err("<<<<<<<<<<<<<<<<<<<<")
-
-    def createParsedEvent(self, sample, etype='??', start_event=True, eye=MONO_EYE):
-        if start_event:
-            print2err("TODO: Create START %s Event: Time %.3f, eye: %d"%(etype, sample[self.ioevent_ix['time']],eye))
-        else:
-            print2err("TODO: Create END %s Event: Time %.3f, eye: %d"%(etype, sample[self.ioevent_ix['time']],eye))
-
-    def parse(self,eye_data,eye_index):
-        """
-        Filter and Parse Data Stream
-        """
-        # Only start parsing once we get adaptive velocity threshold values.
-        vthresh = eye_data.getVelocityThreshold()
-        if vthresh is None:
-            return []
-        # Do not parse when state has unprocessed missing data
-        if len(eye_data.missing_data_sample_ixs)>0:
-            return []
-
-        events = []
-        current_parser_index = eye_data.last_parsed_index
-        parse_to = eye_data.current_sample_index
-        if parse_to - current_parser_index < MIN_PARSER_SAMPLE_BLOCK:
-            return []
-
-        #print2err("**** PARSING ROUND STARTED *****")
-
-        #print2err("Parse index range: ",(current_parser_index,parse_to),' ',parse_to - current_parser_index)
-
-        parsing_event_types = dict(SAC=[],FIX=[],MIS=[])
-        curr_event_category = None
-        prev_event_category = eye_data.prev_event_category
-
-        while current_parser_index <= parse_to:
-            cevent = eye_data.sample_array[current_parser_index]
-
-            valid = cevent[PROC_SAMPLE_VALID_INDEX]
-            if valid:
-                vx = cevent[PROC_SAMPLE_VX_INDEX]
-                vy = cevent[PROC_SAMPLE_VY_INDEX]
-                #if cevent[PROC_SAMPLE_VEL_THRESH_INDEX]:
-                #    vthresh = cevent[PROC_SAMPLE_VEL_THRESH_INDEX]
-                #else:
-                #   cevent[PROC_SAMPLE_VEL_THRESH_INDEX] = vthresh
-
-                #if eye_index == 0:
-                #    print2err("Sample index %d, vel thresh %.3f, event thresh %.3f. vx, vy: "%(current_parser_index,vthresh,cevent[PROC_SAMPLE_VEL_THRESH_INDEX]), (vx,vy))
-                if vx >= vthresh or vy >= vthresh:
-                    parsing_event_types['SAC'].append(current_parser_index)
-                    curr_event_category = 'SAC'
-                else:
-                    parsing_event_types['FIX'].append(current_parser_index)
-                    curr_event_category = 'FIX'
-            else:
-                parsing_event_types['MIS'].append(current_parser_index)
-                curr_event_category = 'MIS'
-
-            #if eye_data.eye_index == 0:
-            #    print2err("Sample index %d, evt categoty: %s"%(current_parser_index,curr_event_category))
-            if prev_event_category and prev_event_category != curr_event_category:
-                if MIN_EVENT_SAMPLES[prev_event_category] > len(parsing_event_types[prev_event_category]):
-                    #event is too short, so add to current event type list head
-                    parsing_event_types[prev_event_category].extend(parsing_event_types[curr_event_category])
-                    parsing_event_types[curr_event_category] = parsing_event_types[prev_event_category]
-                    parsing_event_types[prev_event_category] = []
-                else:
-                    #print2err("+++ Adding Event (eye %d): "%(eye_data.eye_index), (prev_event_category, len(parsing_event_types[prev_event_category])))
-                    new_event = sorted(parsing_event_types[prev_event_category], key = lambda x: eye_data.sample_array[x][PROC_SAMPLE_TIME_INDEX])
-                    parsing_event_types[prev_event_category] = []
-                    events.append((prev_event_category, new_event))
-
-            prev_event_category = curr_event_category
-
-            current_parser_index += 1
-
-        eye_data.curr_event_category = curr_event_category
-
-        if len(events) > 1:
-            evt_typ, exv_ix = events[-1]
-            parsing_event_types[evt_typ].extend(exv_ix)
-            events = events[:-1]
-
-        last_index = SAMPLE_ARRAY_ROWS
-        unused_sample_count = 0
-        #print2err("parsing_event_types: ", parsing_event_types)
-        for e in parsing_event_types.values():
-            if e:
-                last_index = min(last_index, *e)
-                unused_sample_count+=len(e)
-        eye_data.last_parsed_index = last_index
-
-
-        #print2err("Unused clasified samples: ", unused_sample_count)
-        #print2err("Updated last_parsed_index: ", eye_data.last_parsed_index)
-
-        #print2err("****** PARSING ROUND DONE ******")
-
-        return events
-'''

@@ -9,6 +9,7 @@ import socket
 from websocket import WebSocketConnectionClosedException
 from psychopy import visual, core
 from psychopy.clock import CountdownTimer
+from psychopy.data import TrialHandler
 from psychopy.iohub.client import ioHubExperimentRuntime
 from psychopy.iohub import EventConstants, MouseConstants, Computer, EyeTrackerConstants
 from psychopy.iohub.util import NumPyRingBuffer
@@ -41,7 +42,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.device_monitor_countdowns = dict()
         self.recording_devices={}
         self.device_info_stats={}
-
+        self.recording_condition_variables=None
+        self.recording_vars = None
         self.hub.sendMessageEvent("Started New Experiment Session: %s"%(self.getSessionMetaData().get('code','CODE_MISSING')),"data_monitoring")
         self._quit_char = self.keyChainValue(appcfg, 'manual_termination',
                                              'keyboard', 'key')
@@ -53,6 +55,21 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.display = self.devices.display
         self.mouse = self.hub.getDevice('mouse')
         self.eyetracker = self.hub.getDevice('tracker')
+
+        self._device_event_filter=dict()
+        # Add filters if needed:
+        event_filters = self.keyChainValue(appcfg, 'data_collection', 'event_filters')
+        if event_filters:
+            for device_name, event_filter_config in event_filters:
+                filter_file_path = event_filter_config.get('file_path', '.')
+                filter_class_name = event_filter_config.get('class_name')
+                filtered_events_only = event_filter_config.get('stream_filtered_only', False)
+                filter_id = self.hub.getDevice(device_name).addFilter(filter_file_path, filter_class_name)
+                if filter_id >= 0:
+                    if filtered_events_only is True:
+                        self._device_event_filter[device_name] = filter_id
+                else:
+                    print("ERROR: Filter not installed:",filter_file_path,filter_class_name)
         #--
 
         self.createDeviceStatsMessageDicts()
@@ -238,7 +255,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def updateMouseMsgInfo(self):
         dev_data = self.device_info_stats['mouse']
-        new_events = self.mouse.getEvents(asType='dict')
+        kwargs = dict(asType='dict')
+        filter_device_events = self._device_event_filter.get('mouse')
+        if filter_device_events is not None:
+           kwargs['filter_id'] = filter_device_events
+        new_events = self.mouse.getEvents(**kwargs)
         self.updateLocalEventsCache(new_events)
 
         if dev_data["events"][0] is None and (new_events is None or len(new_events) == 0):
@@ -275,8 +296,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
 
     def updateKeyboardMsgInfo(self):
         dev_data = self.device_info_stats['keyboard']
-        new_events = self.keyboard.getEvents(asType='dict')
-
+        kwargs = dict(asType='dict')
+        filter_device_events = self._device_event_filter.get('keyboard')
+        if filter_device_events is not None:
+           kwargs['filter_id'] = filter_device_events
+        new_events = self.keyboard.getEvents(**kwargs)
         self.updateLocalEventsCache(new_events)
 
         if dev_data["events"][0] is None and (new_events is None or len(new_events) == 0):
@@ -322,8 +346,13 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if dev_data["average_gaze_position"][0] != gp:            
             dev_data["average_gaze_position"][0] = gp
             dev_data_update = True
-            
-        new_events = self.eyetracker.getEvents(asType='dict')
+
+        kwargs = dict(asType='dict')
+        filter_device_events = self._device_event_filter.get('eyetracker')
+        if filter_device_events is not None:
+           kwargs['filter_id'] = filter_device_events
+        new_events = self.eyetracker.getEvents(**kwargs)
+
         new_samples=[e for e in new_events if e['type'] in [EventConstants.BINOCULAR_EYE_SAMPLE, EventConstants.MONOCULAR_EYE_SAMPLE]]
         new_events=[e for e in new_events if e['type'] not in [EventConstants.BINOCULAR_EYE_SAMPLE, EventConstants.MONOCULAR_EYE_SAMPLE]]
         self.updateLocalEventsCache(new_events)
@@ -618,6 +647,20 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         self.sendToWebServer(msg)
 
     def startDeviceRecording(self):
+        if self.recording_vars is None:
+            self.recording_vars=[]
+            for i in range(256):
+                self.recording_vars.append({'session_id': self.hub.experimentSessionID,
+                                            'trial_id': i,
+                                            'TRIAL_START': 0.0,
+                                            'TRIAL_END': 0.0
+                                            })
+            self.recording_condition_variables = TrialHandler(
+                                                    self.recording_vars, 1)
+            self.hub.createTrialHandlerRecordTable(self.recording_condition_variables)
+
+        self.current_rec_vars = self.recording_condition_variables.next()
+
         session_info=self.device_info_stats['experiment_session']
 
         data_collect_config = self.getConfiguration().get('data_collection', {}).get('recording_period', {})
@@ -636,6 +679,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 #cntimer._label = device_label
                 self.device_monitor_countdowns[device_label] = cntimer
             session_info['recording_start_time'][0] =getTime()
+            self.current_rec_vars['TRIAL_START'] = getTime()
 
             self.beginScreenCaptureStream()
 
@@ -644,6 +688,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             cmtype="success"
             msg={'msg_type':start_msg_txt,'type':cmtype}
             self.sendToWebServer(msg)
+
 
             self.runVisualSyncProcedure()
             self.hub.clearEvents("all")
@@ -666,6 +711,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 del self.device_monitor_countdowns[device_label]
             session_info['recording_start_time'][0] = 0.0
             session_info['recording'][0] = False
+            self.current_rec_vars['TRIAL_END'] = getTime()
+            self.hub.addRowToConditionVariableTable(self.current_rec_vars.values())
             self.runVisualSyncProcedure()
             # try to ensure frames with visual sync stim have been written
             # to video file

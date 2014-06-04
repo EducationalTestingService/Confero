@@ -48,6 +48,13 @@ data_collection:
             end_msg: END_EVENT_PERIOD
         end_msg: RECORDING_STOPPED
 
+    event_filters:
+        eyetracker:
+            file_path: "..\lib\event_filters\eyetracker.py"
+            class_name: EyeTrackerEventParser
+            stream_filtered_only: True
+
+
 screen_capture:
     screen_index: 0
     screen_resolution: [1920, 1080]
