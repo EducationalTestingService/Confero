@@ -396,7 +396,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 end_event = self.createBlinkEndEventArray(last_sample, existing_start_event, evt_samples)
                 del self.open_parser_events['MIS']
             else:
-                print2err("PARSER Warning: Blink Start Event not found; Blink End event being dropped: ", end_event)
+                pass#print2err("PARSER Warning: Blink Start Event not found; Blink End event being dropped: ", end_event)
         elif last_sample_category == 'FIX':
             # Create end fix event
             existing_start_event = self.open_parser_events.get('FIX')
@@ -407,7 +407,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 end_event = self.createFixationEndEventArray(last_sample, existing_start_event,evt_samples)
                 del self.open_parser_events['FIX']
             else:
-                print2err("PARSER Warning: Fixation Start Event not found; Fixation End event being dropped: ", end_event)
+                pass#print2err("PARSER Warning: Fixation Start Event not found; Fixation End event being dropped: ", end_event)
         elif last_sample_category == 'SAC':
             # Create end sac event
             existing_start_event = self.open_parser_events.get('SAC')
@@ -418,7 +418,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 end_event = self.createSaccadeEndEventArray(last_sample, existing_start_event,evt_samples)
                 del self.open_parser_events['SAC']
             else:
-                print2err("PARSER Warning: Saccade Start Event not found; Saccade End event being dropped: ", end_event)
+                pass#print2err("PARSER Warning: Saccade Start Event not found; Saccade End event being dropped: ", end_event)
 
         if current_sample_category == 'MIS':
             # Create start blink event
@@ -500,8 +500,10 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
 
     def initializeForSampleType(self,in_evt):
         self.sample_type = MONOCULAR_EYE_SAMPLE  #in_evt[DeviceEvent.EVENT_TYPE_ID_INDEX]
+        #print2err("self.sample_type: ",self.sample_type,", ",EventConstants.getName(self.sample_type))
         self.io_sample_class = EventConstants.getClass(self.sample_type)
         self.io_event_fields = self.io_sample_class.CLASS_ATTRIBUTE_NAMES
+        #print2err("self.io_sample_class: ",self.io_sample_class,", ",len(self.io_event_fields),"\n>>",self.io_event_fields)
         self.io_event_ix = self.io_sample_class.CLASS_ATTRIBUTE_NAMES.index
 
         if in_evt[DeviceEvent.EVENT_TYPE_ID_INDEX] == BINOCULAR_EYE_SAMPLE:
@@ -579,7 +581,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
 
     def _convertToMonoAveraged(self, prev_event, current_event):
         mono_evt=[]
-        binoc_field_names = EventConstants.getClass(BINOCULAR_EYE_SAMPLE).CLASS_ATTRIBUTE_NAMES
+        binoc_field_names = EventConstants.getClass(EventConstants.BINOCULAR_EYE_SAMPLE).CLASS_ATTRIBUTE_NAMES
+        #print2err("binoc_field_names: ",len(binoc_field_names),"\n",binoc_field_names)
         status = current_event[binoc_field_names.index('status')]
         for field in self.io_event_fields:
             if field in binoc_field_names:
@@ -589,6 +592,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
             elif field.endswith('_type'):
                 mono_evt.append(int(current_event[binoc_field_names.index('left_%s'%(field))]))
             else:
+                #print2err("binoc status: ",status)
                 if status == 0:
                     lfv = float(current_event[binoc_field_names.index('left_%s'%(field))])
                     rfv = float(current_event[binoc_field_names.index('right_%s'%(field))])

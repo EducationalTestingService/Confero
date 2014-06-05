@@ -79,7 +79,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                         raise ValueError("sampling_rate could not be read!")
 
                 filter_id = self.hub.getDevice(device_name).addFilter(filter_file_path, filter_class_name, filter_kwargs)
-                print("ADDED FILTER: ", filter_id)
+                #print("ADDED FILTER: ", filter_id)
                 if filter_id >= 0:
                     if filtered_events_only is True:
                         self._device_event_filter[device_name] = filter_id

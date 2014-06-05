@@ -24,8 +24,8 @@ remaining_processes_affinity: []
 ioHub:
     process_affinity: []
     #config: ..\iohub_config_no_eyetracker.yaml
-    #config: ..\iohub_config_tobii.yaml
-    config: ..\iohub_config_smi.yaml
+    config: ..\iohub_config_tobii.yaml
+    #config: ..\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
@@ -56,18 +56,18 @@ data_collection:
             params:
                 adaptive_vel_thresh_history: 5.0
                 position_filter:
-                    name: MedianFilter
-                    length: 5
+                    name: MovingWindowFilter
+                    length: 3
                     knot_pos: center
                     #weights:
                 velocity_filter:
-                    name:  PassThroughFilter
-                    #length:
-                    #knot_pos:
+                    name:  MedianFilter
+                    length: 3
+                    knot_pos: center
                     #weights:
 screen_capture:
     screen_index: 0
-    screen_resolution: [1920, 1080]
+    screen_resolution: [1280, 1024]
 
     ffmpeg:
         path: '..\..\..\bin\ffmpeg\bin'
