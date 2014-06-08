@@ -52,8 +52,9 @@ def startNodeWebStreamer(app_config):
 
     VID_WIDTH = int(screen_cap_width*stream_scale)-int(screen_cap_width*stream_scale)%2
     VID_HEIGHT = int(screen_cap_height*stream_scale)-int(screen_cap_width*stream_scale)%2
-    npath = os.path.join(script_dir, r'..\..\..\bin\nodejs\node.exe')
-    jpath = os.path.join(script_dir, r'..\..\..\bin\nodejs\stream-server.js')
+    node_js_path = keyChainValue(app_config,'web_application','nodejs_path')
+    npath = os.path.join(script_dir, node_js_path, 'node.exe')
+    jpath = os.path.join(script_dir,node_js_path, 'stream-server.js')
     nodejs = os.path.abspath(npath)
     jsscript = os.path.abspath(jpath)
     print("Starting Video Streaming Server on", STREAM_HOST)

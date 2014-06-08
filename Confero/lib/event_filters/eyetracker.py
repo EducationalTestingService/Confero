@@ -131,10 +131,7 @@ Data is filtered once, similar to what a 'normal' filter level would be in the
 
 import psychopy.iohub.devices.eventfilters as eventfilters
 from psychopy.iohub import EventConstants, DeviceEvent, print2err
-from psychopy.iohub.util import NumPyRingBuffer
-from timeit import default_timer as getTime
-from collections import deque, OrderedDict
-import numpy as np
+from collections import OrderedDict
 
 ################### Pixel to Visual Angle Calculation ##########################
 """
@@ -260,9 +257,9 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
 
         pos_filter_kwargs['event_type'] = MONOCULAR_EYE_SAMPLE
         pos_filter_kwargs['inplace'] = True
-        pos_filter_kwargs['event_field_name'] = 'gaze_x'
+        pos_filter_kwargs['event_field_name'] = 'angle_x'
         self.x_position_filter = pos_filter_class(**pos_filter_kwargs)
-        pos_filter_kwargs['event_field_name'] = 'gaze_y'
+        pos_filter_kwargs['event_field_name'] = 'angle_y'
         self.y_position_filter = pos_filter_class(**pos_filter_kwargs)
 
         vel_filter_kwargs['event_type'] = MONOCULAR_EYE_SAMPLE
@@ -273,13 +270,6 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         self.y_velocity_filter = vel_filter_class(**vel_filter_kwargs)
         vel_filter_kwargs['event_field_name'] = 'velocity_xy'
         self.xy_velocity_filter = vel_filter_class(**vel_filter_kwargs)
-
-#        print2err('self.x_position_filter: ',self.x_position_filter)
-#        print2err('self.y_position_filter: ',self.y_position_filter)
-#        print2err('self.x_velocity_filter: ',self.x_velocity_filter)
-#        print2err('self.y_velocity_filter: ',self.y_velocity_filter)
-#        print2err('self.xy_velocity_filter: ',self.xy_velocity_filter)
-        # function vars
 
         ###
         mm_size = display_device.get('mm_size')
@@ -516,8 +506,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
     def interpolateMissingData(self, current_sample):
         samples_for_processing = []
         invalid_sample_count = len(self.invalid_samples_run)
-        gx_ix = self.io_event_ix('gaze_x')
-        gy_ix = self.io_event_ix('gaze_y')
+        gx_ix = self.io_event_ix('angle_x')
+        gy_ix = self.io_event_ix('angle_y')
         ps_ix = self.io_event_ix('pupil_measure1')
         starting_gx = self.last_valid_sample[gx_ix]
         starting_gy = self.last_valid_sample[gy_ix]
@@ -560,13 +550,13 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
     def _convertPosToAngles(self, mono_event):
         gx_ix = self.io_event_ix('gaze_x')
         gx_iy = self.io_event_ix('gaze_y')
-        mono_event[gx_ix], mono_event[gx_iy] = self.pix2deg(mono_event[gx_ix], mono_event[gx_iy])
+        mono_event[self.io_event_ix('angle_x')], mono_event[self.io_event_ix('angle_y')] = self.pix2deg(mono_event[gx_ix], mono_event[gx_iy])
 
     def _addVelocity(self, prev_event, current_event):
         io_ix = self.io_event_ix
 
-        dx = np_abs(current_event[io_ix('gaze_x')] - prev_event[io_ix('gaze_x')])
-        dy = np_abs(current_event[io_ix('gaze_y')] - prev_event[io_ix('gaze_y')])
+        dx = np_abs(current_event[io_ix('angle_x')] - prev_event[io_ix('angle_x')])
+        dy = np_abs(current_event[io_ix('angle_y')] - prev_event[io_ix('angle_y')])
         dt = current_event[io_ix('time')] - prev_event[io_ix('time')]
 
         current_event[io_ix('velocity_x')] = dx/dt
@@ -641,8 +631,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[self.io_event_ix('gaze_x')],
                 sample[self.io_event_ix('gaze_y')],
                 0.0,
-                0.0,
-                0.0,
+                sample[self.io_event_ix('angle_x')],
+                sample[self.io_event_ix('angle_y')],
                 sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 sample[self.io_event_ix('pupil_measure1')],
@@ -681,8 +671,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 existing_start_event[gx],
                 existing_start_event[gy],
                 0.0,
-                0.0,
-                0.0,
+                existing_start_event[self.io_event_ix('angle_x')],
+                existing_start_event[self.io_event_ix('angle_y')],
                 existing_start_event[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 existing_start_event[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 existing_start_event[self.io_event_ix('pupil_measure1')],
@@ -697,8 +687,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[gx],
                 sample[gy],
                 0.0,
-                0.0,
-                0.0,
+                sample[self.io_event_ix('angle_x')],
+                sample[self.io_event_ix('angle_y')],
                 sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 sample[self.io_event_ix('pupil_measure1')],
@@ -750,8 +740,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[self.io_event_ix('gaze_x')],
                 sample[self.io_event_ix('gaze_y')],
                 0.0,
-                0.0,
-                0.0,
+                sample[self.io_event_ix('angle_x')],
+                sample[self.io_event_ix('angle_y')],
                 sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 sample[self.io_event_ix('pupil_measure1')],
@@ -798,8 +788,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 existing_start_event[gx],
                 existing_start_event[gy],
                 0.0,
-                0.0,
-                0.0,
+                existing_start_event[self.io_event_ix('angle_x')],
+                existing_start_event[self.io_event_ix('angle_y')],
                 existing_start_event[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 existing_start_event[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 existing_start_event[self.io_event_ix('pupil_measure1')],
@@ -814,8 +804,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                 sample[gx],
                 sample[gy],
                 0.0,
-                0.0,
-                0.0,
+                sample[self.io_event_ix('angle_x')],
+                sample[self.io_event_ix('angle_y')],
                 sample[self.io_event_ix('raw_x')], # used to hold online x velocity threshold calculated for sample
                 sample[self.io_event_ix('raw_y')], # used to hold online y velocity threshold calculated for sample
                 sample[self.io_event_ix('pupil_measure1')],

@@ -1,7 +1,7 @@
 PRINT_STATUS = True
 SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = True
-SESSION_PATH = r'..\track\results\first_exp\s1'
+SESSION_PATH = r'..\..\..\Results\Exp_A\xczxc'
 SYNC_TIME_BOX = 0, 0, 20, 20
 SYNC_TRANSITION_COUNT = 15  # Each includes a cycle through colors
 SYNC_COLORS = 255.0, 0.0
@@ -119,7 +119,7 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
     """
     result_dtype = [('video_id', np.uint8), ('frame_number', np.uint32),
                     ('frame_time', np.float32), ('event_type', np.uint8),
-                    ('event_id', np.uint32), ('event_table_row_index', np.uint32),
+                    ('event_id', np.uint32), ('filter_id', np.uint8), ('event_table_row_index', np.uint32),
                     ('event_time', np.float32)]
     hubdata = None
     try:
@@ -157,7 +157,7 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
                             event_count += 1
                             video_frame_events[frame_num].append((
                                 vi, frame_num, fstart_time/1000.0, e['type'],
-                                e['event_id'], e.nrow, e['time']))
+                                e['event_id'], e['filter_id'],e.nrow, e['time']))
                         else:
                             frame_num += 1
                             if frame_num + 1 < frame_count:
@@ -176,7 +176,7 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
                                 event_count += 1
                                 video_frame_events[frame_num].append((
                                     vi, frame_num, fstart_time/1000.0 , e['type'],
-                                    e['event_id'], e.nrow, e['time']))
+                                    e['event_id'], e['filter_id'],e.nrow, e['time']))
 
             # now have all events per frame in the current video.
             # They are not sorted by time in each video, but ny event type.
@@ -204,8 +204,8 @@ def saveVideoEventLookupArray(video_frame_evt_array, session_folder):
         printf("Saving session_vframe_events.txt...")
         header = "Created on %s UTC.\nProcessing session folder: %s\n" % (
             datetime.datetime.utcnow().isoformat(), session_folder)
-        header += "video_id\tframe_number\tframe_time\tevent_type\tevent_id\tevent_row_index\tevent_time\n"
-        fmt = ['%d', '%d', '%.3f', '%d', '%d', '%d', '%.3f']
+        header += "video_id\tframe_number\tframe_time\tevent_type\tevent_id\tfilter_id\tevent_row_index\tevent_time\n"
+        fmt = ['%d', '%d', '%.3f', '%d', '%d', '%d', '%d', '%.3f']
         np.savetxt(
             os.path.join(session_folder, 'session_vframe_events.txt'),
             video_frame_evt_array, header=header, delimiter='\t', fmt=fmt)

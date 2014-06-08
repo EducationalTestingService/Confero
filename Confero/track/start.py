@@ -75,7 +75,7 @@ def main(configurationDirectory):
     pisdir = os.path.isdir
 
     app_conf = load(file(os.path.join(configurationDirectory,
-                                    "..\\app_config.yaml"), u'r'),
+                                    "..\\..\\settings\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
     view_server_info = findConferoViewServer()
@@ -125,7 +125,7 @@ def main(configurationDirectory):
             DataCollectionRuntime.active_exp_name = active_exp_name
 
             app_conf = load(file(pjoin(configurationDirectory,
-                                            "..\\app_config.yaml"), u'r'),
+                                            "..\\..\\settings\\app_config.yaml"), u'r'),
                                             Loader=Loader)
 
             app_conf.get('experimenter_server')['address'] = view_server_info['ip']
@@ -151,7 +151,7 @@ def main(configurationDirectory):
             #
             # Read the default app config yaml file
             #
-            app_conf_path = pjoin(configurationDirectory, "..\\app_config.yaml")
+            app_conf_path = pjoin(configurationDirectory, "..\\..\\settings\\app_config.yaml")
             app_conf = load(file(app_conf_path, u'r'), Loader=Loader)
 
             app_conf.get('experimenter_server')['address'] = view_server_info['ip']
@@ -165,14 +165,14 @@ def main(configurationDirectory):
                                                             'ioHub', 'config')))
             # Update the iohub config file relative path to use.
             #
-            new_iohubconfig_rpath = '..\\last_'+psplit(iohubconfpath)[1]
+            new_iohubconfig_rpath = '..\\..\\settings\\last_'+psplit(iohubconfpath)[1]
             app_conf.get('ioHub', {})['config'] = new_iohubconfig_rpath
             # Create the name of the temp app config file to use when
             # starting the runtime. Save the app config, with changes, to the
             # new app conf file.
             #
             app_config_file_name = pjoin(configurationDirectory,
-                                                "..\\last_app_config.yaml")
+                                                "..\\..\\settings\\last_app_config.yaml")
             dump(app_conf, file(app_config_file_name, 'w'), Dumper=Dumper)
             ##########################################################
 
@@ -198,7 +198,7 @@ def main(configurationDirectory):
             # Create the experiment Session Runtime
             #
             runtime = DataCollectionRuntime(configurationDirectory,
-                                            "..\\last_app_config.yaml")
+                                            "..\\..\\settings\\last_app_config.yaml")
 
             # Set the app web socket and send a msg indicating data collection
             # is ready

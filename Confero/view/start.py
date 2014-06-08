@@ -10,7 +10,7 @@ from psychopy.iohub import Loader, load
 from findserver import findConferoViewServer
 import os
 if __name__ == "__main__":
-    app_config = load(file(os.path.abspath(r'..\app_config.yaml'), 'r'),
+    app_config = load(file(os.path.abspath(r'..\..\settings\app_config.yaml'), 'r'),
                         Loader=Loader)
 
     bonsvc = ConferoBonjourService()

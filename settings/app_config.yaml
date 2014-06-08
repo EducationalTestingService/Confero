@@ -23,16 +23,16 @@ remaining_processes_affinity: []
 
 ioHub:
     process_affinity: []
-    #config: ..\iohub_config_no_eyetracker.yaml
-    config: ..\iohub_config_tobii.yaml
-    #config: ..\iohub_config_smi.yaml
+    #config: ..\..\settings\iohub_config_no_eyetracker.yaml
+    #config: ..\..\settings\iohub_config_tobii.yaml
+    config: ..\..\settings\iohub_config_smi.yaml
 
 ################# ETS Screen Streaming Application Specific ###################
 
-results_root_folder: .\results
+results_root_folder: ..\..\Results
 experiment_inactive_token:
 
-auto_launch_webapp:
+auto_launch_webapp: default
 
 data_collection:
     video_event_sync:
@@ -67,10 +67,10 @@ data_collection:
                     #weights:
 screen_capture:
     screen_index: 0
-    screen_resolution: [1280, 1024]
+    screen_resolution: [1920, 1080]
 
     ffmpeg:
-        path: '..\..\..\bin\ffmpeg\bin'
+        path: '..\bin\ffmpeg\bin'
         exe: ffmpeg.exe
         stdout_file: ffmpeg_stdout
         stderr_file: ffmpeg_stderr
@@ -128,6 +128,7 @@ experimenter_server:
     port: AUTO
 
 web_application:
+    nodejs_path: '..\bin\nodejs\'
     notifications:
         eyetracker:
             proportion_valid_samples:

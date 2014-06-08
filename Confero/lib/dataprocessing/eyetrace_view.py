@@ -2,9 +2,9 @@
 from __future__ import division
 from psychopy.iohub import EventConstants
 
-IOHUB_DATA_FOLDER_PATH = r'..\..\track\results\first_exp'
+IOHUB_DATA_FOLDER_PATH = r'..\..\..\Results\Exp_A'
 IOHUB_DATA_FILE_NAME = 'iohub_events.hdf5'
-SESSION_CODE = 'calc_evt_fields'
+SESSION_CODE = 'xczxc'
 
 UNFILTERED_SAMPLE_TYPE = EventConstants.BINOCULAR_EYE_SAMPLE
 FILTERED_SAMPLE_TYPE =  EventConstants.MONOCULAR_EYE_SAMPLE
@@ -44,7 +44,7 @@ def getRecordingPeriodSamples(event_type, event_fields, filter_id=0):
 def getUnfilteredSamples():
     # Get unfiltered event data
     eye_field_names=['time', 'event_id', 'status']
-    eye_specific_fields = ['gaze_x', 'gaze_y']#, 'pupil_measure1', ]
+    eye_specific_fields = ['angle_x', 'angle_y']#, 'pupil_measure1', ]
     if UNFILTERED_SAMPLE_TYPE == EventConstants.BINOCULAR_EYE_SAMPLE:
         for eye_prepend in ['left_','right_']:
             eye_field_names.extend([eye_prepend+f for f in eye_specific_fields])
@@ -56,7 +56,7 @@ def getUnfilteredSamples():
 
 def getFilteredSamples():
     filtered_eye_field_names=['time', 'event_id', 'status']
-    filtered_eye_specific_fields = ['gaze_x', 'gaze_y', 'raw_x', 'raw_y', 'velocity_x', 'velocity_y']#, 'pupil_measure1', 'velocity_xy']
+    filtered_eye_specific_fields = ['angle_x', 'angle_y', 'raw_x', 'raw_y', 'velocity_x', 'velocity_y']#, 'pupil_measure1', 'velocity_xy']
     if FILTERED_SAMPLE_TYPE == EventConstants.BINOCULAR_EYE_SAMPLE:
         for eye_prepend in ['left_', 'right_']:
             filtered_eye_field_names.extend([eye_prepend+f for f in filtered_eye_specific_fields])
@@ -78,8 +78,8 @@ def plotSampleFieldTraces(sample_traces,session_code, recording_id):
     plt.title("Filtered Eye Samples and Online Parsed Events\n( Session: %s, Recording: %d )"%(session_code, recording_id+1))
 
     ax = plt.gca()
-    ax.plot(time, sample_traces['gaze']['x'], label='Horz. Pos. (Degrees)', color=deg_pos_colors[0])
-    ax.plot(time, sample_traces['gaze']['y'], label='Vert. Pos. (Degrees)', color=deg_pos_colors[1])
+    ax.plot(time, sample_traces['angle']['x'], label='Horz. Pos. (Degrees)', color=deg_pos_colors[0])
+    ax.plot(time, sample_traces['angle']['y'], label='Vert. Pos. (Degrees)', color=deg_pos_colors[1])
     ax.set_xlabel('Time')
     ax.set_ylabel('Position (Degrees)',color=deg_pos_colors[-1])
 
@@ -152,9 +152,9 @@ if __name__ == '__main__':
             sample_traces = dict()
             sample_traces['time'] = sample_data.time
             sample_traces['status'] = sample_data.status
-            sample_traces['gaze'] = dict()
-            sample_traces['gaze']['x'] = sample_data.gaze_x
-            sample_traces['gaze']['y'] = sample_data.gaze_y
+            sample_traces['angle'] = dict()
+            sample_traces['angle']['x'] = sample_data.angle_x
+            sample_traces['angle']['y'] = sample_data.angle_y
             #sample_traces['pupil'] = sample_data.pupil_measure1
             sample_traces['velocity'] = dict()
             sample_traces['velocity']['x'] = sample_data.velocity_x

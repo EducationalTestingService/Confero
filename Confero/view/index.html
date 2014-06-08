@@ -51,7 +51,9 @@
 </head>
 
 <body class style>
--	 <div id="fullDiv">
+    <a id='noback'></a>
+    <a id='noback_again'></a>
+    <div id="fullDiv">
         <div class="modal fade" id="experimentSelectionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -162,7 +164,7 @@
                         </ul>
                         <form class="navbar-form navbar-left" role="search">
                             <div class="form-group">
-                                <input id="msgLogText" type="text" class="form-control">
+                                <input id="msgLogText" maxlength="127" type="text" name="logmsg" class="form-control">
                             </div>
                             <button id="submitExperimentMessage"
                                     class="btn btn-default disabled" type="button"
@@ -471,11 +473,15 @@
     <!-- NOTE: Modified jquery.bootstrap-growl.js so that the growl node if can be specified. -->
     <script type="text/javascript" src="static/js/jquery.bootstrap-growl.js"></script>
     <script type="text/javascript" src="static/js/bootbox.js"></script>
+    <script type="text/javascript" src="static/js/bootstrap-maxlength.js"></script>
     <script type="text/javascript" src="static/js/userMonitorClientState.js"></script>
     <script type="text/javascript" src="static/js/scripts.js"></script>
     <script type="text/javascript">
 
          $(document).ready(function(){
+            window.location.hash = "noback";
+            window.location.hash = "noback_again";
+            window.onhashchange = function(){ window.location.hash="noback"; }
 
             bootbox.setDefaults({show: false})
             $('#newSessionSpan').tooltip();
@@ -500,7 +506,14 @@
              $('.btn').button();
              $('.expNamePicker').selectpicker();
 
-             $('#experimentSelectionModal').modal('show');
+             $('#experimentSelectionModal').modal({backdrop:'static',keyboard:false, show:true});
+
+             $('#msgLogText').maxlength({
+                alwaysShow: true,
+                warningClass: "label label-success",
+                limitReachedClass: "label label-important"
+                });
+
 
              $('#experimentSelectionModalButton').on('click', function(event) {
                 umf_state.active_experiment_name=$('.expNamePicker')[0].value;
