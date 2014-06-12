@@ -1,0 +1,182 @@
+#
+# Eye Tracker Validation Process Configuration File
+#
+
+#
+# Fixation Target Graphics Configuration
+#
+
+# target_graphics: Contains 1 - N fixation target graphics configurations.
+# If multiple target graphics configurations are defined within target_graphics,
+# only one can be referenced in the validation section of this config file.
+#
+target_graphics:
+    # Each configuration sub section of target_graphics defines the graphics
+    # settings of a fixation target that can be used within the validation
+    # procedure. Here we define one fixation target graphics config, labelled
+    # 'default', and give the YAML pointer name '&default_target_stim'.
+    #
+    default: &default_target_stim
+        radius: 16               # 16 pix outer radius.
+        fillcolor: [.5, .5, .5]  # 75% white fill color.
+        edgecolor: [-1, -1, -1]  # Fully black outer edge
+        edgewidth: 3             # with a 3 pixel width.
+        dotcolor: [1, -1, -1]    # Full red center dot
+        dotradius: 3             # with radius of 3 pixels.
+        units: pix               # Size & position units are in pix.
+        colorspace: rgb          # Colors are in 'rgb' space; (-1.0 - 1.0) range
+                                 # for each r,g,b element.
+        opacity: 1.0             # The transparency of the target (0.0 - 1.0)
+        contrast: 1.0            # The contrast of the target stim.
+
+#
+# Validation Sequence Position Grid Configuration
+#
+
+# position_grids: Contains 1 - N position grid configurations. Only one can be
+# referenced in the validation section of this config file. A position grid
+# defines the number and location of the points the fixation target will be
+# displayed at duriung the validation process.
+#
+position_grids:
+    # Each configuration sub section of position_grids defines the validation
+    # point list configuration that can be used within the validation
+    # procedure. Here we define one position grid config, labelled
+    # 'default', and give the YAML pointer name '&default_position_grid'.
+    #
+    default:  &default_position_grid
+        shape: 3            # Defines the number of columns and rows of
+                            # positions needed. If shape is an array of
+                            # two elements, it defines the col,row shape
+                            # for position layout. Position count will
+                            # equal rows*cols. If shape is a single
+                            # int, the position grid col,row shape will
+                            # be shape x shape.
+        posCount:           # Defines the number of positions to create.
+                            # without any col,row position constraint.
+        leftMargin:         # Specify the minimum valid horz position.
+        rightMargin:        # Limit horz positions to be < max horz
+                            # position minus rightMargin.
+        topMargin:          # Limit vert positions to be < max vert
+                            # position minus topMargin.
+        bottomMargin:       # Specify the minimum valid vert position.
+        scale: 0.85         # Scale can be one or two numbers, each
+                            # between 0.0 and 1.0. If a tuple is
+                            # provided, it represents the horz, vert
+                            # scale to be applied to window width,
+                            # height. If a single number is
+                            # given, the same scale will be applied to
+                            # both window width and height. The scaled
+                            # window size is centered on the original
+                            # window area, defining the valid position area.
+        posList:            # Provide an existing list of (x,y)
+                            # positions. If posList is provided, the
+                            # shape, posCount, margin and scale arg's
+                            # are ignored.
+        noiseStd:           # Add a random shift to each position based
+                            # on a normal distribution with mean of 0.0
+                            # and sigma equal to noiseStd. Specify
+                            # value based on units being used.
+        firstposindex: 4    # Specify which position in the position
+                            # list should be displayed first. This
+                            # position is not effected by randomization.
+        repeatfirstpos: True # If the first position in the list should
+                            # be provided as the last position as well,
+                            # set to True. In this case, the number of
+                            # positions returned will be position
+                            # count + 1. False indicated the first
+                            # position should not be repeated.
+        randomize: True     # Randomize the position list presentation order
+                            # each time it is repeated.
+
+#
+# Eye Tracker Validation Configuration: Combines a target_graphics and
+# position_grid configuration reference, in addition to some extra settings,
+# to define the full Validation process configuration that will be used.
+#
+validation:
+    target: *default_target_stim        # target specifies the target_graphics
+                                        # config to use. Here we simply point to
+                                        # the default_target_stim reference defined
+                                        # at the startof this file.
+
+    positions: *default_position_grid   # positions specifies the  position grid
+                                        # config to use. Here we simply point to
+                                        # the default_position_grid reference
+                                        # defined earlier in this file.
+    # targ_animation: Control how the fixation target should move when going
+    # between validation positions. If the target should just 'jump' from
+    # one point to another, comment out the targ_animation config section.
+    #
+    targ_animation:
+        velocity: 800.0         # coord_units / second speed that the target should
+                                # move at when sliding from one validation position
+                                # to the next.
+        expandedscale: 2.0      # When a target is first displayed at a validation
+                                # location, the graphic can expand in size.
+                                # expandedscale defines the maximum size of the
+                                # fixation target relative to the original size defined.
+        expansionduration: 0.1  # How many seconds should it take the target to expand from
+                                # it's default size out to default size * expandedscale.
+        contractionduration: 0.1 # How many seconds should it take the target to contract from
+                                # it's expanded size back down to default target size.
+
+    # Triggers define the conditions that will cause the fixation target to move
+    # from one position to the next. If multiple triggers are defined (as is the
+    # case here), the target will move as soon as any of the triggers occurres.
+    # There are two trigger types that can be defined: TimeTrigger and DeviceEventTrigger.
+    #
+    triggers:
+        TimeTrigger:                    # Defines a time trigger
+            start_time:                 # What should the reference start time be?
+                                        # When left blank, the retrace onset time
+                                        # the target was displayed at the current position is used.
+            delay: 1.5                  # How many seconds should elapse after start_time
+                                        # before the trigger causes the target to move locations.
+
+        DeviceEventTrigger:             # Defines an iohub device event based trigger.
+            device: keyboard            # Use an event from the device with the name 'keyboard'.
+            event_type: KEYBOARD_RELEASE # Only consider events caused by a key being released.
+            event_attribute_conditions:
+                key: space              # The key release event must be from the space bar key.
+
+    # Specify the color to use for the validation window background.
+    # Use the same color space units as were used when defining the target graphics.
+    # If left empty, the default background color is used (grey).
+    #
+    background:
+    storeeventsfor:
+
+    # If the time a target stopped being displayed at a validation location is
+    # defined as 'Tend', then samples with a time stamp >=
+    # (Tend - accuracy_period_start) will be included in the accuracy calc
+    # for the given validation point location.
+    #
+    accuracy_period_start: 0.550
+
+    # Samples with a time stamp <= (Tend - accuracy_period_stop) are included
+    # in the accuracy calc for the given validation point location.
+    #
+    accuracy_period_stop: .150
+
+    # Display a screen with show_intro_screen text prior to displaying the
+    # first validation point.
+    #
+    show_intro_screen: True
+    intro_text: Validation procedure is now going to be performed.
+
+    # Display a plot showing the validation results after all validation points
+    # have been displayed.
+    #
+    show_results_screen: True
+
+    # Convert position data to visual degrees for the validation accuracy
+    # calculations and results.
+    #
+    results_in_degrees: True
+
+    # The path to use to save an image of the validation results plot.
+    # If SESSION_RESULTS_FOLDER is used, the image will be saved in the current
+    # session data folder.
+    #
+    save_figure: SESSION_RESULTS_FOLDER

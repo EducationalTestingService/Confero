@@ -1,0 +1,205 @@
+#                                                                             #
+#################### Confero View Related Configuration ######################
+#                                                                             #
+
+# screen_capture: Configuration section containing settings related to the
+# screen being used to create the Screen Capture Video Stream from
+# on the Confero Track computer.
+#
+screen_capture:
+    # screen_index: The index of the display being used by the participant
+    # during data collection. This setting is only relevent when the data
+    # collection computer has a multimonitor setup. 0 indicates the primary
+    # computer monitor, 1 would indicate the second monitor in a two display
+    # configuration, etc.
+    #
+    screen_index: 0
+
+    # screen_resolution: Scecify the screen resolution that is used during data
+    # recording, screen capture video saving. This is the pixel resolution of
+    # monitor used by the *participant* during the experiment session.
+    #
+    screen_resolution: [1920, 1080]
+
+    # http_stream: Settings related to the streaming version of the screen
+    # capture video. The stream is sent by Confero Track and received by
+    # Confero View, providing real-time remote screen display.
+    #
+    # * Do not change these unless you know what you are doing.
+    #
+    # * Any change made in this section of the Confero View app_config must also
+    # be made for the same configuration options in the Confero Track
+    # version of the app_config.
+    #
+    http_stream:
+        # host: Since Bonjour is now being used, leave host value at AUTO
+        #
+        host: AUTO
+
+        # write_port: The port that Confero Track should send screen video
+        # data to on the Confero View server. The port is used by a web socket.
+        #
+        write_port: 8082
+
+        # read_port: The port that Confero View WebApp should read decoded
+        # screen video frames from on the Confero View server.
+        # The port is used by a web socket.
+        #
+        read_port: 8084
+
+        # uri: The uri portion of the full web socket URL Confero Track uses
+        # when sending screen capture video stream data.
+        #
+        uri: screenstream
+
+        # ffmpeg_settings: scale: Sets the screen resolution to screen capture
+        # frame resolution scaling factor that should be used. A scale of 1.0
+        # means video frames streamed are the same resolution as the monitor
+        # that is being screen captured
+        #
+        ffmpeg_settings:
+            scale: 1.0
+
+# http_address: The ip address that the Confero View web server is running on.
+# This is used by the Confero View web app UI to connected to the http server.
+# Since Bonjour is now being used, leave http_address value at DEFAULT
+#
+http_address: DEFAULT
+
+# http_port: The port that the Confero View web server is listening on.
+# This is used by the Confero View web app UI to connected to the http server.
+# Since Bonjour is now being used, leave http_port value at DEFAULT
+#
+http_port: DEFAULT
+
+# auto_launch_webapp: When the Confero View application is started, the value
+# of this param indicates whether the webapp ui should automatically be openned
+# in a web browser on the Confero View computer or not.
+# Valid values are:
+#   * [no value]: If the param value is left blank, no web browser will be
+#              openned. Instead a Windows dialog will be shown giving the URL
+#              to use to manually open the webapp in a browser (perhaps on a tablet?)
+#   * default: open the web app in the default web browser registered as the
+#              on the Confero View computer.
+#   * [specific_browser_app]: open the web app in the named specific_browser_app
+#                             , which can be one of the following defines. The
+#                             actual browser must be installed on the computer!:
+#                                   - firefox
+#                                   - netscape
+#                                   - chrome
+#                                   - opera
+#                                   - windows-default ( will open IE )
+#
+auto_launch_webapp: default
+
+# notifications: This section of the Confero View configuration defines any
+# Warning or Error Alert conditions that should be active in the Confero View
+# WebApp during periods of data recording in .
+#
+# There is no limit to the number of notifications that can be defined. However
+# for each device status field name, only one warning and one error level alert
+# can be defined.
+#
+# See the "Confero View Notifications Configuration" section of the Confero
+# User Manual for a detailed description of how to define notification entries.
+#
+notifications:
+    # The Confero Track iohub_config.yaml file should have an eye tracker device
+    # defined with the label 'eyetracker'
+    #
+    eyetracker:
+        # proportion_valid_samples is one of the eye tracker status fields that
+        # the Confero View WebApp reports. For a full list of valid status fields
+        # that can be used for each device notifications supports,
+        # see the "Confero View Notifications Configuration" section of the
+        # User Manual.
+        #
+        proportion_valid_samples:
+            # warning: Create a Warning Alert for the current device status field.
+            #
+            warning:
+
+                # The warning alert is being assigned a threshold value of 85.
+                #
+                threshold: 85
+
+                # edges: Is used to indicate if the warning should be triggered
+                # when the current device status field value goes above (rising: True),
+                # or goes below (falling: True) the threshold value.
+                #
+                edges:
+
+                    # Only trigger the warning when the current device status field value
+                    # goes below threshold.
+                    #
+                    falling: True
+
+                # When the current device status field value crosses threshold,
+                # it must stay so for 2.5 seconds before the warning will
+                # actually be displayed.
+                #
+                minimum_time_period: 2.5
+
+                # When the warning triggers, display a floating dialog with
+                # some text (called a 'growl') to further emphisize the notification.
+                #
+
+                growl:
+                    # The text to display in the growl
+                    #
+
+                    text: "Warning: Valid Samples below 85%."
+                    # The growl for this warning alert should only be shown while the
+                    # warning condition is true. It should then be hidden automatically.
+                    #
+                    duration: AUTO
+
+            # error: Create an Error Alert for the current device status field.
+            #
+            error:
+                edges:
+                    falling: True
+                minimum_time_period: 1.5
+                threshold: 25
+                growl:
+                    text: "Valid Samples below 25%. Check participant positioning."
+                    duration: MANUAL
+
+        rms_noise:
+            warning:
+                threshold: 20
+                edges:
+                    rising: True
+                minimum_time_period: 1
+
+    # input_computer is the Confero Track computer.
+    #
+    input_computer:
+        cpu_usage_all:
+            warning:
+                threshold: 80
+                edges:
+                    rising: True
+                minimum_time_period: 0.5
+
+    # server_computer is the Confero View computer.
+    #
+    server_computer:
+        cpu_usage_all:
+            warning:
+                threshold: 80
+                edges:
+                    rising: True
+                minimum_time_period: 0.5
+
+# Use a 0.2 second window of data when calculating eye tracker rms and stdev
+# status field values.
+#
+noise_calculation:
+   win_size: 0.2
+
+# nodejs_path: The Confero View server actually consists of a python based http
+# server and a Node.js web socket server. nodejs_path gives the relative location
+# of the nodejs root folder. This setting should never need to be changed.
+#
+nodejs_path: '..\bin\nodejs\'

@@ -1,0 +1,7 @@
+===============================
+Eye Tracker Sample Processing
+===============================
+
+* TBC
+* Location and purpose of lib/event_filters folder.
+* Review of the currently supported Sample event field filter types.

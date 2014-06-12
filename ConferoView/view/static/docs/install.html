@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Initial Installation and Setup &mdash; Confero 0.9rc1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.1.0/united/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Confero 0.9rc1 documentation" href="index.html" />
+    <link rel="next" title="Getting Started" href="get_started.html" />
+    <link rel="prev" title="Hardware and Software Requirements" href="hw_sw_requirements.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          Confero</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#confero-track-and-view-applications">Confero Track and View Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#system-architecture-diagram">System Architecture Diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#key-features">Key Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hw_sw_requirements.html">Hardware and Software Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hw_sw_requirements.html#confero-view">Confero View</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hw_sw_requirements.html#confero-track">Confero Track</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installation and Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#confero-software-distribution">Confero Software Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#confero-view-setup">Confero View Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#confero-track-setup">Confero Track Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-setup">Hardware Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#starting-confero-view-and-track">Starting Confero View and Track</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#preparing-for-data-collection">Preparing for Data Collection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#collecting-data-and-performance-monitoring">Collecting Data and Performance Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#closing-shop">Closing Shop</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="confero_view.html">Confero View WebApp UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_files.html">Configuration Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration_files.html#confero-view-config-settings">Confero View Config Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_files.html#confero-track-config-settings">Confero Track Config Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notification_config_settings.html">Defining WebApp UI Alerts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notification_config_settings.html#notification-configuration-specification">Notification Configuration Specification</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="result_folder_structure.html">Results File Organization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="result_folder_structure.html#results-directory-hierarchy">Results Directory Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result_folder_structure.html#results-directory-file-organization">Results Directory File Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="result_folder_structure.html#experiment-session-folder-file-types">Experiment Session Folder File Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="et_parsing_and_filtering.html">Eye Tracker Sample Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_processing.html">Post Processing Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related_info.html">Related Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="release_notes.html#initial-release">Initial Release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Initial Installation and Setup</a><ul>
+<li><a class="reference internal" href="#confero-software-distribution">Confero Software Distribution</a><ul>
+<li><a class="reference internal" href="#distribution-contents">Distribution Contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#confero-view-setup">Confero View Setup</a><ul>
+<li><a class="reference internal" href="#software-installation">Software Installation</a></li>
+<li><a class="reference internal" href="#required-configuration-settings">Required Configuration Settings</a><ul>
+<li><a class="reference internal" href="#screen-capture-screen-resolution">1. screen_capture: screen_resolution</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starting-confero-view">Starting Confero View</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#confero-track-setup">Confero Track Setup</a><ul>
+<li><a class="reference internal" href="#id1">Software Installation</a></li>
+<li><a class="reference internal" href="#id2">Required Configuration Settings</a><ul>
+<li><a class="reference internal" href="#id3">1. screen_capture: screen_resolution</a></li>
+<li><a class="reference internal" href="#iohub-config">2. iohub: config</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starting-confero-track">Starting Confero Track</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hardware-setup">Hardware Setup</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="hw_sw_requirements.html" title="Previous Chapter: Hardware and Software Requirements"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Hardware and Sof...</span>
+    </a>
+  </li>
+  <li>
+    <a href="get_started.html" title="Next Chapter: Getting Started"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Getting Started &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/install.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="initial-installation-and-setup">
+<span id="installation-page"></span><h1>Initial Installation and Setup<a class="headerlink" href="#initial-installation-and-setup" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to install the Confero Track or Confero View
+application on computers that have not previously had the Confero software
+installed.</p>
+<p>For instruction on how to start using the Confero software on a computer
+that already has been setup to use one of the Confero Applications, please
+see the <a class="reference internal" href="get_started.html#getting-started-page"><em>Getting Started</em></a>  section of the manual.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Before proceeding with this section, please ensure that the
+<a class="reference internal" href="hw_sw_requirements.html#hw-sw-requirements-page"><em>Hardware and Software Requirements</em></a>  section of the user manual has been read.
+It is critical that the computers being used meet the hardware requirements
+for each application, and that the 3rd party software needed for each
+has also been downloaded.</p>
+</div>
+<p>The installation and setup of Confero Track and Confero View are
+reviewed separately, since normally only one of the two applications is setup
+on a specific computer.</p>
+<div class="section" id="confero-software-distribution">
+<h2>Confero Software Distribution<a class="headerlink" href="#confero-software-distribution" title="Permalink to this headline">¶</a></h2>
+<p>An archived file, containing a folder called <tt class="docutils literal"><span class="pre">Confero</span></tt>, contains all the
+software needed to run the Confero Track or View applications. The contents
+of this archive file is referred to as the <tt class="docutils literal"><span class="pre">Confero</span> <span class="pre">Software</span> <span class="pre">Distribution</span></tt>.</p>
+<p>The contents of the Confero software distribution is as follows</p>
+<img alt="_images/confero_distro_folder_contents.png" class="align-center" src="_images/confero_distro_folder_contents.png" />
+<div class="section" id="distribution-contents">
+<h3>Distribution Contents<a class="headerlink" href="#distribution-contents" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>ConferoView.bat</strong>: The file used to launch the Confero View Application.</p>
+</li>
+<li><p class="first"><strong>ConferoTrack.bat</strong>: The file used to launch the Confero Track Application.</p>
+</li>
+<li><p class="first"><strong>settings</strong>: General settings folder for the Python environment used by Confero.</p>
+</li>
+<li><p class="first"><strong>python-2.7.6</strong>: The python 2.7 distribution used by Confero.</p>
+</li>
+<li><p class="first"><strong>docs</strong>: The folder containing the Confero User Manual you are currently reading.</p>
+</li>
+<li><p class="first"><strong>dependancies</strong>: A folder containing some of the 3rd party software
+installers required by one or both of the Confero Applications. These files
+are referenced later in this section of the document.</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>ConferoView</strong>: The folder containing the Confero View software.</dt>
+<dd><ul class="first last simple">
+<li>Confero View configuration files are located in the <tt class="docutils literal"><span class="pre">settings</span></tt> directory of this folder.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><strong>ConferoTrack</strong>: The folder containing the Confero Track software.</dt>
+<dd><ul class="first last simple">
+<li>Confero Track configuration files are located in the <tt class="docutils literal"><span class="pre">settings</span></tt> directory of this folder.</li>
+<li>All screen video files and user event data is stored within the <tt class="docutils literal"><span class="pre">Results</span></tt>
+folder of this directory.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="confero-view-setup">
+<h2>Confero View Setup<a class="headerlink" href="#confero-view-setup" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All steps of the Confero View installation are to be performed on
+the computer that will be used by the experimenter for real-time monitoring
+and control of the Confero Track application.</p>
+</div>
+<div class="section" id="software-installation">
+<h3>Software Installation<a class="headerlink" href="#software-installation" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Open the Confero Software Distribution zip file, and copy the Confero
+folder that is in the archive to a folder of your choice. The full path to the
+copied Confero folder will be called the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt> folder in this
+document.</li>
+<li>The <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt> folder contains the software needed to run either
+of the Confero View or Track applications. The files that are specific to
+Confero View are located in the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>/ConferoView folder.
+This folder will be referred to as <tt class="docutils literal"><span class="pre">CONFERO_VIEW_ROOT</span></tt> in this
+document.</li>
+<li>Since only one of the two Confero applications should run on a specific
+computer, feel free to delete the following from the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>
+since Confero View is being installed:<ul>
+<li>the ConferoTrack.bat file.</li>
+<li>the ConferoTrack folder.</li>
+</ul>
+</li>
+<li>Install Bonjour for Windows. Start the bonjour installation exe and
+simply follow the instructions given.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A copy of the installer can be found in the
+<tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>/dependancies/Bonjour. Based on whether the OS
+being used is 32bit or 64bit, install the correct version of Bonjour.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>Install the Chrome web browser (if not already installed).</li>
+</ol>
+</div>
+<div class="section" id="required-configuration-settings">
+<h3>Required Configuration Settings<a class="headerlink" href="#required-configuration-settings" title="Permalink to this headline">¶</a></h3>
+<p>When starting, Confero View reads some configuration settings from the
+<tt class="docutils literal"><span class="pre">CONFERO_VIEW_ROOT\settings\app_config.yaml</span></tt> file. Most of these settings
+do not need to be changed to simply test that the software is working.
+However one setting <strong>must</strong> be changed in order for Confero View to function
+without invalid data being collected.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For full details on Confero View configuration options, see the
+<a class="reference internal" href="configuration_files.html#config-files-page"><em>Confero Configuration</em></a> section of the manual.</p>
+</div>
+<div class="section" id="screen-capture-screen-resolution">
+<h4>1. screen_capture: screen_resolution<a class="headerlink" href="#screen-capture-screen-resolution" title="Permalink to this headline">¶</a></h4>
+<p>The <tt class="docutils literal"><span class="pre">screen_capture:</span> <span class="pre">screen_resolution</span></tt> setting must be updated to match
+the screen resolution of the <strong>Confero Track</strong> computer monitor being used for
+data recording. For example, the following shows how to indicate that the
+Confero Track screen resolution being used is 1920 by 1080 pixels.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">screen_capture</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">screen_index</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0</span>
+    <span class="l-Scalar-Plain">screen_resolution</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">1920</span><span class="p-Indicator">,</span> <span class="nv">1080</span><span class="p-Indicator">]</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">screen_capture:</span> <span class="pre">screen_resolution</span></tt> setting is incorrect,
+the software will generate bad data and /or not function correctly.</p>
+</div>
+</div>
+</div>
+<div class="section" id="starting-confero-view">
+<h3>Starting Confero View<a class="headerlink" href="#starting-confero-view" title="Permalink to this headline">¶</a></h3>
+<p>To launch the Confero View application, double click on the
+<tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT\ConferoView.bat</span></tt> file.</p>
+<p>By default, the Confero View Web UI should open in a tab of your Chrome browser.
+If it does not, note the URL provided for the application and enter it manually
+into a Chrome tab and press enter.</p>
+</div>
+</div>
+<div class="section" id="confero-track-setup">
+<h2>Confero Track Setup<a class="headerlink" href="#confero-track-setup" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All steps of the Confero Track installation are to be performed on
+the computer that will be used by the participant during data collection.</p>
+</div>
+<div class="section" id="id1">
+<h3>Software Installation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Open the Confero Software Distribution zip file, and copy the Confero
+folder that is in the archive to a folder of your choice. The full path to the
+copied Confero folder will be called the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt> folder in this
+document.</li>
+<li>The <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt> folder contains the software needed to run either
+of the Confero View or Track applications. The files that are specific to
+Confero Track are located in the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>/ConferoTrack folder.
+This folder will be referred to as <tt class="docutils literal"><span class="pre">CONFERO_TRACK_ROOT</span></tt> in this
+document.</li>
+<li>Since only one of the two Confero applications should run on a specific
+computer, feel free to delete the following from the <tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>
+since only Confero Track is being installed on the current computer:<ul>
+<li>the ConferoView.bat file.</li>
+<li>the ConferoView folder.</li>
+</ul>
+</li>
+<li>Install Bonjour for Windows. Start the bonjour installation exe and
+simply follow the instructions given.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A copy of the installer can be found in the
+<tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>/dependancies/Bonjour. Based on whether the OS
+being used is 32bit or 64bit, install the correct version of Bonjour.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>Install the Screen Capture Recorder software. Start the
+<tt class="docutils literal"><span class="pre">Setup</span> <span class="pre">Screen</span> <span class="pre">Capture</span> <span class="pre">Recorder</span> <span class="pre">vx.xx.xx.exe</span></tt> file and follow the
+instructions provided.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A copy of the Screen Capture Recorder installer can be found in the
+<tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT</span></tt>/dependancies/ folder, with a file name like
+<tt class="docutils literal"><span class="pre">Setup</span> <span class="pre">Screen</span> <span class="pre">Capturer</span> <span class="pre">Recorder</span> <span class="pre">vx.xx.xx</span></tt></p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">By default, the Screen Capture Recorder software is configured to
+capture the full area of the Confero Track primary display. This is generally
+the desired configuration of the screen capturing software, so no
+extra configuration is needed.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">However if your setup requires non-default
+settings for the Screen Capture Recorder software, run the configuration
+utility provided with the Screen Capture Recorder software.</p>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>Required Configuration Settings<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>When starting, Confero Track reads some configuration settings from the
+<tt class="docutils literal"><span class="pre">CONFERO_TRACK_ROOT\settings\app_config.yaml</span></tt> file. Most of these settings
+do not need to be changed to simply test that the software is working.
+However, two settings <strong>must</strong> be changed in order for Confero Track to function
+without invalid data being collected.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For full details on Confero View configuration options, see the
+<a class="reference internal" href="configuration_files.html#config-files-page"><em>Confero Configuration</em></a> section of the manual.</p>
+</div>
+<div class="section" id="id3">
+<h4>1. screen_capture: screen_resolution<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>The <tt class="docutils literal"><span class="pre">screen_capture:</span> <span class="pre">screen_resolution</span></tt> setting must be updated to match
+the screen resolution being used for data recording. For example, the following
+shows how to indicate that a screen resolution of 1920 by 1080 pixels is used
+during data recording.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">screen_capture</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">screen_index</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0</span>
+    <span class="l-Scalar-Plain">screen_resolution</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">1920</span><span class="p-Indicator">,</span> <span class="nv">1080</span><span class="p-Indicator">]</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">screen_capture:</span> <span class="pre">screen_resolution</span></tt> setting is incorrect,
+the software will generate bad data and /or not function correctly.</p>
+</div>
+</div>
+<div class="section" id="iohub-config">
+<h4>2. iohub: config<a class="headerlink" href="#iohub-config" title="Permalink to this headline">¶</a></h4>
+<p>Additionally, the <tt class="docutils literal"><span class="pre">iohub:</span> <span class="pre">config</span></tt> setting must be updated based on the eye
+tracker model being used during data recording. The app_config.yaml file includes
+a line that can be used to specify any one of the supported eye tracker devices.
+Only one of the provided values for this setting can be <em>active</em>. The <em>active</em>
+selection <em>will not</em> start with a <strong>#</strong> symbol. The other, <em>inactive</em>, option
+lines <em>will</em> start with a <strong>#</strong> symbol.</p>
+<p>For example, the following excerpt from the config file shows a setup that
+is using the Tobii eye tracking system during data collection.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">ioHub</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">config</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">..\..\settings\iohub_config_tobii.yaml</span>
+    <span class="c1">#config: ..\..\settings\iohub_config_eyelink.yaml</span>
+</pre></div>
+</div>
+<p>To use an eyelink eye tracker instead, the section of the config file would
+look like the following.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">ioHub</span><span class="p-Indicator">:</span>
+    <span class="c1">#config: ..\..\settings\iohub_config_tobii.yaml</span>
+    <span class="l-Scalar-Plain">config</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">..\..\settings\iohub_config_eyelink.yaml</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">iohub:</span> <span class="pre">config</span></tt> setting is incorrect,
+the Confero Track software will fail to run correctly when started.</p>
+</div>
+</div>
+</div>
+<div class="section" id="starting-confero-track">
+<h3>Starting Confero Track<a class="headerlink" href="#starting-confero-track" title="Permalink to this headline">¶</a></h3>
+<p>To launch the Confero Track application, double click on the
+<tt class="docutils literal"><span class="pre">CONFERO_DISTRO_ROOT\ConferoTrack.bat</span></tt> file.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Ensure that Confero View software is already running on the
+other computer before starting the Confero Track software. Otherwise the
+Confero Track application may exit because it could not connect to the
+Confero View application before timing out.</p>
+</div>
+<p>The Confero Track application does not have a GUI interface. A command prompt
+window will appear and text should be printed indicating that the Confero Track
+application found, and connected to, the Confer View application
+running on the other computer.</p>
+</div>
+</div>
+<div class="section" id="hardware-setup">
+<h2>Hardware Setup<a class="headerlink" href="#hardware-setup" title="Permalink to this headline">¶</a></h2>
+<p>The only hardware related setup required for Confero is the connection of both
+the Confero View and Confero Track applications to the same LAN network using
+a wired 100/1000 network port.</p>
+<p>The setup of the eye tracking hardware that will be used to record eye position
+data during data collection is beyond the scope of this document. Please refer
+to the eye tracker installation and setup materials for information in this area.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, Sol Simpson.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

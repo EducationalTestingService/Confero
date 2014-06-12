@@ -1,0 +1,103 @@
+﻿.modal-body{
+    color:  #611427;
+    background-color: #dddcc5;
+}
+
+.modal-header, .modal-footer{
+    color:  #611427;
+    background-color: #958976;
+}
+
+.glyphicon, .btn-primary{
+    color:  #611427;
+}
+
+.h6,h6{
+    margin-right: 2px;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+}
+
+#mouse_type{
+	width: 200px;
+}
+
+#keyboard_type{
+	width: 200px;
+}
+
+#eyetracker_time{
+    width: 180px;
+}
+
+.table{
+    margin-bottom: 2px;
+    margin-top: 2px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+}
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+  padding: 1px;
+  line-height: 1.2;
+  border-top: 1px solid #dddddd;
+  border-bottom-color: #6a6a61;
+  border-left-color: #6a6a61;
+  border-right-color: #6a6a61;
+  border-top-color: #6a6a61;
+}
+
+.panel-heading, .panel-default > .panel-heading{
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    color: rgb(55, 55, 55);
+    background-color: #958976;
+}
+
+.panel-body{
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-color: #dddcc5;
+    color: rgb(55, 55, 55);
+}
+
+#videoCanvas {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: #dddcc5;
+}
+
+.modal-dialog {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+#fullDiv {
+  position: absolute;
+  margin: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden; /* or auto or scroll */
+}
+
+.iohub-warning{
+  background-color: rgb(255, 201, 14);
+}
+
+.iohub-error{
+  background-color: rgb(165, 37, 32);
+}

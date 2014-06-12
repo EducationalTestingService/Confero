@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Results File Organization &mdash; Confero 0.9rc1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootswatch-3.1.0/united/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.9rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="Confero 0.9rc1 documentation" href="index.html" />
+    <link rel="next" title="Eye Tracker Sample Processing" href="et_parsing_and_filtering.html" />
+    <link rel="prev" title="Configuring Confero View WebApp Notifications" href="notification_config_settings.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          Confero</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.9</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#confero-track-and-view-applications">Confero Track and View Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#system-architecture-diagram">System Architecture Diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#key-features">Key Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hw_sw_requirements.html">Hardware and Software Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hw_sw_requirements.html#confero-view">Confero View</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hw_sw_requirements.html#confero-track">Confero Track</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#confero-software-distribution">Confero Software Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#confero-view-setup">Confero View Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#confero-track-setup">Confero Track Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#hardware-setup">Hardware Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#starting-confero-view-and-track">Starting Confero View and Track</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#preparing-for-data-collection">Preparing for Data Collection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#collecting-data-and-performance-monitoring">Collecting Data and Performance Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started.html#closing-shop">Closing Shop</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="confero_view.html">Confero View WebApp UI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_files.html">Configuration Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration_files.html#confero-view-config-settings">Confero View Config Settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration_files.html#confero-track-config-settings">Confero Track Config Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notification_config_settings.html">Defining WebApp UI Alerts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notification_config_settings.html#notification-configuration-specification">Notification Configuration Specification</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Results File Organization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#results-directory-hierarchy">Results Directory Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results-directory-file-organization">Results Directory File Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#experiment-session-folder-file-types">Experiment Session Folder File Types</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="et_parsing_and_filtering.html">Eye Tracker Sample Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_processing.html">Post Processing Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related_info.html">Related Resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="release_notes.html#initial-release">Initial Release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Results File Organization</a><ul>
+<li><a class="reference internal" href="#results-directory-hierarchy">Results Directory Hierarchy</a></li>
+<li><a class="reference internal" href="#results-directory-file-organization">Results Directory File Organization</a></li>
+<li><a class="reference internal" href="#experiment-session-folder-file-types">Experiment Session Folder File Types</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="notification_config_settings.html" title="Previous Chapter: Configuring Confero View WebApp Notifications"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; Configuring Conf...</span>
+    </a>
+  </li>
+  <li>
+    <a href="et_parsing_and_filtering.html" title="Next Chapter: Eye Tracker Sample Processing"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm">Eye Tracker Samp... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/result_folder_structure.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="results-file-organization">
+<span id="results-folder"></span><h1>Results File Organization<a class="headerlink" href="#results-file-organization" title="Permalink to this headline">¶</a></h1>
+<p>All data files created by Confero Track during experiment session recording
+periods are saved within the <tt class="docutils literal"><span class="pre">CONFERO_TRACK_ROOT/Results</span></tt> folder on the
+Confero Track computer. The <tt class="docutils literal"><span class="pre">CONFERO_TRACK_ROOT/Results</span></tt> folder will be
+termed the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt> in this document.</p>
+<div class="admonition danger">
+<p class="first admonition-title">Danger</p>
+<p class="last">Do not delete, rename, edit, move, or reorganize any file or folder
+within the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt>. Doing so will jeopardise the data
+integrity of one or more experiment&#8217;s results.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Adding files that do not use the naming convention of any existing
+file type is OK.</p>
+</div>
+<div class="section" id="results-directory-hierarchy">
+<h2>Results Directory Hierarchy<a class="headerlink" href="#results-directory-hierarchy" title="Permalink to this headline">¶</a></h2>
+<p>Confero Track organizes data files within the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt> using
+a nested directory structure:</p>
+<ul class="simple">
+<li>Each folder in the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt> contains the data collected
+for an individual Experiment. An Experiment folder in the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt>
+is called an <tt class="docutils literal"><span class="pre">EXPERIMENT_RESULTS_FOLDER</span></tt>; the folder name being the name of
+the experiment it represents.</li>
+<li>Each <tt class="docutils literal"><span class="pre">EXPERIMENT_RESULTS_FOLDER</span></tt> contains 0 - N Session folders, as well a
+a single file named <tt class="docutils literal"><span class="pre">iohub_events_.hdf5</span></tt>.<ul>
+<li>Each Experiment Session folder ( or <tt class="docutils literal"><span class="pre">SESSION_DATA_FOLDER</span></tt>) contains the
+files created for each recording period performed for that run of the experiment.</li>
+<li>The <tt class="docutils literal"><span class="pre">iohub_events.hdf5</span></tt> file contains all the device events collected
+by the ioHub for every session of the experiment. This includes eye tracker,
+keyboard, mouse, and custom experiment message events.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="results-directory-file-organization">
+<h2>Results Directory File Organization<a class="headerlink" href="#results-directory-file-organization" title="Permalink to this headline">¶</a></h2>
+<p>The following diagram provides the full directory and file type hierarchy within
+the <tt class="docutils literal"><span class="pre">CONFERO_RESULTS_ROOT</span></tt>.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">CONFERO_RESULTS_ROOT</span>
+  <span class="l-Scalar-Plain">|</span>
+  <span class="l-Scalar-Plain">-&gt; ExperimentFolder1</span>
+  <span class="l-Scalar-Plain">|     |</span>
+  <span class="l-Scalar-Plain">|     |-- iohub_events_.hdf5</span>
+  <span class="l-Scalar-Plain">|     |</span>
+  <span class="l-Scalar-Plain">|     -&gt; SessionFolder1</span>
+  <span class="l-Scalar-Plain">|             |</span>
+  <span class="l-Scalar-Plain">|             |-- validation_[year_month_day_hour_minute].png</span>
+  <span class="l-Scalar-Plain">|             |-- validation_[year_month_day_hour_minute].png</span>
+  <span class="l-Scalar-Plain">|             |</span>
+  <span class="l-Scalar-Plain">|             |-- screen_capture_1.mkv</span>
+  <span class="l-Scalar-Plain">|             |-- ffmpeg_stderr_1.txt</span>
+  <span class="l-Scalar-Plain">|             |-- ffmpeg_stdout_1.txt</span>
+  <span class="l-Scalar-Plain">|             |</span>
+  <span class="l-Scalar-Plain">|             |-- screen_capture_N.mkv</span>
+  <span class="l-Scalar-Plain">|             |-- ffmpeg_stderr_N.txt</span>
+  <span class="l-Scalar-Plain">|             |-- ffmpeg_stdout_N.txt</span>
+  <span class="l-Scalar-Plain">|             |</span>
+  <span class="l-Scalar-Plain">|             |-- last_app_config.yaml</span>
+  <span class="l-Scalar-Plain">|             |-- last_iohub_config_xxxx.yaml</span>
+  <span class="l-Scalar-Plain">|</span>
+  <span class="l-Scalar-Plain">|     -&gt; SessionFolderN</span>
+  <span class="l-Scalar-Plain">|             |</span>
+  <span class="l-Scalar-Plain">|             | .....</span>
+  <span class="l-Scalar-Plain">|</span>
+  <span class="l-Scalar-Plain">-&gt; ExperimentFolderN</span>
+  <span class="l-Scalar-Plain">|     |</span>
+  <span class="l-Scalar-Plain">|     | ....</span>
+</pre></div>
+</div>
+<p>Each <tt class="docutils literal"><span class="pre">SESSION_DATA_FOLDER</span></tt> contains a set of files for each recording period
+performed while that session was open. A recording period is the time from when
+the <tt class="docutils literal"><span class="pre">Start</span> <span class="pre">Recording</span> <span class="pre">Data</span></tt> button is pressed in the Confero View WebApp, until
+the <tt class="docutils literal"><span class="pre">Stop</span> <span class="pre">Recording</span> <span class="pre">Data</span></tt> button is pressed or the Confero View WebApp is shut
+down.</p>
+</div>
+<div class="section" id="experiment-session-folder-file-types">
+<h2>Experiment Session Folder File Types<a class="headerlink" href="#experiment-session-folder-file-types" title="Permalink to this headline">¶</a></h2>
+<p>Files within a <tt class="docutils literal"><span class="pre">SESSION_DATA_FOLDER</span></tt> that are created for each recording period
+are identified by having the current recording period count for the session appended
+to the end of their file names.</p>
+<table border="1" class="table-hover table-bordered docutils">
+<colgroup>
+<col width="15%" />
+<col width="10%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">File Name</th>
+<th class="head">Created</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>validation_yy_mm_dd_hh_mm.png</td>
+<td>Each ET Validation</td>
+<td>The figure displayed at the end of an Eye Tracker Validation. Each file name includes the date (yy_mm_dd) and time (hh_mm) when the image was created.</td>
+</tr>
+<tr class="row-odd"><td>screen_capture_x.mkv</td>
+<td>Each Rec. Period</td>
+<td>The Screen Capture Video file for the recording period number x.</td>
+</tr>
+<tr class="row-even"><td>ffmpeg_stderr_x.txt</td>
+<td>Each Rec. Period</td>
+<td>Any output to stderr from the ffmpeg process which is saving the video file.</td>
+</tr>
+<tr class="row-odd"><td>ffmpeg_stdout_x.txt</td>
+<td>Each Rec. Period</td>
+<td>Any output to stdout from the ffmpeg process which is saving the video file.</td>
+</tr>
+<tr class="row-even"><td>last_app_config.yaml</td>
+<td>On Session Creation</td>
+<td>A copy of the Confero Track&#8217;s app_config.yaml file used for the session.</td>
+</tr>
+<tr class="row-odd"><td>last_iohub_config_xxxx.yaml</td>
+<td>On Session Creation</td>
+<td>A copy of the iohub configuration file used by Confero Track for the session.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, Sol Simpson.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

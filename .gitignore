@@ -219,7 +219,10 @@ pip-log.txt
 *.log
 .idea
 .iohpid
-source/usermonitor/datacollection/ideas/
-source/usermonitor/datacollection/results/
-source/usermonitor/webserver/static/temp_tests/
-source/usermonitor/webserver/static/assets
+dependancies/
+docs/build/
+ConferoTrack/Results/
+ConferoTrack/bin/
+ConferoView/bin/nodejs/node_modules/
+.idea/
+

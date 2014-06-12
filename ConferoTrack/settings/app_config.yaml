@@ -1,0 +1,228 @@
+#                                                                             #
+#################### Confero Track Related Configuration ######################
+#                                                                             #
+
+# The ioHub settings subsection contains parameters specific to the
+# psychopy.iohub event detection framework.
+#
+ioHub:
+    # config: The relative path to the actual iohub device configuration
+    # file to use. Based on the eye tracker type being used, uncomment
+    # the config line where the yaml file name includes the eye tracker name,
+    # while ensuring the other config lines are commented out.
+    #
+    #config: ..\settings\iohub_config_tobii.yaml
+    config: ..\settings\iohub_config_smi.yaml
+
+    # process_affinity : Assign specific cores of a multicore CPU to the
+    # iohub process. Any empty list indicates that no affinity setting is
+    # to be applied to the iohub process.
+    #
+    process_affinity: []
+
+# screen_capture: Configuration section containing settings related to the
+# screen capture video file storage and streaming. Other than the screen_index
+# and screen_resolution settings, most of this section should not be modified
+# unless you know what you are doing.
+#
+screen_capture:
+    # screen_index: The index of the display being used by the participant
+    # during data collection. This setting is only relevent when the data
+    # collection computer has a multimonitor setup. 0 indicates the primary
+    # computer monitor, 1 would indicate the second monitor in a two display
+    # configuration, etc.
+    #
+    screen_index: 0
+
+    # screen_resolution: Scecify the screen resolution that is used during data
+    # recording, screen capture video saving. This is the pixel resolution of
+    # monitor used by the *participant* during the experiment session.
+    #
+    screen_resolution: [1920, 1080]
+
+    # ffmpeg: Settings related to the bundled ffmpeg software used by Confero
+    # Track to encode the screen capture frames into a video file and stream.
+    # These settings should not be changed.
+    #
+    ffmpeg:
+        path: '..\bin\ffmpeg\bin'
+        exe: ffmpeg.exe
+        stdout_file: ffmpeg_stdout
+        stderr_file: ffmpeg_stderr
+
+
+    # dshow_filters: Settings related to the direct show filter used by Confero
+    # Track to actually perform the screen frame capturing.
+    # These settings should not be changed.
+    #
+    dshow_filters:
+        # Screen captue frames are taken by using Screen Capture Recorder
+        #   software. The installer in in the dependancies folder of the
+        #   project. This filter MUST be installed and configured or User
+        #   Monitor will not work.
+        #
+        video: screen-capture-recorder
+        # audio options: 
+        #   leave blank: no audio saved to screen cap video
+        #   virtual-audio-capturer: save sound from computer audio out.
+        #   [ NOT WORKING ] Microphone: save what comes in the default audio input selected
+        #       by / within the OS settings.     
+        audio: virtual-audio-capturer
+        ffmpeg_settings:
+            #  real time buffer size (in K)
+            rtbufsize: 1404000 # 2097152 K
+            
+    # media_file: Settings related to the file version of the screen stream
+    # being saved.
+    #
+    media_file:
+        # name : The preamble to the video file name that is used when creating
+        # screen capture media files. The name value is appended with the
+        # current recording index for the experiment session that is open.
+        #
+        name: screen_capture
+
+        # extension: The file type extension string to use for the video files
+        # being saved.
+        #
+        extension: mkv
+
+        # ffmpeg_settings: Settings used by ffmpeg to configure characteristics
+        # of the video file format used to save the screen capture media.
+        # Do not change these unless you know what you are doing.
+        #
+        ffmpeg_settings:
+            codec: libx264
+            pix_fmt: yuv420p
+            crf: 0 #18.0
+            preset: ultrafast
+            g: 250
+            threads: 0
+            
+    # http_stream: Settings related to the streaming version of the screen
+    # capture video being streamed to the Confero View WebApp, providing the
+    # real-time screen display functionality.
+    # Do not change these unless you know what you are doing.
+    #
+    http_stream:
+        host: AUTO
+        write_port: 8082
+        read_port: 8084
+        uri: screenstream
+        ffmpeg_settings:
+            scale: 1.0
+            threads: 0
+            r: 30       # frame rate
+            b:          # bitrates (in K)
+                v: 1600 # video bitrate
+
+
+experimenter_server:
+    address: AUTO
+    port: AUTO
+
+# video_event_sync: Settings controlling the period of flashing on the
+# subjects monitor at the start and end of each recording period. The
+# retrace time of the display changes are used to syncronize the screen
+# capture video file time base with the iohub time base used for all events.
+#
+video_event_sync:
+
+    # region: The [left, top, right, bottom] pixel boundary of the flashing
+    # box. 0,0 is the top left of the display.
+    #
+    region: [0, 0, 20, 20]
+
+    # colors: The alternating greyscale colors used during the box stim
+    # flashing
+    #
+    colors: [255, 0]
+
+    # phase_duration: The number of seconds that each color should be
+    # displayed during the screen flashing.
+    #
+    phase_duration: 0.125
+
+    # cycle_count: The number of times the colors list should be presented.
+    # Therefore the number of display changes to expect during a flashing
+    # period = cycle_count * len(colors)
+    #
+    cycle_count: 15
+
+# recording_period: Defines string values that are used when creating iohub
+# experiment message events indicating when recording starts and stops, as
+# well as the start and end time that bounds the period of time within
+# a recording that iohub events are considered to be part of the actual trial.
+#
+# These values are used in some post processing scripts. Therefore, do not
+# change the values unless the scripts are changed as well.
+#
+recording_period:
+    start_msg: RECORDING_STARTED
+    event_period:
+        start_msg: START_EVENT_PERIOD
+        end_msg: END_EVENT_PERIOD
+    end_msg: RECORDING_STOPPED
+
+# event_loop_rate: Confero Track runs an event processing loop continiously
+# while the application runs. event_loop_rate specifies how often the event
+# processing loop should be run. A value of 0 will make the Confero Track
+# application call the event processing loop as frequently as possible. This
+# can result in extra CPU usage that is not necessary. 5 msec (the default
+# setting), is quick enough to ensure the application is responsible, which
+# still allowing other processes to use the CPU when needed.
+#
+event_loop_rate: 0.005
+
+# results_root_folder: The relative path to the CONFERO_RESULTS_ROOT folder,
+# where all files created by Confero Track are stored.
+results_root_folder: ..\Results
+
+# Within the CONFERO_RESULTS_ROOT folder are 1 - N directories, each contains the
+# data for a specific experiment. This list of directory names is also what
+# the experiment to use is selected from when starting Confero View WebApp.
+# If some experiments should be hidden from the Confero View WebApp so they can
+# not be selected to save new data to, set the experiment_inactive_token and
+# then add it to the start of each experiment folder name that should be hidden.
+#
+experiment_inactive_token:
+
+# The Confero Track application can be manually forced to quit **from the
+# Confero Track keyboard**, by pressing the key combination defined here.
+#
+manual_termination:
+    keyboard:
+        key: q
+        modifier: CONTROL_LEFT
+
+# ioHub supports the ability to create 'event filters'. An event filter receives
+# events as input and can then output new events which are saved to the iohub
+# hdf5 file. Confero Track uses a filter that takes eye tracker samples as input,
+# and creates fixation, saccade, and blink output events.
+#
+# The event_filters configuration section controls what filter to use, and what
+# settings should be used by the filter itself. For details on configuring
+# event filter options for Confero, please refer to the
+# "Eye Tracker Sample Processing" section of the Confero User Manual.
+#
+event_filters:
+    tracker:
+        file_path: '..\lib\event_filters\eyetracker.py'
+        class_name: EyeTrackerEventParser
+        stream_filtered_only: True
+        params:
+            adaptive_vel_thresh_history: 5.0
+            position_filter:
+                name: MovingWindowFilter
+                length: 3
+                knot_pos: center
+                #weights:
+            velocity_filter:
+                name:  MedianFilter
+                length: 3
+                knot_pos: center
+                #weights:
+
+event_buffer_length: 1048
+process_affinity: []
+remaining_processes_affinity: []
