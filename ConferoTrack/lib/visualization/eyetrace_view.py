@@ -2,12 +2,12 @@
 from __future__ import division
 from psychopy.iohub import EventConstants
 
-IOHUB_DATA_FOLDER_PATH = r'..\..\..\Results\Exp_A'
+IOHUB_DATA_FOLDER_PATH = r'..\..\Results\Default_Experiment'
 IOHUB_DATA_FILE_NAME = 'iohub_events.hdf5'
-SESSION_CODE = 'xczxc'
+SESSION_CODE = 's1'
 
 UNFILTERED_SAMPLE_TYPE = EventConstants.BINOCULAR_EYE_SAMPLE
-FILTERED_SAMPLE_TYPE =  EventConstants.MONOCULAR_EYE_SAMPLE
+FILTERED_SAMPLE_TYPE = EventConstants.MONOCULAR_EYE_SAMPLE
 FILTER_ID = 23
 
 from psychopy.iohub.datastore.util import ExperimentDataAccessUtility

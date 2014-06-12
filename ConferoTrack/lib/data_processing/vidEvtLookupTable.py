@@ -1,7 +1,7 @@
 PRINT_STATUS = True
 SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = True
-SESSION_PATH = r'..\..\..\Results\Exp_A\xczxc'
+SESSION_PATH = r'..\..\Results\Default_Experiment\s1'
 SYNC_TIME_BOX = 0, 0, 20, 20
 SYNC_TRANSITION_COUNT = 15  # Each includes a cycle through colors
 SYNC_COLORS = 255.0, 0.0
@@ -11,6 +11,9 @@ FPS = 30.0
 SYNC_FLASH_INTERVAL = 0.125 + 0.050  # extra 50 msec / flash is just padding.
 MAX_SEARCH_FRAMES = int(SYNC_TRANSITION_COUNT * len(
     SYNC_COLORS) * SYNC_FLASH_INTERVAL * FPS) + 90  # extra 3 seconds of frames to handle sleep time at runtime.
+
+# Set to -1 for no filtering by filter_id. ;)
+EVENT_FILTER_ID = 23
 
 import numpy as np
 from cv2video import OpenCVideo
@@ -141,6 +144,8 @@ def getEventsPerFrame(session_folder, frame_times_per_session_video):
             rec_block_end_time = rec_end_msg['time']
             cond = "(time >= %f) & (time <= %f)" % (
                 rec_block_start_time, rec_block_end_time)
+            if EVENT_FILTER_ID >= 0:
+                 cond = cond + " & (filter_id == %d)" % (EVENT_FILTER_ID)
             frame_times = frame_times_per_session_video[vi]
             frame_count = frame_times.shape[0]
             video_frame_events = [[] for z in xrange(frame_count)]

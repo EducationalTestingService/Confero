@@ -4,7 +4,7 @@ import os
 from common import openDataStoreReader, Picker
 import numpy as np
 
-SESSION_PATH = r'..\..\..\Results\Exp_A\xczxc'
+SESSION_PATH = r'..\..\Results\Default_Experiment\s1'
 FRAME_EVENT_FILE = r'session_vframe_events.npz'
 FILTERS = dict(event_type=[EventConstants.MONOCULAR_EYE_SAMPLE,], video_id=[0,], filter_id=[23,])
 BATCH_SIZE = 100
@@ -29,4 +29,4 @@ def getEventDetails(session_path, frame_event_lookup_file, filters, batch_size):
 if __name__ == '__main__':
         for event_details_batch in getEventDetails(SESSION_PATH, FRAME_EVENT_FILE, FILTERS, BATCH_SIZE):
             for event in event_details_batch:
-                print EventConstants.getName(event['type']), event['time']
+                print EventConstants.getName(event['type']), event['time'], event['filter_id']

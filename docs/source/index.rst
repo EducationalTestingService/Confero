@@ -19,10 +19,6 @@ Confero User Documentation
    Defining WebApp UI Alerts <notification_config_settings>
    Results File Organization <result_folder_structure>
    Eye Tracker Sample Processing <et_parsing_and_filtering>
-   Post Processing Scripts <data_processing>
-   FAQ <faq>
-   Glossary <glossary>
-   Related Resources <related_info>
+   Stand Alone Python Scripts <standalone_scripts>
    Release Notes <release_notes>
-   Licenses <licenses>
 

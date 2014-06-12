@@ -64,6 +64,10 @@ the ``CONFERO_RESULTS_ROOT``.
       |             |
       |             |-- last_app_config.yaml
       |             |-- last_iohub_config_xxxx.yaml
+      |             |
+      |             |-- session_vframe_events.npz (optional)
+      |             |-- session_vframe_events.txt (optional)
+      |             |
       |
       |     -> SessionFolderN
       |             |
@@ -98,4 +102,6 @@ ffmpeg_stderr_x.txt           Each Rec. Period     Any output to stderr from the
 ffmpeg_stdout_x.txt           Each Rec. Period     Any output to stdout from the ffmpeg process which is saving the video file.
 last_app_config.yaml          On Session Creation  A copy of the Confero Track's app_config.yaml file used for the session.
 last_iohub_config_xxxx.yaml   On Session Creation  A copy of the iohub configuration file used by Confero Track for the session.
+session_vframe_events.npz     vidEvtLookupTable.py Contains one row for each event that occurred during recording periods. The current screen video frame information is included with each event.
+session_vframe_events.txt     vidEvtLookupTable.py A text version of session_vframe_events.npz (.npz is the numpy file format).
 ============================= ==================== ==============================

@@ -64,7 +64,7 @@ eventfilters.PassThroughFilter
 The PassThroughFilter is a NULL filter. In other words, the filter does
 not do any filtering.
 
-Parameters: None
+Parameters:
 ~~~~~~~~~~~
 
 None

@@ -64,11 +64,14 @@ User Interface Overview
           This is a fast way to high a device status panel if the information
           provided in that panel is not relevant for the current experiment.
 
-8. A text line allowing observations or comments to be made by the experimenter
+8. A text entry line allowing observations or comments to be made by the experimenter
    during data collection. Each message can be up to 128 characters in length.
-   By pressing enter in the text line, or by pressing the Submit button ( 9 ),
-   the message text is time stamped and stored with all the other event
-   data being collected.
+
+
+9. The Submit Button sends the current message text to Confero Track,
+   where it is time stamped and stored with all the other event
+   data being collected. The text entered is cleared after pressing the button,
+   making it easy to quickly add a new text message.
 
 10. The Chrome Browser Tab that the Confero View WebApp is running in.
 

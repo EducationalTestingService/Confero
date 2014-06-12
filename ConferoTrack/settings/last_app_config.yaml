@@ -51,7 +51,7 @@
     !!python/unicode name: !!python/unicode screen_capture
   !!python/unicode screen_index: 0
   !!python/unicode screen_resolution: [1920, 1080]
-session_defaults: {code: !!python/unicode vcxxcv}
+session_defaults: {code: !!python/unicode s1}
 !!python/unicode video_event_sync:
   !!python/unicode colors: [255, 0]
   !!python/unicode cycle_count: 15
