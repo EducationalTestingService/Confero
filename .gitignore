@@ -226,3 +226,19 @@ ConferoTrack/bin/
 ConferoView/bin/nodejs/node_modules/
 ConferoView/view/static/docs
 
+*.less
+*.js
+*.css
+ConferoView/view/static/fonts/glyphicons-halflings-regular.eot
+ConferoView/view/static/fonts/glyphicons-halflings-regular.svg
+*.woff
+*.7z
+ConferoView/view/static/icon_chooser.html
+ConferoView/view/static/fonts/glyphicons-halflings-regular.ttf
+ConferoView/view/static/img/glyphicons-halflings-white.png
+ConferoView/view/static/img/glyphicons-halflings.png
+ConferoView/view/static/less/variables.less.org
+*.json
+ConferoView/view/static/bootselect/CONTRIBUTING.md
+ConferoView/view/static/bootselect/README.md
+ConferoView/view/static/bootselect/test.html
