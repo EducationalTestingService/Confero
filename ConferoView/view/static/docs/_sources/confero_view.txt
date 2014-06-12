@@ -1,9 +1,0 @@
-========================
-Confero View WebApp UI
-========================
-
-* TBC
-* Show an image of the WebApp UI and put numbered dots on the various UI
-  components. Have a list that gives a description for each dot.
-* Have a table with every button on the gui, one per row. Describe what the
-  button does in a second column.

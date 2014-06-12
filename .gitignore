@@ -219,11 +219,10 @@ pip-log.txt
 *.log
 .idea
 .iohpid
-dependancies/*
-docs/build/*
-ConferoTrack/Results/*
-ConferoTrack/bin/*
-ConferoView/bin/nodejs/node_modules/*
-ConferoView/view/static/docs/*
-.idea/*
+dependancies/
+docs/build/
+ConferoTrack/Results/
+ConferoTrack/bin/
+ConferoView/bin/nodejs/node_modules/
+ConferoView/view/static/docs
 
