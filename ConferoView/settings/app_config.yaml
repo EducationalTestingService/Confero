@@ -90,7 +90,7 @@ http_port: DEFAULT
 #                                   - opera
 #                                   - windows-default ( will open IE )
 #
-auto_launch_webapp: default
+auto_launch_webapp:
 
 # notifications: This section of the Confero View configuration defines any
 # Warning or Error Alert conditions that should be active in the Confero View

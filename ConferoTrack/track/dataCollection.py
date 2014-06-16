@@ -393,7 +393,6 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             msg=ujson.loads(server_msg)
             if msg.get('type') == 'experiment_message':
                 self.hub.sendMessageEvent(msg.get('text'), msg.get('category'))
-                print('!! TODO: Correct for delay in feedback app experiment_message:', msg)
             elif msg.get('type') == 'START_EXP_SESSION':
                 self.stopDeviceRecording()
                 #print("MSG RX: ",msg)

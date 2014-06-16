@@ -10,9 +10,9 @@ ioHub:
     # file to use. Based on the eye tracker type being used, uncomment
     # the config line where the yaml file name includes the eye tracker name,
     # while ensuring the other config lines are commented out.
-    #
+    config: ..\settings\iohub_config_no_eyetracker.yaml
     #config: ..\settings\iohub_config_tobii.yaml
-    config: ..\settings\iohub_config_smi.yaml
+    #config: ..\settings\iohub_config_smi.yaml
 
     # process_affinity : Assign specific cores of a multicore CPU to the
     # iohub process. Any empty list indicates that no affinity setting is

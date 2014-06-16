@@ -35,6 +35,7 @@ monitor_devices:
         serial_number:
         monitor_event_types: [ MonocularEyeSampleEvent, BinocularEyeSampleEvent, FixationStartEvent, FixationEndEvent, SaccadeStartEvent, SaccadeEndEvent, BlinkStartEvent, BlinkEndEvent]
         runtime_settings:
+            track_eyes: BINOCULAR_AVERAGED
             sampling_rate: 60
         calibration:
             type: FIVE_POINTS

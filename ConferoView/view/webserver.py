@@ -182,13 +182,11 @@ class ControlFeedbackServer(object):
                                           "Confero View Available")
     
                 server_ip = keyChainValue(self.app_config,
-                                       'experimenter_server',
-                                       'address')
+                                       'http_address')
                 server_port = keyChainValue(self.app_config,
-                                       'experimenter_server',
-                                       'port')
+                                       'http_port')
                 import threading                       
-                self._win_dialog_thread = threading.Timer(0.5, showWinDialog,args=[server_ip,server_port])
+                self._win_dialog_thread = threading.Timer(0.5, showWinDialog, args=[server_ip,server_port])
                 self._win_dialog_thread.start()
                 
                 

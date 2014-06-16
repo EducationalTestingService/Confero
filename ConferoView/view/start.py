@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     print
     print "Confero Server Started. "
-    print "Registered Confero Server with Bonjour for ip", view_server_info['ip']
+    print "Registered Confero Server with Bonjour for ip", app_config['http_address'],' : ',app_config['http_port']
     print
     server = ControlFeedbackServer(app_config, bonsvc)
     server.serveForever()
