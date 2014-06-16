@@ -102,9 +102,25 @@ def findConferoViewServer():
             pass
     finally:
         browse_sdRef.close()
+    ip_index = 1
+    valid_inputs = len(confero_server_bonjour_info)
+    print 'Number of IPs returned by Bonjour:', valid_inputs
+    if valid_inputs > 1:
+        print
+        print
+        print '*** Confero View Server IP Address Selection Required ***'
+        for i, o in enumerate(confero_server_bonjour_info):
+            print '\t', i+1, ':', o['ip']
+        print
+        ok_ip_selected = False
+        while ok_ip_selected is False:
+            ip_index = raw_input(">> Enter the ID of the Server IP Address:")
+            try:
+                ip_index = int(ip_index)
+                if ip_index>0 and ip_index<=valid_inputs:
+                    ok_ip_selected = True
+            except:
+                pass
 
-    from pprint import pprint
-    #print 'Bonjour found:'
-    #pprint(confero_server_bonjour_info)
-
-    return confero_server_bonjour_info[0]
+    print 'Bonjour IP Selected:', ip_index
+    return confero_server_bonjour_info[ip_index-1]
