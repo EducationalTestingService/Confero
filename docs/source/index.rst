@@ -8,7 +8,7 @@ Confero User Documentation
 ==========================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    Introduction <intro>
    Hardware and Software Requirements <hw_sw_requirements>
