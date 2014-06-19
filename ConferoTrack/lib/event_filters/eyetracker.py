@@ -329,9 +329,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                     samples_for_processing.append(filtered_event)
                 self.last_valid_sample = current_mono_evt
             else:
-
                 self.invalid_samples_run.append(current_mono_evt)
-
+                self.addOutputEvent(current_mono_evt)
 
             self.last_sample = current_mono_evt
 
@@ -340,7 +339,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         # at this point.
         for s in samples_for_processing:
             self.parseEvent(s)
-            self.addOutputEvent(s)
+            if self.isValidSample(s):
+                self.addOutputEvent(s)
 
         self.clearInputEvents()
 

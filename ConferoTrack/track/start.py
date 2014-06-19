@@ -210,12 +210,6 @@ def main(configurationDirectory):
             msg = {'msg_type': 'EXP_SESSION_STARTED', 'type': cmtype}
             runtime.sendToWebServer(msg)
 
-            # Get the notifications config dict and send it to the server, which
-            # will forward it to the webapp
-            notifications_dict = app_conf.get('web_application',{}).get('notifications',{})
-            msg = {'msg_type': 'RUNTIME_NOTIFICATION_SETTINGS', 'data':notifications_dict}
-            runtime.sendToWebServer(msg)
-
             app_conf = None
 
             # Start the exp runtime

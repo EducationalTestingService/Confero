@@ -177,6 +177,13 @@ class DataCollectionWebSocket(WebSocket):
                 self.data_collection_state['experiment_names_msg'] = m
             elif msg_type == 'DATA_COLLECT_CONFIG':
                 self.data_collection_state['data_collection_config'] = m
+            elif msg_type == 'EXP_SESSION_STARTED':
+                # Get the notifications config dict and send it to the server, which
+                # will forward it to the webapp
+                from webserver import ControlFeedbackServer
+                notifications_dict = ControlFeedbackServer.app_config.get('notifications',{})
+                msg = {'msg_type': 'RUNTIME_NOTIFICATION_SETTINGS', 'data':notifications_dict}
+                to_send.append(msg)
 
             if msg_type is not 'UNKNOWN':
                 to_send.append(m)
