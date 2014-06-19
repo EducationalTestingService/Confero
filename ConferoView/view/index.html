@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Confero View 0.1</title>
+  <title>Confero View 1.0 RC1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
   <meta name="author" content="">
@@ -87,7 +87,7 @@
                              <span class="icon-bar"></span>
                             <!-- <span class="icon-bar"></span> -->
                          </button>
-                        <a class="navbar-brand" href="#">Confero View</a>
+                        <span class="navbar-brand">Confero View</span>
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
@@ -183,9 +183,8 @@
                             </li>
                         </ul>
                         <ul class="nav navbar-nav navbar-right">
-                        <button id="userManualButton"
-                                class="btn navbar-btn btn-primary"
-                                type="button">
+                        <a class="btn navbar-btn btn-primary"
+                                    href="/static/docs/index.html" target="_blank">
                                     <span id="userManualSpan"
                                           data-toggle="tooltip"
                                           data-placement="bottom"
@@ -193,7 +192,7 @@
                                           title="Open Confero User Manual"
                                           class="glyphicon glyphicon-question-sign">
                                     </span>
-                        </button>
+                        </a>
 						<select class="multiselect" id="selectedStatsPanels" multiple="multiple">
 							<option value="#systemStatusPanel" selected>System</option>
 							<option value="#eyetrackerStatusPanel" selected>Eye Tracker</option>
@@ -540,10 +539,11 @@
                 $('#experimentSelectionModal').modal('hide');
                });
 
-            $('#userManualButton').on('click', function() {
-                var sendmsg=JSON.stringify({type:'OPEN_USER_MANUAL'});
-                server_websocket.send(sendmsg);
-            });
+            //$('#userManualButton').on('click', function() {
+                //var sendmsg=JSON.stringify({type:'OPEN_USER_MANUAL'});
+                //server_websocket.send(sendmsg);
+            //    window.open('/static/docs/index.html', 'confero_documentation_window', config='toolbar=no, menubar=no, location=no, directories=no, status=no');
+            //});
 
             $('#shutdownSoftwareButton').on('click', function() {
                 var box=bootbox.confirm("Are you sure you want to shut down all Confero software?", function(result) {
@@ -684,11 +684,19 @@
 			});
 
             $('#gazeOverlayButton').on('click', function(event) {
-                umf_state.toggleOverlayType(event.currentTarget.parentNode.classList,'gaze');
+                umf_state.gaze_overlay_enabled = !umf_state.gaze_overlay_enabled;
+                //if (umf_state.gaze_overlay_enabled == true)
+                //    $('#gazeOverlayButton').removeClass('disabled');
+                //else
+                //    $('#gazeOverlayButton').addClass('disabled');
             });
 
             $('#mouseOverlayButton').on('click', function(event) {
-                umf_state.toggleOverlayType(event.currentTarget.parentNode.classList,'mouse');
+                umf_state.mouse_overlay_enabled = !umf_state.mouse_overlay_enabled;
+                //if (umf_state.mouse_overlay_enabled == true)
+                //    $('#mouseOverlayButton').addClass('active');
+                //else
+                //    $('#mouseOverlayButton').removeClass('active');
             });
              // <<< Nav. JS
 
