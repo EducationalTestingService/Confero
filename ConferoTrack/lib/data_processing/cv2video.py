@@ -9,6 +9,7 @@ class OpenCVideo(object):
     def __init__(self, filename):
         self.reset()
         self.loadVideo(filename)
+        self.filname=filename
 
     @property
     def frame_index(self):
@@ -87,11 +88,11 @@ class OpenCVideo(object):
                     self._video_stream = cv2.VideoCapture()
                     self._video_stream.open(filename)
                     if not self._video_stream.isOpened():
-                        raise RuntimeError( "Error when reading image file")
+                        raise RuntimeError( "Error when reading image file: "+self.filname)
                     self._total_frame_count = last_index
 
             else:
-                raise ValueError("Video file frame count must be > 0:", self._total_frame_count)
+                raise ValueError("Video file frame count must be > 0:", self._total_frame_count, self.filname)
         self.filename = filename
         self._video_width = self._video_stream.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
         self._video_height = self._video_stream.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
@@ -135,7 +136,7 @@ class OpenCVideo(object):
         if ret:
             return f#cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
         else:
-            raise RuntimeError("Could not load video frame data.")
+            raise RuntimeError("Could not load video frame data.", self.filname)
 
     def seek(self, timestamp=None, frame_number=None):
         if timestamp:
@@ -217,10 +218,10 @@ class OpenCVideo(object):
                             synctimes.append((frame_index, cvid.frame_time))
                             break
                         if frame_index > start_frame + max_frames_searched:
-                            print "Error: Max frame index for detectSyncTimeFrames reached."
+                            print "Error: Max frame index for detectSyncTimeFrames reached.:",self.filname,len(synctimes)
                             return synctimes, frame_index
                 else:
-                    print "Error: End of Video reached without detecting all sync frames"
+                    print "Error: End of Video reached without detecting all sync frames:",self.filname,len(synctimes)
                     return synctimes, frame_index
 
         r = cvid.seek(frame_number=1)

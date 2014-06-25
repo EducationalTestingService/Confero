@@ -719,7 +719,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             cli += '-s {0}x{1} '.format(stream_width, stream_height)
         cli += '-f mpeg1video -b:v {0}k -r {1} '.format(bv, rate)
 
-        host=self.view_server_ip#scParam('http_stream','host')
+        host=self.view_server_ip
         write_port=scParam('http_stream','write_port')
         uri=scParam('http_stream','uri')
         cli+='http://{0}:{1}/{2}/{3}/{4}/ '.format(host, write_port, uri,

@@ -3,7 +3,8 @@ from __future__ import division
 """
 ioHub Eye Tracker Sample Event Parser
 
-.. file: [TO BE MOVED INTO IOHUB MODULE AFTER DEVELOPMENT IS STABLE)
+This is a copy of the eye sample event parser file from the ioHub OSS project,
+with the following licensing for this .py file only.
 
 Copyright (C) 2012-2014 iSolver Software Solutions
 Distributed under the terms of the GNU General Public License

@@ -4,6 +4,8 @@ import glob
 import os
 import psychopy.iohub.datastore.util as dsutil
 import numpy as np
+from psychopy.iohub import load, Loader
+from psychopy.iohub import dump, Dumper
 
 class Picker:
     def __init__(self, data):
@@ -54,3 +56,16 @@ def openDataStoreReader(session_folder):
                                                      sessionCodes=[
                                                          session_name])
     return hubdata
+
+
+def readAppSettingParameters(session_folder):
+    #recording_period:
+    #    start_msg: RECORDING_STARTED
+    #    event_period:
+    #        start_msg: START_EVENT_PERIOD
+    #        end_msg: END_EVENT_PERIOD
+    #    end_msg: RECORDING_STOPPED
+    return load(file(os.path.join(session_folder,
+                                      'last_app_config.yaml'), u'r'),
+                                                        Loader=Loader)
+

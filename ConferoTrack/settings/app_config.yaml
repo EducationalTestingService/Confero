@@ -10,8 +10,8 @@ ioHub:
     # file to use. Based on the eye tracker type being used, uncomment
     # the config line where the yaml file name includes the eye tracker name,
     # while ensuring the other config lines are commented out.
-    config: ..\settings\iohub_config_no_eyetracker.yaml
-    #config: ..\settings\iohub_config_tobii.yaml
+    #config: ..\settings\iohub_config_no_eyetracker.yaml
+    config: ..\settings\iohub_config_tobii.yaml
     #config: ..\settings\iohub_config_smi.yaml
 
     # process_affinity : Assign specific cores of a multicore CPU to the
@@ -105,7 +105,6 @@ screen_capture:
     # Do not change these unless you know what you are doing.
     #
     http_stream:
-        host: AUTO
         write_port: 8082
         read_port: 8084
         uri: screenstream
@@ -117,7 +116,14 @@ screen_capture:
                 v: 1600 # video bitrate
 
 
-experimenter_server:
+# view_server : Configure the ip address and port that track should use to
+# to connect to the main Confero View http  server. AUTO will instruct the
+# software to use Bonjour to auto detect the server.
+# view_server:address: can also be a hard coded ip address for the view server,
+# such as 192.168.2.23.
+# view_server:port: can also be a hard coded port for the view server, which is
+# set to 8888 by default.
+view_server:
     address: AUTO
     port: AUTO
 

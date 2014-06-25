@@ -42,10 +42,8 @@ def startNodeWebStreamer(app_config):
                           'screen_capture',
                           'http_stream',
                           'read_port')
-    STREAM_HOST= keyChainValue(app_config,
-                          'screen_capture',
-                          'http_stream',
-                          'host')
+    STREAM_HOST = app_config['http_address']
+
     screen_cap_width, screen_cap_height = keyChainValue(app_config,
                                   'screen_capture',
                                   'screen_resolution')

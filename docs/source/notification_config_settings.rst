@@ -103,20 +103,20 @@ eyetracker
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-average_gaze_position     TBC
-proportion_valid_samples  TBC
-rms_noise                 TBC
-stdev_noise               TBC
-right_eye_gaze            TBC
-right_eye_pos             TBC
-right_eye_pupil           TBC
-left_eye_gaze             TBC
-left_eye_pos              TBC
-left_eye_pupil            TBC
-time                      TBC
-model                     TBC
-track_eyes                TBC
-sampling_rate             TBC
+average_gaze_position     The pixel position of the eye on the screen, averaged over the last 0.25 seconds
+proportion_valid_samples  The invalid sample count / total sample count over the last second.
+rms_noise                 The root mean square noise estimate of the eye sample data.
+stdev_noise               The standard deviation of the gaze position estimate.
+right_eye_gaze            The last read pixel position of the eye on the screen. 0,0 is screen center.
+right_eye_pos             The last read eye position in the eye trackers 3D coordinate space (only on Tobii).
+right_eye_pupil           The last read size of the pupil. For Tobii, it is the mm diameter. For eyelink, it is the area in arbitrary units.
+left_eye_gaze             Not Used, as the sample parser filter outputs mono samples that are placed in the right eye data fields.
+left_eye_pos              Not Used
+left_eye_pupil            Not Used
+time                      The current eye tracker time.
+model                     The model of the eye tracker being used. This is read from the iohub_config.yaml
+track_eyes                The eyes being tracked; or BINOCULAR_AVERAGED when the sample parser is enabled (default)
+sampling_rate             The current sampling rate of the eye tracker.
 ========================= ======================================================
 
 keyboard
@@ -128,11 +128,11 @@ keyboard
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-type                      TBC
-last_event_time           TBC
-key                       TBC
-auto_repeated             TBC
-modifiers                 TBC
+type                      The iohub event type constant for the last event.
+last_event_time           The time of the last event (in seconds).
+key                       The last key that way pressed.
+auto_repeated             The number of auto repeat events that the OS has created for the key press
+modifiers                 Any iohub modifier constants that were pressed at the same time as the key press.
 ========================= ======================================================
 
 mouse
@@ -144,12 +144,12 @@ mouse
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-type                      TBC
-last_event_time           TBC
-position                  TBC
-buttons                   TBC
-modifiers                 TBC
-scroll                    TBC
+type                      The iohub event type constant for the last event.
+last_event_time           The time of the last event (in seconds).
+position                  The position of the mouse, in pixels. (0,0) is screen center
+buttons                   The iohub string constants for any mouse buttons pressed for / during the event.
+modifiers                 Any iohub modifier constants that were pressed at the same time as the mouse event.
+scroll                    The current scroll position of the mouse device.
 ========================= ======================================================
 
 input_computer
@@ -161,9 +161,9 @@ input_computer
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-cpu_usage_all             TBC
-memory_usage_all          TBC
-up_time                   TBC
+cpu_usage_all             The total CPU used on the Confero Track computer, averaged over the last 0.5 seconds.
+memory_usage_all          The total amount of RAM used on the computer, averaged over the last 0.5 seconds.
+up_time                   The time since the confero software started on the computer.
 ========================= ======================================================
 
 server_computer
@@ -175,8 +175,8 @@ server_computer
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-cpu_usage_all             TBC
-memory_usage_all          TBC
+cpu_usage_all             The total CPU used on the Confero View computer, averaged over the last 0.5 seconds.
+memory_usage_all          The total amount of RAM used on the computer, averaged over the last 0.5 seconds.
 ========================= ======================================================
 
 experiment_session
@@ -188,9 +188,9 @@ experiment_session
 ========================= ======================================================
 device_status_field_name  Description
 ========================= ======================================================
-code                      TBC
-experiment_name           TBC
-recording_counter         TBC
+code                      The code of the currently open experiment session.
+experiment_name           The experiment folder name being used to save session data.
+recording_counter         The number of times recording has been started / stopped for the current session.
 ========================= ======================================================
 
 Warning and Error Settings
@@ -206,12 +206,12 @@ options are the same for ``warning`` and ``error`` definitions.
 =================== =============== ========================= ==================
 Property Name       Parent          Valid Values              Description
 =================== =============== ========================= ==================
-threshold           warning / error int, float                TBC
-edges               warning / error N/A                       TBC
-falling             edges           True, False               TBC
-rising              edges           True, False               TBC
-minimum_time_period warning / error int, float                TBC
-growl               warning / error N/A                       TBC
-text                growl           str, unicode              TBC
-duration            growl           int, float, MANUAL, AUTO  TBC
+threshold           warning / error int, float                The value used to trigger a warning or error.
+edges               warning / error N/A
+falling             edges           True, False               If True, an alert will occur when the field value goes below threshold.
+rising              edges           True, False               If True, an alert will occur when the field value goes above threshold.
+minimum_time_period warning / error int, float                The alert is only generated when the threshold has been crossed for this many seconds.
+growl               warning / error N/A                       Use if a alert balloon should be displayed when triggered.
+text                growl           str, unicode              The text to display in the alert balloon.
+duration            growl           int, float, MANUAL, AUTO  If MANUAL, the growl must be closed by the operator. If AUTO, the growl is removed when the alert condition ends. If a number, the growl is displayed for that number of seconds.
 =================== =============== ========================= ==================

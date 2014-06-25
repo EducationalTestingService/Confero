@@ -93,8 +93,8 @@ Required Configuration Settings
 When starting, Confero View reads some configuration settings from the
 ``CONFERO_VIEW_ROOT\settings\app_config.yaml`` file. Most of these settings
 do not need to be changed to simply test that the software is working.
-However one setting **must** be changed in order for Confero View to function
-without invalid data being collected.
+However three setting **must** be changed / verified in order for
+Confero View to function without invalid data being collected.
 
 .. note:: For full details on Confero View configuration options, see the
   :ref:`config_files_page` section of the manual.
@@ -115,6 +115,38 @@ Confero Track screen resolution being used is 1920 by 1080 pixels.
 
 .. warning:: If the ``screen_capture: screen_resolution`` setting is incorrect,
   the software will generate bad data and /or not function correctly.
+
+2. http_address
+~~~~~~~~~~~~~~~~~
+
+The ``http_address`` setting must either be set
+
+* **AUTO**:  in which case bonjour will be used to auto detect the ip
+  address of the **Confero View** computer.
+* **[IP_FOR SERVER]**:  specify the ip address that Track should attempt
+  to use to connect to the **Confero View** computer.
+
+.. code-block:: yaml
+
+    http_address: AUTO
+
+.. warning:: If the ``http_address`` setting is incorrect, Confero Track will not find the Confero View Server.
+
+3. http_port
+~~~~~~~~~~~~~~~~~
+
+The ``http_port`` setting must either be set
+
+* **AUTO**:  in which case bonjour will be used to auto detect the port
+  of the **Confero View** computer to be used.
+* **[PORT_FOR SERVER]**:  specify the port that Track should attempt
+  to use to connect to the **Confero View** computer.
+
+.. code-block:: yaml
+
+    http_port: AUTO
+
+.. warning:: If the ``http_port`` setting is incorrect, Confero Track will not find the Confero View Server.
 
 Starting Confero View
 ----------------------
@@ -181,7 +213,7 @@ Required Configuration Settings
 When starting, Confero Track reads some configuration settings from the
 ``CONFERO_TRACK_ROOT\settings\app_config.yaml`` file. Most of these settings
 do not need to be changed to simply test that the software is working.
-However, two settings **must** be changed in order for Confero Track to function
+However, four settings **must** be changed in order for Confero Track to function
 without invalid data being collected.
 
 .. note:: For full details on Confero View configuration options, see the
@@ -234,6 +266,40 @@ look like the following.
 
 .. warning:: If the ``iohub: config`` setting is incorrect,
   the Confero Track software will fail to run correctly when started.
+
+3. http_address
+~~~~~~~~~~~~~~~~~
+
+The ``http_address`` setting must either be set
+
+* **AUTO**:  in which case Bonjour will be used to auto detect the ip
+  address of the **Confero View** computer.
+* **[IP_FOR SERVER]**:  specify the ip address that Track should attempt
+  to use to connect to the **Confero View** computer.
+
+.. code-block:: yaml
+
+    view_server:
+        address: AUTO
+
+.. warning:: If the ``view_server : address`` setting is incorrect, Confero Track will not find the Confero View Server.
+
+4. http_port
+~~~~~~~~~~~~~~~~~
+
+The ``http_port`` setting must either be set
+
+* **AUTO**:  in which case Bonjour will be used to auto detect the port
+  of the **Confero View** computer to be used.
+* **[PORT_FOR SERVER]**:  specify the port that Track should attempt
+  to use to connect to the **Confero View** computer.
+
+.. code-block:: yaml
+
+    view_server:
+        port: AUTO
+
+.. warning:: If the ``view_server:port`` setting is incorrect, Confero Track will not find the Confero View Server.
 
 Starting Confero Track
 ----------------------

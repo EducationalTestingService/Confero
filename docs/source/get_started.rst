@@ -341,7 +341,8 @@ status field. When a Warning Alert occurs for a device field:
 * (Optionally) A Warning Alert Balloon will appear indicating what the Warning
   is about.
 
-**[INSERT WARNING ALERT WEBAPP GUI EXAMPLE IMAGE HERE]**
+.. image:: ./images/confero_view_warning_alert.png
+   :align: center
 
 Error Alerts
 ~~~~~~~~~~~~~~~
@@ -367,7 +368,8 @@ When an Error Alert occurs for a device field:
   discussed. Instead the Error Balloon needs to be closed manually by the
   researcher.
 
-**[INSERT ERROR ALERT WEBAPP GUI EXAMPLE IMAGE HERE]**
+.. image:: ./images/confero_view_warning_errror_alert.png
+   :align: center
 
 9. Stop Data Recording
 ------------------------

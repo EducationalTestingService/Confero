@@ -25,8 +25,8 @@ def keyChainValue(cdict, *key_path):
     return result
 
 def createWebsocketInterface(appcfg):
-    address = keyChainValue(appcfg, 'experimenter_server', 'address')
-    port = keyChainValue(appcfg, 'experimenter_server', 'port')
+    address = keyChainValue(appcfg, 'view_server', 'address')
+    port = keyChainValue(appcfg, 'view_server', 'port')
     sockopt = ((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),)
     ws_url = "ws://{0}:{1}/data_websocket".format(address, port)
     ui_server_websocket = create_connection(ws_url, None, sockopt=sockopt)
@@ -80,13 +80,22 @@ def main(configurationDirectory):
                                     "..\\settings\\app_config.yaml"), u'r'),
                                     Loader=Loader)
 
-    view_server_info = findConferoViewServer()
+    view_server_info={}
+
     print
     print "Confero Track Started. "
-    print "Found Confero Server:", view_server_info['ip'],view_server_info['port']
-    print
-    app_conf.get('experimenter_server')['address'] = view_server_info['ip']
-    app_conf.get('experimenter_server')['port'] = view_server_info['port']
+
+    if app_conf.get('view_server',{}).get('address').lower() in [None, 'auto', 'bonjour']:
+        view_server_info = findConferoViewServer()
+        print "Found Confero Server via Bonjour:", view_server_info['ip'], view_server_info['port']
+        print
+        app_conf.get('view_server')['address'] = view_server_info['ip']
+        app_conf.get('view_server')['port'] = view_server_info['port']
+    else:
+        view_server_info['ip'] = app_conf.get('view_server')['address']
+        view_server_info['port'] = app_conf.get('view_server')['port']
+        print "Using app_config settings for Confero Server connection:", view_server_info['ip'], view_server_info['port']
+        print
 
     DataCollectionRuntime.view_server_ip = view_server_info['ip']
 
@@ -130,8 +139,8 @@ def main(configurationDirectory):
                                             "..\\settings\\app_config.yaml"), u'r'),
                                             Loader=Loader)
 
-            app_conf.get('experimenter_server')['address'] = view_server_info['ip']
-            app_conf.get('experimenter_server')['port'] = view_server_info['port']
+            app_conf.get('view_server')['address'] = view_server_info['ip']
+            app_conf.get('view_server')['port'] = view_server_info['port']
 
             DataCollectionRuntime.results_root_folder = \
                                             app_conf.get('results_root_folder')
@@ -156,8 +165,8 @@ def main(configurationDirectory):
             app_conf_path = pjoin(configurationDirectory, "..\\settings\\app_config.yaml")
             app_conf = load(file(app_conf_path, u'r'), Loader=Loader)
 
-            app_conf.get('experimenter_server')['address'] = view_server_info['ip']
-            app_conf.get('experimenter_server')['port'] = view_server_info['port']
+            app_conf.get('view_server')['address'] = view_server_info['ip']
+            app_conf.get('view_server')['port'] = view_server_info['port']
 
             # Update the session code to be used
             #

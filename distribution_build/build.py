@@ -144,7 +144,9 @@ docs_build_dir = nabs(os.path.join(CONFERO_DOCS_ROOT,'build'))
 print "    docs_build_dir:",docs_build_dir
 
 DOCS_HTML_BUILD_ROOT = nabs(os.path.join(docs_build_dir,'html'))
+DOCS_PDF_BUILD_ROOT = nabs(os.path.join(docs_build_dir,'pdf'))
 NEW_DISTRIBUTION_DOCS_DIR = nabs(os.path.join(NEW_DISTRIBUTION_ROOT_DIR,'docs'))
+NEW_DISTRIBUTION_PDF_DOCS_DIR = nabs(os.path.join(NEW_DISTRIBUTION_ROOT_DIR,'docs','pdf'))
 NEW_DISTRIBUTION_SERVER_DOCS_DIR = nabs(os.path.join(NEW_DISTRIBUTION_ROOT_DIR,'ConferoView/View/static/docs'))
 
 print
@@ -153,3 +155,5 @@ print "    Copying %s to %s"%(DOCS_HTML_BUILD_ROOT,NEW_DISTRIBUTION_DOCS_DIR)
 distutils.dir_util.copy_tree(DOCS_HTML_BUILD_ROOT, NEW_DISTRIBUTION_DOCS_DIR)
 print "    Copying %s to %s"%(DOCS_HTML_BUILD_ROOT,NEW_DISTRIBUTION_SERVER_DOCS_DIR)
 distutils.dir_util.copy_tree(DOCS_HTML_BUILD_ROOT, NEW_DISTRIBUTION_SERVER_DOCS_DIR)
+print "    Copying %s to %s"%(DOCS_PDF_BUILD_ROOT,NEW_DISTRIBUTION_PDF_DOCS_DIR)
+distutils.dir_util.copy_tree(DOCS_PDF_BUILD_ROOT, NEW_DISTRIBUTION_PDF_DOCS_DIR)

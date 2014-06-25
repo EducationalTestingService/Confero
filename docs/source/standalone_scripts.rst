@@ -13,6 +13,32 @@ The ``CONFERO_TRACK_ROOT/lib/data_processing`` folder contains scripts related
 to accessing the screen capture video frames, as well as iohub device events,
 recorded during an experiment session.
 
+videvt2ssa.py
+--------------
+
+The videvt2ssa.py creates .ssa files for the recordings preformed a single
+experiment session.
+
+This script must be run by first starting the ``Confero Data Processing.bat``
+file located in the ``CONFERO_ROOT`` folder. When the .bat file runs, it will
+open a cmd prompt in the ``CONFERO_TRACK_ROOT/lib/data_processing`` folder.
+
+You can then run the script by typing:
+
+.. code-block:: python
+
+    python.exe videvt2ssa.py [experiment_folder_name] [session_folder_name]
+
+where:
+
+* [experiment_folder_name] is the folder in the ``CONFERO_TRACK_ROOT/Results``
+  for the experiment containing the session folder.
+* [session_folder_name] is the name of the session folder to use within the
+  named experiment folder.
+
+One .ssa file is created for each video file in the session folder, and is named
+the same as the video file, but with a .ssa extension.
+
 vidEvtLookupTable.py
 ----------------------
 

@@ -1,3 +1,5 @@
+print "TODO: Read constants from app_config.yaml in session folder"
+
 PRINT_STATUS = True
 SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = True

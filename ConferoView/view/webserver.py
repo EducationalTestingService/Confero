@@ -89,9 +89,7 @@ class MainHandler(BaseHandler):
         #name = tornado.escape.xhtml_escape(self.current_user)
         #
         appconfig = ControlFeedbackServer.app_config
-        vshost = keyChainValue(appconfig, 'screen_capture',
-                               'http_stream',
-                               'host')
+        vshost = appconfig['http_address']
         rport = keyChainValue(appconfig,
                               'screen_capture',
                               'http_stream',
@@ -143,7 +141,8 @@ class ControlFeedbackServer(object):
         self.webapp = tornado.web.Application(self.handlers, **self.settings)
         self.ssproxy = None
         self.bonjour_service = bonjour_service
-        self.bonjour_service.checkForDaemonRequests()
+        if self.bonjour_service:
+            self.bonjour_service.checkForDaemonRequests()
         self._win_dialog_thread=None
         ControlFeedbackServer.app_config = app_config
         UIWebSocket.server_app_websockets = self.web_sockets
@@ -165,10 +164,12 @@ class ControlFeedbackServer(object):
                     self.bonjour_service.checkForDaemonRequests()
 
             def register_timed_callback():
-                self.bonjour_service.tornado_callback = tornado.ioloop.PeriodicCallback(checkForDaemonRequests,1000)
-                self.bonjour_service.tornado_callback.start()
+                if self.bonjour_service:
+                    self.bonjour_service.tornado_callback = tornado.ioloop.PeriodicCallback(checkForDaemonRequests,1000)
+                    self.bonjour_service.tornado_callback.start()
 
-            IOLoop.instance().add_callback(register_timed_callback)
+            if self.bonjour_service:
+                IOLoop.instance().add_callback(register_timed_callback)
 
             autolaunch=keyChainValue(self.app_config, 'auto_launch_webapp')
             if autolaunch:            
@@ -217,8 +218,9 @@ class ControlFeedbackServer(object):
                 self._win_dialog_thread=None
                 quiteSubprocs([psutil.Process(),])
 
-        self.bonjour_service.close()
-        self.bonjour_service = None
+        if self.bonjour_service:
+            self.bonjour_service.close()
+            self.bonjour_service = None
 
         IOLoop.instance().add_timeout(self.getServerTime()+2.0,_exit)
 
@@ -247,14 +249,14 @@ class ControlFeedbackServer(object):
                     print("Error while starting webbrowser.get() with value of", autolaunch)
                     traceback.print_exc()
 
-    @staticmethod
-    def openUserManual():
-        appconfig = ControlFeedbackServer.app_config
-        server_ip = keyChainValue(appconfig,
-                               'http_address')
-        server_port = keyChainValue(appconfig,
-                               'http_port')
-        webbrowser.open_new_tab('http://%s:%d/static/docs/index.html'%(server_ip,server_port))
+#    @staticmethod
+#    def openUserManual():
+#        appconfig = ControlFeedbackServer.app_config
+#        server_ip = keyChainValue(appconfig,
+#                               'http_address')
+#        server_port = keyChainValue(appconfig,
+#                               'http_port')
+#        webbrowser.open_new_tab('http://%s:%d/static/docs/index.html'%(server_ip,server_port))
 
 
     @staticmethod

@@ -32,10 +32,6 @@ screen_capture:
     # version of the app_config.
     #
     http_stream:
-        # host: Since Bonjour is now being used, leave host value at AUTO
-        #
-        host: AUTO
-
         # write_port: The port that Confero Track should send screen video
         # data to on the Confero View server. The port is used by a web socket.
         #
@@ -62,15 +58,15 @@ screen_capture:
 
 # http_address: The ip address that the Confero View web server is running on.
 # This is used by the Confero View web app UI to connected to the http server.
-# Since Bonjour is now being used, leave http_address value at DEFAULT
+# Since Bonjour is now being used, leave http_address value at AUTO
 #
-http_address: DEFAULT
+http_address: AUTO
 
 # http_port: The port that the Confero View web server is listening on.
 # This is used by the Confero View web app UI to connected to the http server.
 # Since Bonjour is now being used, leave http_port value at DEFAULT
 #
-http_port: DEFAULT
+http_port: AUTO
 
 # auto_launch_webapp: When the Confero View application is started, the value
 # of this param indicates whether the webapp ui should automatically be openned
