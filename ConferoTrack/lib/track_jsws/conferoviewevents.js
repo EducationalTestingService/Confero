@@ -52,6 +52,16 @@ var conferotrack = {
         return this.monitored_devices;
     },
 
+    logEvent: function(text, category, time){
+       if (text === undefined)
+        return undefined;
+       if (category === undefined)
+        category = 'JS_EVENT'
+       if (time === undefined)
+        time = -1
+       this.send({type: 'JS_EVENT', text:text, category: category, time: time});
+    },
+
     send : function (msg) {
         var sendmsg=JSON.stringify(msg);
         this.socket.send(sendmsg);

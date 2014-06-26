@@ -393,6 +393,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             msg=ujson.loads(server_msg)
             if msg.get('type') == 'experiment_message':
                 self.hub.sendMessageEvent(msg.get('text'), msg.get('category'))
+            if msg.get('type') == 'JS_EVENT':
+                time = msg.get('time')
+                if time == -1:
+                    time = getTime()
+                self.hub.sendMessageEvent(msg.get('text'), msg.get('category'),sec_time=time)
             elif msg.get('type') == 'START_EXP_SESSION':
                 self.stopDeviceRecording()
                 #print("MSG RX: ",msg)

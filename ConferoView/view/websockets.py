@@ -89,12 +89,11 @@ class TrackBrowserWebSocket(WebSocket):
             if msg_type is 'UNKNOWN':
                 msg_type = msg_dict.get('type', 'UNKNOWN')
 
-            if msg_type == 'ECHO':
-                self.write_message(message)
+            if msg_type == 'JS_EVENT':
+                dc_sw.write_message(message)
             elif msg_type == 'device_filter':
                 self.device_filter=msg_dict['device_list']
                 dc_sw.data_collection_state['confero_track_ws_device_filter'] = self.device_filter
-
             elif msg_type == 'UNKNOWN':
                 self.write_message(self.createErrorMsgmessage(msg_dict, "Unknown Message Type"))
         else:
@@ -102,7 +101,8 @@ class TrackBrowserWebSocket(WebSocket):
             print("WARNING: Data Collection Web Socket is not Running.")
             print("")
 
-    def createErrorMsg(self,msg,reason):
+
+    def createErrorMsg(self, msg, reason):
         return ujson.dump(dict(type='ERROR', rx_msg=msg, reason=reason))
 
 def createLeftEyeInfo(dev_data):
