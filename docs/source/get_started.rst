@@ -43,7 +43,7 @@ that displays the Confero View WebApp.
 2. Create an Experiment Folder (Optional)
 ------------------------------------------
 
-The computer running Confero Track is also the computer that any screen capture
+The computer running Confero Track is also the computer on which any screen capture
 video's and device event data files are saved. The root folder for all files
 saved by Confero Track is ``CONFERO_TRACK_ROOT\Results``.
 
@@ -99,7 +99,7 @@ the currently open experiment session.
   application to fail in unexpected ways.
 
 Confero Track does not have a GUI interface. When started, a command prompt
-window will appear and text should be printed indicating that Confero Track
+window will appear and text should be printed on screen indicating that Confero Track
 found, and connected to, Confero View.
 
 Preparing for Data Collection
@@ -353,8 +353,8 @@ collected has reached a value threshold where the data being collected is
 likely severely compromised, so some action should likely be taken by the
 experimenter to correct the condition.
 
-Since the Confero View Alert system is completed configurable by the
-experimenter, and the action to take obviously depends on
+Since the Confero View Alert system is configurable by the
+experimenter, and the action to take depends on
 the specific Error Alert being generated, providing a list of specific Alerts
 and the action that should be taken under such a condition is beyond the
 scope of this document.
