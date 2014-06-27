@@ -39,8 +39,21 @@ Important: The following installation instructions must be followed for both the
 computer that will be used to run **Confero Track**, as well as the computer that
 will run the **Confero Server** and **Confero View** aplications.
 
-Python Package Dependancies
+The Confero software may be installed anywere on the computer. A convenient location is C:\Confero, which in most cases will allow all users on the computer to access Confero. Note that this also expose all the program files and data to all users. You may risk accidental deletions or misconfigurations. Decide your installation path according to your application. 
+
+In the remainder of the document we refer to the Confero root directory as CONFERO_ROOT. In the above example, CONFERO_ROOT = c:\ .
+
+The document assumes you are installing from a distribution package (distro), in the form of a ZIP or an EXE file. 
+
+* unzip the distro to a temporary directory
+* check to see if your CONFERO_ROOT directoy already exists; if so, rename or move the directory
+* move the Confero directory to the CONFERO_ROOT path. In the above example, we move Confero to C:\, so that CONFERO_ROOT= c:\Confero
+* Proceed with the following steps in setting up.
+
+Python Package Dependancies (if needed)
 ----------------------------
+
+** If you are installing from a distribution package (either as a ZIP file or an EXE file), all the dependencies should have been included. Skip this section. **
 
 The following python packages must be installed in the python distribution
 being used to run Confero Application Suite. All packages must
@@ -56,9 +69,32 @@ be for Python 2.7 32-bit (even if Windows is 64bit)
 Eye Tracker Client Library (if needed)
 ---------------------------------------
 
+** This is only necessary if you are using an eye-tracker that is not currently included in the distribution (EyeLink or Tobii remote series) **
+
 If using an eye tracker, ensure any dependencies specific to the eye tracker
 being used have been installed. See the docs for the eye tracker being used
 with iohub for more details: http://www.isolver-solutions.com/iohubdocs/iohub/api_and_manual/device_details/eyetracker.html#eye-tracking-hardware-implementations
+
+Program Depandencies
+------------------------
+
+The following programs should be installed and configured before running Confero.
+
+** Screen Capturer Recorder **
+
+The setup program is included in the **dependancies** folder. Use the version of program provided. After installation, the program needs to be set up for **each user** separately on the computer. To configure:
+
+1. Go to menu Start >> All Programs >> Screen Capturer Recorder >> configure >> configure by setting specific screen capture numbers
+2. Follow the onscreen instruction to go through the process. Leave BLANK, not 0, for default values. The most important parameters are the size of the monitor, and which monitor to record if you have multiple monitors. To find out the specific numbers, use Control Panel >> Display or other programs to view the display setting.
+
+** Bonjour **
+
+Bonjour is used to automatically recognize and configure the IPs of the Track and View programs. Use the version provided; use either the 32bit or 64bit version depending on your Windows OS. You may need to reinstall it if you experience problems with Bonjour. 
+
+
+Configure Confero
+--------------------
+
 
 UserMonitor Project Files
 --------------------------
