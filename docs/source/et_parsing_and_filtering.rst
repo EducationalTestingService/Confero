@@ -47,7 +47,7 @@ filtered sample stream that is created. One filter can be applied to the
 positional data of the samples, namely the gaze position and eye angle sample fields
 ( the POSITION_FILTER ). The other filter can be applied to the velocity
 measure that is calculated using the filtered sample positional fields ( the VELOCITY_FILTER ).
-These filters are called ``event field filter's``, because they can operate on a single
+These filters are called ``event field filters``, because they can operate on a single
 iohub event (or sample) field, using the value of that field as the filters data input stream.
 
 Event Field Filter Types
