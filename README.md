@@ -80,9 +80,9 @@ Install these programs first
 
 The following programs should be installed and configured before running Confero.
 
-** Screen Capturer Recorder **
+**Screen Capturer Recorder**
 
-The setup program is included in the **dependancies** folder. Use the version of program provided. You need to installation only once on a computer, but the program needs to be set up for **each user** separately on the computer. 
+The setup program is included in the **dependancies** folder. Use the version of program provided. You need to installation only once on a computer, but the program *may* need to be set up for **each user** separately on the computer. Try to see if the recorded video or the mirrored video is scrambled. If so, repeat the set up process for each user on the computer. 
 
 To configure for a user:
 
@@ -90,7 +90,7 @@ To configure for a user:
 2. Go to menu Start >> All Programs >> Screen Capturer Recorder >> configure >> configure by setting specific screen capture numbers. This will launch a DOS window, and it may take a few seconds to load. 
 2. Follow the onscreen instruction to go through the process. Leave BLANK, not 0, for default values. The most important parameters are the size of the monitor, and which monitor to record if you have multiple monitors. To find out the specific numbers, use Control Panel >> Display or other programs to view the display setting.
 
-** Bonjour **
+**Bonjour**
 
 Bonjour is used to automatically recognize and configure the IPs of the Track and View programs. Use the version provided; use either the 32bit or 64bit version depending on your Windows OS. You may need to reinstall it if you experience problems with Bonjour. No configuration is needed for Bonjour.
 
