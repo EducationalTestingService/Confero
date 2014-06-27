@@ -117,7 +117,7 @@ Set up Confero View:
 
 **Two computers**
 
-* set up Confero on each of the two computers following the instruction above. 
+* Install Confero on each of the two computers following the instruction above, including dependent programs (Bonjour, etc.). 
 * On the computer that connects to the eye-tracker (the Track computer), follow the steps to set up the Track.
 * On the other computer, do the View configuration
 * [Optional] If you are certain that you will always use the current 2-computer set up, you may delete the **View** folder from the **Track** PC and the **Track** folder from the **View** computer, because they are not used and may cause confusions. 
