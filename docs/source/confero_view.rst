@@ -61,7 +61,7 @@ User Interface Overview
 .. note:: Pressing the title text of any of the Status Panels will collapse the
           panel body, leaving only the title bar. Press the text on a collapsed
           status panel, and the contents of the panel expand back in the UI.
-          This is a fast way to high a device status panel if the information
+          This is a fast way to hide a device status panel if the information
           provided in that panel is not relevant for the current experiment.
 
 8. A text entry line allowing observations or comments to be made by the experimenter
@@ -78,8 +78,8 @@ User Interface Overview
 Important Confero View WebApp *Do Not's*
 =========================================
 
-.. danger:: Do not close the browser tab Confero View is running in, without first
-            shutting down the Confero software correctly.
+.. danger:: Do not close the browser tab Confero View is running in, without first clicking 
+            the Quite the Confgero View and Track button to shut down the Confero software safely.
 
 .. danger:: Do not press the 'refresh' or 'reload' button on the Confero View
             browser tab when the software is running. Doing so will cause the
