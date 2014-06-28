@@ -184,6 +184,10 @@ event_loop_rate: 0.005
 # where all files created by Confero Track are stored.
 results_root_folder: ..\Results
 
+# If True, run the SSA creation script each time a session is closed.
+# Default is False.
+autorun_ssa_creation: True
+
 # Within the CONFERO_RESULTS_ROOT folder are 1 - N directories, each contains the
 # data for a specific experiment. This list of directory names is also what
 # the experiment to use is selected from when starting Confero View WebApp.

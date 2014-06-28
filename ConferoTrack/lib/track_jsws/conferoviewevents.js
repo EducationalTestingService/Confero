@@ -53,6 +53,10 @@ var conferotrack = {
     },
 
     logEvent: function(text, category, time){
+       // Text must be between 1 and 128 chars.
+       // Category can be between 0 and 32 characters
+       // Time is specified in sec.msec format. If -1, the time of the msg is
+       // created when the track app receives the msg and logs it into iohub
        if (text === undefined)
         return undefined;
        if (category === undefined)

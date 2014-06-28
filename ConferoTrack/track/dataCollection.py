@@ -407,6 +407,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 self.stopDeviceRecording()
                 self.hub.sendMessageEvent("Experiment Session Complete: %s"%(self.getSessionMetaData().get('code', 'CODE_MISSING')), "data_monitoring")
                 msg={'msg_type': 'EXP_SESSION_CLOSED', 'type': "success"}
+                if self.getConfiguration().get('autorun_ssa_creation', False):
+                    self.startSSAconvertion()
                 self.sendToWebServer(msg)
                 self.resetDataCollectionStats()
                 self.createDeviceStatsMessageDicts()
@@ -689,6 +691,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             
             self.hub.sendMessageEvent(end_msg_txt, "data_monitoring")
 
+    def startSSAconvertion(self):
+        print("EXP, SESS:", self.active_exp_name, self.getSessionMetaData().get('code'))
+        print("generate_ssa_files.bat %s %s"%(self.active_exp_name, self.getSessionMetaData().get('code')))
+        self.p = subprocess.Popen("generate_ssa_files.bat %s %s"%(self.active_exp_name, self.getSessionMetaData().get('code')), shell=True)
 
     def startScreenCaptureStream(self):
         appcfg=self.getConfiguration()
