@@ -17,7 +17,7 @@ VLC_OFFSET_CORRECTION = 1.0
 PLOT_MOUSE = False
 
 PRINT_STATUS = False
-SAVE_TXT_FILE = False
+SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = False
 SAVE_SSA_FILES = True
 
@@ -141,7 +141,9 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
                     ('frame_time', np.float32),
                     ('event_time', np.float32),
                     ('gaze_x', np.float32),
-                    ('gaze_y', np.float32)
+                    ('gaze_y', np.float32),
+                    ('status', np.int)
+
                     ]
     hubdata = None
     try:
@@ -181,7 +183,7 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
                         event_count += 1
                         video_frame_events[frame_num].append((
                             vi, frame_num, fstart_time/1000.0,
-                            e['time'], e[X_COL], e[Y_COL]))
+                            e['time'], e[X_COL], e[Y_COL], e['status']))
                     else:
                         frame_num += 1
                         if frame_num + 1 < frame_count:
@@ -199,7 +201,7 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
                             event_count += 1
                             video_frame_events[frame_num].append((
                                 vi, frame_num, fstart_time/1000.0,
-                                e['time'],  e[X_COL], e[Y_COL]))
+                                e['time'],  e[X_COL], e[Y_COL], e['status']))
 
             # now have all mono samples per frame in the current video.
             # They are not sorted by time in each video, but by event type.
@@ -208,7 +210,7 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
             for frame_events in video_frame_events:
                 if frame_events:
                     video_event_list.extend(
-                        sorted(frame_events, key=lambda x: x[-3]))
+                        sorted(frame_events, key=lambda x: x[-4]))
 
             video_events.extend(video_event_list)
         # Convert to numpy ndarray
@@ -251,17 +253,18 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
         with open(output_file_name, 'w') as output_file:
             output_file.write(preamble.format(swidth, sheight))
             for i,frame_sample in enumerate(vid_frame_samples[:-1]):
-                next_frame_sample = vid_frame_samples[i+1]
-                timestamp_start = timedelta(0, float(frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
-                timestamp_end = timedelta(0, float(next_frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
-                gaze_y = sheight - (frame_sample['gaze_y'] + sheight/2)
-                output_file.write('Dialogue:{0},{1},{2},Default,,0000,0000,0000,,{{\\pos({3},{4})\\an5}}+\n'.format(eye_num,
-                                                                unicode(timestamp_start)[:-4],
-                                                                unicode(timestamp_end)[:-4],
-                                                                int(round(frame_sample['gaze_x'])),
-                                                                int(round(gaze_y))
-                                                                )
-                                 )
+                if frame_sample['status'] != 22:
+                    next_frame_sample = vid_frame_samples[i+1]
+                    timestamp_start = timedelta(0, float(frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
+                    timestamp_end = timedelta(0, float(next_frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
+                    gaze_y = sheight - (frame_sample['gaze_y'] + sheight/2)
+                    output_file.write('Dialogue:{0},{1},{2},Default,,0000,0000,0000,,{{\\pos({3},{4})\\an5}}+\n'.format(eye_num,
+                                                                    unicode(timestamp_start)[:-4],
+                                                                    unicode(timestamp_end)[:-4],
+                                                                    int(round(frame_sample['gaze_x'])),
+                                                                    int(round(gaze_y))
+                                                                    )
+                                     )
 
 def saveVideoEventFiles(video_frame_evt_array, session_folder, mean_offset_per_video):
     if SAVE_TXT_FILE:
@@ -270,8 +273,8 @@ def saveVideoEventFiles(video_frame_evt_array, session_folder, mean_offset_per_v
         printf("Saving session_vframe_events.txt...")
         header = "Created on %s UTC.\nProcessing session folder: %s\n" % (
             datetime.datetime.utcnow().isoformat(), session_folder)
-        header += "video_id\tframe_number\tframe_time\tevent_time\tgaze_x\tgaze_y\n"
-        fmt = ['%d', '%d', '%.3f', '%.3f',  '%.3f',  '%.3f']
+        header += "video_id\tframe_number\tframe_time\tevent_time\tgaze_x\tgaze_y\tstatus\n"
+        fmt = ['%d', '%d', '%.3f', '%.3f',  '%.3f',  '%.3f', '%d']
         np.savetxt(
             os.path.join(session_folder, 'session_vframe_events.txt'),
             video_frame_evt_array, header=header, delimiter='\t', fmt=fmt)
