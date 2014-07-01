@@ -484,6 +484,15 @@
     <script type="text/javascript" src="static/js/scripts.js"></script>
     <script type="text/javascript">
 
+        function sleep(milliseconds) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds){
+                    break;
+                }
+            }
+        }
+
          $(document).ready(function(){
             window.location.hash = "noback";
             window.location.hash = "noback_again";
@@ -552,7 +561,13 @@
                     $.bootstrapGrowl("Software Shutdown Cancelled",{type:'info'});
                     $('#shutdownSoftwareButton').removeClass('active');
                   } else {
-                         window.location = '/shutdown';
+                        //var sendmsg=JSON.stringify({type:'STOP_RECORDING'});
+                        //server_websocket.send(sendmsg);
+                        //sleep(0.33)
+                        //var sendmsg=JSON.stringify({type:'CLOSE_EXP_SESSION'});
+                        //server_websocket.send(sendmsg);
+                        //sleep(0.33)
+                        window.location = '/shutdown';
                         }
                  });
                 box.modal("show").css({

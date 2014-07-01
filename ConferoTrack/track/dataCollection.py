@@ -387,6 +387,22 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
         if dev_data_update:
             return dev_data
 
+    def exitApplicationCleanly(self):
+        # - stop recording if needed
+        # - close session if needed
+        # then pass on exit.
+        self.stopDeviceRecording()
+        self.hub.quit()
+        if self.getConfiguration().get('autorun_ssa_creation', False):
+            print("Starting SSA file creation for last session.")
+            print ("Please Wait .",)
+            conv_proc = self.startSSAconvertion()
+            while conv_proc.poll() == None:
+                core.wait(1.0, .1)
+                print (".",)
+            print("")
+        return 'EXIT_PROGRAM'
+
     def handleMsgRx(self):
         try:
             server_msg=self.ui_server_websocket.recv()
@@ -398,6 +414,8 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
                 if time == -1:
                     time = getTime()
                 self.hub.sendMessageEvent(msg.get('text'), msg.get('category'),sec_time=time)
+            elif msg.get('type') == 'EXIT_PROGRAM':
+                return self.exitApplicationCleanly()
             elif msg.get('type') == 'START_EXP_SESSION':
                 self.stopDeviceRecording()
                 #print("MSG RX: ",msg)
@@ -431,11 +449,11 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             if e.errno == 10035:
                 pass
             else:
-                print("**handleMsgRx Exception:", e)
-                return 'EXIT_PROGRAM'
+                print("Socket Error:", e)
+                return self.exitApplicationCleanly()
         except WebSocketConnectionClosedException, wse:
             print("WebSocketConnectionClosedException:", wse)
-            return 'EXIT_PROGRAM'
+            return self.exitApplicationCleanly()
 
     def sendToWebServer(self,*args):
         try:
@@ -506,13 +524,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.hub.quit()
         except Exception, e:
             print ('**Exception self.hub.quit():',e)
-#
-#        try:
-#            if self.eyetracker:
-#                self.eyetracker.setRecordingState(False)
-#                self.eyetracker.setConnectionState(False)
-#        except Exception, e:
-#            print ('**Exception in close():',e)
+
 
     def startSubProcess(self, *args,**kwargs):
         stdout_file=kwargs['stdout_file']
@@ -522,7 +534,7 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             p=subprocess.Popen(cmd_line, stdin=subprocess.PIPE, 
                                stdout=out, stderr=err
                                )
-        return p#psutil.Process(p.pid)
+        return p
 
     def startEyeTrackerCalibration(self):
         self.hub.sendMessageEvent("CALIBRATION STARTING. Enabling keyboard events.")
@@ -692,9 +704,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.hub.sendMessageEvent(end_msg_txt, "data_monitoring")
 
     def startSSAconvertion(self):
-        print("EXP, SESS:", self.active_exp_name, self.getSessionMetaData().get('code'))
-        print("generate_ssa_files.bat %s %s"%(self.active_exp_name, self.getSessionMetaData().get('code')))
+        #print("EXP, SESS:", self.active_exp_name, self.getSessionMetaData().get('code'))
+        #print("generate_ssa_files.bat %s %s"%(self.active_exp_name, self.getSessionMetaData().get('code')))
         self.p = subprocess.Popen("generate_ssa_files.bat %s %s"%(self.active_exp_name, self.getSessionMetaData().get('code')), shell=True)
+        return self.p
 
     def startScreenCaptureStream(self):
         appcfg=self.getConfiguration()
