@@ -461,11 +461,10 @@ class DataCollectionRuntime(ioHubExperimentRuntime):
             self.ui_server_websocket.send(tosend)
         except Exception, e:
             print(">>>")
-            print("Error: sendToWebServer failed: ",e)
-            import traceback
-            traceback.print_exc()
-            print
-            print("Attempting to send:",args)
+            print("SendToWebServer failed: ",e)
+            #import traceback
+            #traceback.print_exc()
+            print("Attempted to send:",args)
             print("<<<")
 
     def resetWebAppDataStats(self):
