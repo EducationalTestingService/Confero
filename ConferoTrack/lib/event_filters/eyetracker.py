@@ -225,6 +225,8 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         self.last_valid_sample = None
         self.last_sample = None
         self.invalid_samples_run = []
+        self.invalid_samples_run_end = []
+
         self._last_parser_sample = None
         self.open_parser_events = OrderedDict()
         self.convertEvent = None
@@ -318,6 +320,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                     # Discard all invalid samples that occurred prior
                     # to the first valid sample.
                     del self.invalid_samples_run[:]
+                    del self.invalid_samples_run_end[:]
 
                 # Then add current event to field filters. If a filtered event
                 # is returned, add it to the to be processed sample list.
@@ -330,7 +333,15 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
                     samples_for_processing.append(filtered_event)
                 self.last_valid_sample = current_mono_evt
             else:
-                self.invalid_samples_run.append(current_mono_evt)
+                if len(self.invalid_samples_run)<256:
+                    self.invalid_samples_run.append(current_mono_evt)
+                else:
+                    if len(self.invalid_samples_run_end)<256:
+                        self.invalid_samples_run_end.append(current_mono_evt)
+                    else:
+                        self.invalid_samples_run_end = self.invalid_samples_run_end[1:]
+                        self.invalid_samples_run_end.append(current_mono_evt)
+
                 self.addOutputEvent(current_mono_evt)
 
             self.last_sample = current_mono_evt
@@ -480,6 +491,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
         self.last_valid_sample = None
         self.last_sample = None
         self.invalid_samples_run = []
+        self.invalid_samples_run_end = []
         self.open_parser_events.clear()
         self.x_position_filter.clear()
         self.y_position_filter.clear()
@@ -506,6 +518,7 @@ class EyeTrackerEventParser(eventfilters.DeviceEventFilter):
 
     def interpolateMissingData(self, current_sample):
         samples_for_processing = []
+        self.invalid_samples_run.extend(self.invalid_samples_run_end)
         invalid_sample_count = len(self.invalid_samples_run)
         gx_ix = self.io_event_ix('angle_x')
         gy_ix = self.io_event_ix('angle_y')
