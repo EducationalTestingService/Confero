@@ -18,6 +18,8 @@ var conferotrack = {
 
         // Handle any errors that occur.
         this.socket.onerror = function(error) {
+			// garyfeng: raise an error when not connected
+			jQuery(document).trigger('on_confero_connection_error',{conferoIP:this.conferoview_ip, msg:"Confero Track not Connected"});
             console.log('ConferoEventListener WebSocket Error: ' + error);
             };
 
@@ -68,6 +70,13 @@ var conferotrack = {
 
     send : function (msg) {
         var sendmsg=JSON.stringify(msg);
+		// garyfeng: check if the socket is ready; raise an error if not 
+		if (this.socket.readyState !=1){
+			// socket is not ready
+			jQuery(document).trigger('on_confero_send_error',{conferoIP:this.conferoview_ip, msg:sendmsg});
+			return
+		}
+        
         this.socket.send(sendmsg);
     }
 };
