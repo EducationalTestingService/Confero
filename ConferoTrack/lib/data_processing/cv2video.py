@@ -175,7 +175,7 @@ class OpenCVideo(object):
                 elif cvid.last_frame_index:
                     index_diff = frame_index - cvid.last_frame_index
                     time_diff = frame_time - cvid.last_frame_time
-                    usec_time_diff = int(time_diff * 1000000)
+                    usec_time_diff = int(round(time_diff * 1000000))
                     if index_diff != 1 or usec_time_diff != usec_ifi:
                         print 'checkVideoIFI alert:', frame_index, frame_time, \
                                index_diff, usec_time_diff, usec_ifi
