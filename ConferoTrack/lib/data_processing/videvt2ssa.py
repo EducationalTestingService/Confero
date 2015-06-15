@@ -16,9 +16,9 @@ VLC_OFFSET_CORRECTION = 1.0
 # If True, use mouse position, not gaze position, when creating SSA files.
 PLOT_MOUSE = False
 
-PRINT_STATUS = False
+PRINT_STATUS = True
 SAVE_TXT_FILE = True
-SAVE_NPZ_FILE = False
+SAVE_NPZ_FILE = True
 SAVE_SSA_FILES = True
 
 RESULT_DIR_ROOT = r"..\..\Results"
@@ -60,6 +60,9 @@ def getVideoEventSyncMessages(session_folder):
                 session_id)))
 
         # Ensure that start records are matched to correct stop records
+        # garyfeng
+        printf("====================")
+        printf("Timing for flashes")
         rec_blocks_idx = []
         ei = 0
         for si in range(len(rec_start_msg_idx)):
@@ -72,6 +75,9 @@ def getVideoEventSyncMessages(session_folder):
                     ei += 1
             else:
                 rec_blocks_idx.append((s1, e1))
+            # garyfeng: debugging
+            #printf(s1, e1)
+        #printf("\n")
 
         block_flash_msg_times = []
         for si, ei in rec_blocks_idx:
@@ -83,6 +89,8 @@ def getVideoEventSyncMessages(session_folder):
 
                 if msg_text[0] == '[' and msg_text[-1] == ']':
                     cblock.append((msg_time, msg_text))
+                # garyfeng: debugging
+                printf(msg_time, msg_text)
     except:
         import traceback
 
@@ -238,17 +246,32 @@ preamble = dedent('''
     [Events]
     Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n\n''')
 
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    #return ret[n - 1:] / n
+    return ret / n
+
 def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
     video_ids = np.unique(video_frame_evt_array['video_id'])
     swidth, sheight = APP_CONF.get('screen_capture',{}).get('screen_resolution')
     eye_num = 0
+    # garyfeng: delay, arbitrarily set to 2 seconds. This looks about right. Need to figure out why. 
+    delay=2
+    # end garyfeng
+
     for vid in video_ids:
         output_file_name = os.path.join(session_folder,"screen_capture_%d.ssa"%(vid+1))
         vid_frame_samples = video_frame_evt_array[video_frame_evt_array['video_id']==vid]
 
-        vid_frame_samples['frame_time']-=mean_offset_per_vid[vid]
-        vid_frame_samples['event_time']-=mean_offset_per_vid[vid]
+        vid_frame_samples['frame_time']-= (mean_offset_per_vid[vid]+delay)
+        vid_frame_samples['event_time']-= (mean_offset_per_vid[vid]+delay)
         vid_frame_samples['gaze_x']+=swidth/2
+
+        # garyfeng: smoothing with moving_average
+        vid_frame_samples['gaze_x'] = moving_average(vid_frame_samples['gaze_x'],5)
+        vid_frame_samples['gaze_y'] = moving_average(vid_frame_samples['gaze_y'],5)
+        # end garyfeng
 
         with open(output_file_name, 'w') as output_file:
             output_file.write(preamble.format(swidth, sheight))
@@ -257,6 +280,10 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
                     next_frame_sample = vid_frame_samples[i+1]
                     timestamp_start = timedelta(0, float(frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
                     timestamp_end = timedelta(0, float(next_frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
+                    # garyfeng: skip if timestamp_start==timestamp_end
+                    if (timestamp_start==timestamp_end):
+                        continue
+                    # end garyfeng
                     gaze_y = sheight - (frame_sample['gaze_y'] + sheight/2)
                     output_file.write('Dialogue:{0},{1},{2},Default,,0000,0000,0000,,{{\\pos({3},{4})\\an5}}+\n'.format(eye_num,
                                                                     unicode(timestamp_start)[:-4],
@@ -342,7 +369,7 @@ if __name__ == '__main__':
             printf()
             printf('===============================')
             printf('Processing:', vpath)
-            printf('Load Time (sec):', t2 - t1)
+            printf('Video Load Time (sec):', t2 - t1)
             printf("Frame count:", cvid.total_frame_count)
             printf("Duration (sec, minutes):", cvid.duration,
                    cvid.duration / 60.0)
@@ -370,8 +397,8 @@ if __name__ == '__main__':
                                                                          color_thresh=SYNC_AVG_COLOR_THRESH,
                                                                          std_thresh=SYNC_STD_COLOR_THRESH)
             t2 = getTime()
-            printf()
             printf('Video Start detectSyncTimeFrames duration:', t2 - t1)
+            printf()
 
             printf('Find Video End Sync Flashes....')
             vendstart = cvid.total_frame_count - MAX_SEARCH_FRAMES
@@ -387,8 +414,8 @@ if __name__ == '__main__':
                                                       color_thresh=SYNC_AVG_COLOR_THRESH,
                                                       std_thresh=SYNC_STD_COLOR_THRESH)
             t2 = getTime()
-            printf()
             printf('Video End detectSyncTimeFrames duration:', t2 - t1)
+            printf()
 
             start_sync_times = _flash_msg_times[:len(start_sync_frames)]
             end_sync_times = _flash_msg_times[len(start_sync_frames):]
