@@ -257,7 +257,8 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
     swidth, sheight = APP_CONF.get('screen_capture',{}).get('screen_resolution')
     eye_num = 0
     # garyfeng: delay, arbitrarily set to 2 seconds. This looks about right. Need to figure out why. 
-    delay=2
+    # now changed back to 0
+    delay=0
     # end garyfeng
 
     for vid in video_ids:
