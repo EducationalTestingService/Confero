@@ -285,12 +285,28 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
                     if (timestamp_start==timestamp_end):
                         continue
                     # end garyfeng
-                    gaze_y = sheight - (frame_sample['gaze_y'] + sheight/2)
+                    
+                    # garyfeng: fixing a bug where timestamp doesn't have the trailing msc and microsec
+                    #   when (I guess) the fraction is exactly 000000. for example:
+                    # 0:36:05.965820
+                    # 0:36:06
+                    # Dialogue:0,0:36:05.96,0:3,Default,,0000,0000,0000,,{\pos(1086,208)\an5}+
+                    # we detect this case and add trailing 0s
+                    strStart = str(timestamp_start)
+                    strEnd = str(timestamp_end)
+                    if (len(strStart)<10):
+                        strStart+=".000000"
+                    if (len(strEnd)<10):
+                        strEnd+=".000000"
+                    # end garyfeng
+
+                    # garyfeng: why not do it earlier with vid_frame_samples
+                    #gaze_y = sheight - (frame_sample['gaze_y'] + sheight/2)
                     output_file.write('Dialogue:{0},{1},{2},Default,,0000,0000,0000,,{{\\pos({3},{4})\\an5}}+\n'.format(eye_num,
-                                                                    unicode(timestamp_start)[:-4],
-                                                                    unicode(timestamp_end)[:-4],
+                                                                    unicode(strStart)[:-4],
+                                                                    unicode(strEnd)[:-4],
                                                                     int(round(frame_sample['gaze_x'])),
-                                                                    int(round(gaze_y))
+                                                                    int(round(frame_sample['gaze_y']))
                                                                     )
                                      )
 
