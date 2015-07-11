@@ -28,7 +28,7 @@ if USE_FIXATIONS:
 # moving average only for samples
 SAMPLES_FOR_MOVING_AVERAGE = 5
 # garyfeng: verbose: can be very long; better to redirect the output to a text file
-PRINT_VERBOSE = True
+PRINT_VERBOSE = False
 INFO_ONLY = False
 if INFO_ONLY:
     PRINT_VERBOSE = True
@@ -256,7 +256,7 @@ def getFixations(session_folder):
                     printf(e['session_id'], e['event_id'], e['time'], e['gaze_x'], e['gaze_y'])
                 # garyfeng: simply save the fixations using a filler frame_num
                 frame_num +=1
-                fstart_time=9999
+                fstart_time=e['time']*1000
                 video_frame_events[frame_num].append((
                     vi, frame_num, fstart_time/1000.0,
                     e['time'], e[X_COL], e[Y_COL], e['status']))
