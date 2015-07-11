@@ -15,11 +15,24 @@ VLC_OFFSET_CORRECTION = 1.0
 
 # If True, use mouse position, not gaze position, when creating SSA files.
 PLOT_MOUSE = False
-
 PRINT_STATUS = True
 SAVE_TXT_FILE = True
 SAVE_NPZ_FILE = True
 SAVE_SSA_FILES = True
+
+# garyfeng: Can choose to plot fixation or samples
+USE_FIXATIONS = False
+if USE_FIXATIONS:
+    SAVE_TXT_FILE = False
+    SAVE_NPZ_FILE = False
+# moving average only for samples
+SAMPLES_FOR_MOVING_AVERAGE = 5
+# garyfeng: verbose: can be very long; better to redirect the output to a text file
+PRINT_VERBOSE = True
+INFO_ONLY = False
+if INFO_ONLY:
+    PRINT_VERBOSE = True
+# end garyfeng
 
 RESULT_DIR_ROOT = r"..\..\Results"
 
@@ -34,7 +47,11 @@ if PLOT_MOUSE:
     Y_COL='y_position'
 else:
     EVENT_FILTER_ID = 23
-    SAMPLE_EVENT_ID = EventConstants.MONOCULAR_EYE_SAMPLE
+    # garyfeng: use fixation start as the timestemp
+    if USE_FIXATIONS:
+        SAMPLE_EVENT_ID = EventConstants.FIXATION_START
+    else:
+        SAMPLE_EVENT_ID = EventConstants.MONOCULAR_EYE_SAMPLE
     X_COL='gaze_x'
     Y_COL='gaze_y'
 
@@ -61,8 +78,11 @@ def getVideoEventSyncMessages(session_folder):
 
         # Ensure that start records are matched to correct stop records
         # garyfeng
-        printf("====================")
-        printf("Timing for flashes")
+        if PRINT_VERBOSE:
+          printf("====================")
+          printf("session_folder== %s" % (session_folder))
+          printf("session_id== %d" % (session_id))
+          printf("RECORDING_STARTED and RECORDING_STOPPED events in data table MessageEvent")
         rec_blocks_idx = []
         ei = 0
         for si in range(len(rec_start_msg_idx)):
@@ -76,8 +96,11 @@ def getVideoEventSyncMessages(session_folder):
             else:
                 rec_blocks_idx.append((s1, e1))
             # garyfeng: debugging
-            #printf(s1, e1)
-        #printf("\n")
+                if PRINT_VERBOSE:
+                    printf(s1, e1)
+        if PRINT_VERBOSE:
+            printf("\n")
+            printf("Timing for flashes")
 
         block_flash_msg_times = []
         for si, ei in rec_blocks_idx:
@@ -90,7 +113,8 @@ def getVideoEventSyncMessages(session_folder):
                 if msg_text[0] == '[' and msg_text[-1] == ']':
                     cblock.append((msg_time, msg_text))
                 # garyfeng: debugging
-                printf(msg_time, msg_text)
+                if PRINT_VERBOSE:
+                    printf(msg_time, msg_text)
     except:
         import traceback
 
@@ -129,6 +153,137 @@ def getDataStoreRecordingBlockBounds(hubdata):
     return evt_blocks_idx
 
 
+def getFixations(session_folder):
+    """
+    Return a numpy ndarray of size (total_event_count,4). Each row represents
+    an event that occurred during the given screen capture video, between
+    experiment message events defined by the app config settings:
+
+        data_collection:
+            recording_period:
+                event_period:
+                    start_msg: START_EVENT_PERIOD
+                    end_msg: END_EVENT_PERIOD
+
+    The elements of a row are video_id, frame_index, event_type, event_id, event_time
+
+    """
+    result_dtype = [('video_id', np.uint8),
+                    ('frame_number', np.uint32),
+                    ('frame_time', np.float32),
+                    ('event_time', np.float32),
+                    ('gaze_x', np.float32),
+                    ('gaze_y', np.float32),
+                    ('status', np.int)
+
+                    ]
+    hubdata = None
+    try:
+        hubdata = openDataStoreReader(session_folder)
+
+        evt_blocks_idx = getDataStoreRecordingBlockBounds(hubdata)
+        # garyfeng: debug
+        if PRINT_VERBOSE:
+            printf("=====================================")
+            printf("getSamplesPerFrame\nevt_blocks_idx:", evt_blocks_idx)
+        # garyfeng: end
+        msgeventstable = hubdata.getEventTable(EventConstants.MESSAGE)
+        # garyfeng: The following line does NOT seem to limit the data to the current session_id.
+        # so we need to add a filter to the current session ID
+        session_id = hubdata.getSessionMetaData()[0].session_id
+        # garyfeng: end
+        sampleeventstable = hubdata.getEventTable(SAMPLE_EVENT_ID)
+
+
+
+        # Now match up frame start and end times for each video of the
+        # current session, creating the events_by_video_frame np array rows
+        # defined by result_dtype.
+        video_events = []
+        for vi, (si, ei) in enumerate(evt_blocks_idx):
+            # garyfeng
+            # debug
+            if PRINT_VERBOSE:
+                printf("getSamplesPerFrame: si, ei indices")
+                printf("si", si)
+                printf("ei",ei)
+            # end garyfeng
+
+            edge_msgs = msgeventstable[[si, ei]]
+            rec_start_msg, rec_end_msg = edge_msgs[:]
+            rec_block_start_time = rec_start_msg['time']
+            rec_block_end_time = rec_end_msg['time']
+            # garyfeng
+            # debug
+            if PRINT_VERBOSE:
+                printf("getSamplesPerFrame")
+                printf("rec_block_start_time", rec_block_start_time)
+                printf("rec_block_end_time",rec_block_end_time)
+            # end garyfeng
+
+            #cond = "(time >= %f) & (time <= %f) " % (
+            # garyfeng: adding condition to use only valid eye gaze
+            # also adding the condition to restrict to only the current session_id
+            cond = "(time >= %f) & (time <= %f) & (status == 0) & (session_id==%d)" % (
+                rec_block_start_time, rec_block_end_time, session_id)
+            if EVENT_FILTER_ID >= 0:
+                 cond = cond + " & (filter_id == %d)" % (EVENT_FILTER_ID)
+            # garyfeng: debug
+            printf("getSamplesPerFrame: filter cond=", cond)
+            # garyfeng: ;end
+            event_count = 0
+            filtered_sample_events = sampleeventstable.read_where(cond)
+            fixation_count = filtered_sample_events.shape[0]
+            video_frame_events = [[] for z in xrange(fixation_count+1)]
+            printf("Total Fixations=", fixation_count)
+
+            # frame_times = frame_times_per_session_video[vi]
+            # frame_count = frame_times.shape[0]
+            # frame_num = 0
+            # fstart_time = int(frame_times[0][1] * 1000)
+            # fend_time = int(frame_times[1][1] * 1000)
+            # garyfeng
+            # if PRINT_VERBOSE:
+            #     printf("initial fstart_time", fstart_time)
+            #     printf("initial fend_time", fend_time)
+            # garyfeng: end
+
+            frame_num=0
+            for e in filtered_sample_events:
+                evt_time = int(e['time'] * 1000)
+                # garyfeng: debug
+                if PRINT_VERBOSE:
+                    printf(e['session_id'], e['event_id'], e['time'], e['gaze_x'], e['gaze_y'])
+                # garyfeng: simply save the fixations using a filler frame_num
+                frame_num +=1
+                fstart_time=9999
+                video_frame_events[frame_num].append((
+                    vi, frame_num, fstart_time/1000.0,
+                    e['time'], e[X_COL], e[Y_COL], e['status']))
+                if PRINT_VERBOSE:
+                    if(video_frame_events[frame_num]):
+                        printf("        ", video_frame_events[frame_num])
+                # end garyfeng
+
+            # now have all mono samples per frame in the current video.
+            # They are not sorted by time in each video, but by event type.
+            # Resort events for each video in each frame.
+            video_event_list = []
+            for frame_events in video_frame_events:
+                if frame_events:
+                    video_event_list.extend(
+                        sorted(frame_events, key=lambda x: x[-4]))
+
+            video_events.extend(video_event_list)
+        # Convert to numpy ndarray
+        return np.array(video_events, dtype=result_dtype)
+    except:
+        import traceback
+        traceback.print_exc()
+    finally:
+        if hubdata:
+            hubdata.close()
+
 def getSamplesPerFrame(session_folder, frame_times_per_session_video):
     """
     Return a numpy ndarray of size (total_event_count,4). Each row represents
@@ -158,9 +313,18 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
         hubdata = openDataStoreReader(session_folder)
 
         evt_blocks_idx = getDataStoreRecordingBlockBounds(hubdata)
-
+        # garyfeng: debug
+        if PRINT_VERBOSE:
+            printf("=====================================")
+            printf("getSamplesPerFrame\nevt_blocks_idx:", evt_blocks_idx)
+        # garyfeng: end
         msgeventstable = hubdata.getEventTable(EventConstants.MESSAGE)
+        # garyfeng: The following line does NOT seem to limit the data to the current session_id.
+        # so we need to add a filter to the current session ID
+        session_id = hubdata.getSessionMetaData()[0].session_id
+        # garyfeng: end
         sampleeventstable = hubdata.getEventTable(SAMPLE_EVENT_ID)
+
 
 
         # Now match up frame start and end times for each video of the
@@ -168,14 +332,37 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
         # defined by result_dtype.
         video_events = []
         for vi, (si, ei) in enumerate(evt_blocks_idx):
+            # garyfeng
+            # debug
+            if PRINT_VERBOSE:
+                printf("getSamplesPerFrame: si, ei indices")
+                printf("si", si)
+                printf("ei",ei)
+            # end garyfeng
+
             edge_msgs = msgeventstable[[si, ei]]
             rec_start_msg, rec_end_msg = edge_msgs[:]
             rec_block_start_time = rec_start_msg['time']
             rec_block_end_time = rec_end_msg['time']
-            cond = "(time >= %f) & (time <= %f)" % (
-                rec_block_start_time, rec_block_end_time)
+            # garyfeng
+            # debug
+            if PRINT_VERBOSE:
+                printf("getSamplesPerFrame")
+                printf("rec_block_start_time", rec_block_start_time)
+                printf("rec_block_end_time",rec_block_end_time)
+            # end garyfeng
+
+            #cond = "(time >= %f) & (time <= %f) " % (
+            # garyfeng: adding condition to use only valid eye gaze
+            # also adding the condition to restrict to only the current session_id
+            cond = "(time >= %f) & (time <= %f) & (status == 0) & (session_id==%d)" % (
+                rec_block_start_time, rec_block_end_time, session_id)
             if EVENT_FILTER_ID >= 0:
                  cond = cond + " & (filter_id == %d)" % (EVENT_FILTER_ID)
+            # garyfeng: debug
+            printf("getSamplesPerFrame: filter cond=", cond)
+            # garyfeng: ;end
+
             frame_times = frame_times_per_session_video[vi]
             frame_count = frame_times.shape[0]
             video_frame_events = [[] for z in xrange(frame_count)]
@@ -184,8 +371,19 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
             frame_num = 0
             fstart_time = int(frame_times[0][1] * 1000)
             fend_time = int(frame_times[1][1] * 1000)
+            # garyfeng
+            if PRINT_VERBOSE:
+                printf("initial fstart_time", fstart_time)
+                printf("initial fend_time", fend_time)
+            # garyfeng: end
+
             for e in filtered_sample_events:
                 evt_time = int(e['time'] * 1000)
+                # garyfeng: debug
+                if PRINT_VERBOSE:
+                    printf(e['session_id'], e['event_id'], e['time'], e['gaze_x'], e['gaze_y'])
+                # garyfeng
+
                 if evt_time >= fstart_time:
                     if evt_time < fend_time:
                         event_count += 1
@@ -193,6 +391,11 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
                             vi, frame_num, fstart_time/1000.0,
                             e['time'], e[X_COL], e[Y_COL], e['status']))
                     else:
+                        # garyfeng
+                        if PRINT_VERBOSE:
+                            if(video_frame_events[frame_num]):
+                                printf("        ", video_frame_events[frame_num])
+                        # garyfeng
                         frame_num += 1
                         if frame_num + 1 < frame_count:
                             fstart_time = int(
@@ -256,8 +459,7 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
     video_ids = np.unique(video_frame_evt_array['video_id'])
     swidth, sheight = APP_CONF.get('screen_capture',{}).get('screen_resolution')
     eye_num = 0
-    # garyfeng: delay, arbitrarily set to 2 seconds. This looks about right. Need to figure out why. 
-    # now changed back to 0
+    # garyfeng: delay, arbitrarily set to 2 seconds. This looks about right. Need to figure out why.
     delay=0
     # end garyfeng
 
@@ -268,10 +470,12 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
         vid_frame_samples['frame_time']-= (mean_offset_per_vid[vid]+delay)
         vid_frame_samples['event_time']-= (mean_offset_per_vid[vid]+delay)
         vid_frame_samples['gaze_x']+=swidth/2
+        vid_frame_samples['gaze_y'] = sheight - (vid_frame_samples['gaze_y'] + sheight/2)
 
-        # garyfeng: smoothing with moving_average
-        vid_frame_samples['gaze_x'] = moving_average(vid_frame_samples['gaze_x'],5)
-        vid_frame_samples['gaze_y'] = moving_average(vid_frame_samples['gaze_y'],5)
+        # garyfeng: smoothing with moving_average, unless we are using fixations
+        if not USE_FIXATIONS:
+            vid_frame_samples['gaze_x'] = moving_average(vid_frame_samples['gaze_x'],SAMPLES_FOR_MOVING_AVERAGE)
+            vid_frame_samples['gaze_y'] = moving_average(vid_frame_samples['gaze_y'],SAMPLES_FOR_MOVING_AVERAGE)
         # end garyfeng
 
         with open(output_file_name, 'w') as output_file:
@@ -279,13 +483,17 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
             for i,frame_sample in enumerate(vid_frame_samples[:-1]):
                 if frame_sample['status'] != 22:
                     next_frame_sample = vid_frame_samples[i+1]
-                    timestamp_start = timedelta(0, float(frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
-                    timestamp_end = timedelta(0, float(next_frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
+                    # should be using event time as this was when fixations started
+                    timestamp_start = timedelta(0, float(frame_sample['event_time']+VLC_OFFSET_CORRECTION))
+                    timestamp_end = timedelta(0, float(next_frame_sample['event_time']+VLC_OFFSET_CORRECTION))
+                    # timestamp_start = timedelta(0, float(frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
+                    # timestamp_end = timedelta(0, float(next_frame_sample['frame_time']+VLC_OFFSET_CORRECTION))
                     # garyfeng: skip if timestamp_start==timestamp_end
+                    # why not take an average of all the samples in this frame??@@@@
                     if (timestamp_start==timestamp_end):
                         continue
                     # end garyfeng
-                    
+
                     # garyfeng: fixing a bug where timestamp doesn't have the trailing msc and microsec
                     #   when (I guess) the fraction is exactly 000000. for example:
                     # 0:36:05.965820
@@ -309,6 +517,16 @@ def createSSA(video_frame_evt_array, session_folder, mean_offset_per_vid):
                                                                     int(round(frame_sample['gaze_y']))
                                                                     )
                                      )
+                    if PRINT_VERBOSE:
+                        printf(strStart)
+                        printf(strEnd)
+                        printf('Dialogue:{0},{1},{2},Default,,0000,0000,0000,,{{\\pos({3},{4})\\an5}}+\n'.format(eye_num,
+                                                                    unicode(timestamp_start)[:-4],
+                                                                    unicode(timestamp_end)[:-4],
+                                                                    int(round(frame_sample['gaze_x'])),
+                                                                    int(round(frame_sample['gaze_y']))
+                                                                    )
+                        )
 
 def saveVideoEventFiles(video_frame_evt_array, session_folder, mean_offset_per_video):
     if SAVE_TXT_FILE:
@@ -317,11 +535,11 @@ def saveVideoEventFiles(video_frame_evt_array, session_folder, mean_offset_per_v
         printf("Saving session_vframe_events.txt...")
         header = "Created on %s UTC.\nProcessing session folder: %s\n" % (
             datetime.datetime.utcnow().isoformat(), session_folder)
-        header += "video_id\tframe_number\tframe_time\tevent_time\tgaze_x\tgaze_y\tstatus\n"
+        header += "video_id    frame_number    frame_time    event_time    gaze_x    gaze_y    status\n"
         fmt = ['%d', '%d', '%.3f', '%.3f',  '%.3f',  '%.3f', '%d']
         np.savetxt(
             os.path.join(session_folder, 'session_vframe_events.txt'),
-            video_frame_evt_array, header=header, delimiter='\t', fmt=fmt)
+            video_frame_evt_array, header=header, delimiter='    ', fmt=fmt)
 
     if SAVE_NPZ_FILE:
         printf("Saving session_vframe_events.npz...")
@@ -395,15 +613,24 @@ if __name__ == '__main__':
 
             #check for IFI issues
             t1 = getTime()
-            video_frame_times = cvid.frametimes
-            t2 = getTime()
             printf()
-            printf('cvid.frametimes duration:', t2 - t1)
+            if INFO_ONLY:
+                printf("== INFO ONLY, NOT generating SSA ==")
+            else:
+                if not USE_FIXATIONS:
+                    video_frame_times = cvid.frametimes
+                #printf("== NOT reading video frames ==")
+                t2 = getTime()
+                printf('cvid.frametimes duration:', t2 - t1)
             printf()
 
             printf('Find Video Start Sync Flashes....')
             # Get Video frame time to Event time offset and drift info
             _flash_msg_times = flash_msg_times_per_video[rec_video_index]
+            # garyfeng
+            if PRINT_VERBOSE:
+                printf("_flash_msg_times")
+                printf(_flash_msg_times)
 
             t1 = getTime()
             start_sync_frames, last_frame_checked = cvid.detectSyncTimeFrames(start_frame=1,
@@ -417,77 +644,94 @@ if __name__ == '__main__':
             printf('Video Start detectSyncTimeFrames duration:', t2 - t1)
             printf()
 
-            printf('Find Video End Sync Flashes....')
-            vendstart = cvid.total_frame_count - MAX_SEARCH_FRAMES
-            vendstart = max(vendstart, last_frame_checked + 20)
-            t1 = getTime()
-            end_sync_frames, _ = cvid.detectSyncTimeFrames(
-                                                      start_frame=vendstart,
-                                                      color_list=SYNC_COLORS,
-                                                      sync_region=SYNC_TIME_BOX,
-                                                      iterations=SYNC_TRANSITION_COUNT,
-                                                      max_frames_searched
-                                                      =MAX_SEARCH_FRAMES,
-                                                      color_thresh=SYNC_AVG_COLOR_THRESH,
-                                                      std_thresh=SYNC_STD_COLOR_THRESH)
-            t2 = getTime()
-            printf('Video End detectSyncTimeFrames duration:', t2 - t1)
-            printf()
+            # printf('Find Video End Sync Flashes....')
+            # vendstart = cvid.total_frame_count - MAX_SEARCH_FRAMES
+            # vendstart = max(vendstart, last_frame_checked + 20)
+            # t1 = getTime()
+            # end_sync_frames, _ = cvid.detectSyncTimeFrames(
+            #                                           start_frame=vendstart,
+            #                                           color_list=SYNC_COLORS,
+            #                                           sync_region=SYNC_TIME_BOX,
+            #                                           iterations=SYNC_TRANSITION_COUNT,
+            #                                           max_frames_searched
+            #                                           =MAX_SEARCH_FRAMES,
+            #                                           color_thresh=SYNC_AVG_COLOR_THRESH,
+            #                                           std_thresh=SYNC_STD_COLOR_THRESH)
+            # t2 = getTime()
+            # printf('Video End detectSyncTimeFrames duration:', t2 - t1)
+            # printf()
 
             start_sync_times = _flash_msg_times[:len(start_sync_frames)]
-            end_sync_times = _flash_msg_times[len(start_sync_frames):]
+            #end_sync_times = _flash_msg_times[len(start_sync_frames):]
 
             start_times = np.asarray([(tt[0][1], tt[1][0]) for tt in
                                       zip(start_sync_frames, start_sync_times)])
-            end_times = np.asarray([(tt[0][1], tt[1][0]) for tt in
-                                    zip(end_sync_frames, end_sync_times)])
+            #end_times = np.asarray([(tt[0][1], tt[1][0]) for tt in
+            #                        zip(end_sync_frames, end_sync_times)])
 
             svidtimes, smsgtimes = start_times[:, 0], start_times[:, 1]
-            evidtimes, emsgtimes = end_times[:, 0], end_times[:, 1]
+            #evidtimes, emsgtimes = end_times[:, 0], end_times[:, 1]
 
             start_offsets = smsgtimes - svidtimes
-            end_offsets = emsgtimes - evidtimes
+            #end_offsets = emsgtimes - evidtimes
+
+            # garyfeng
+            if PRINT_VERBOSE:
+                printf("smsgtimes: starting timestamp on the eye-tracker clock")
+                printf(smsgtimes)
+                printf("svidtimes: starting timestamp on the video clock")
+                printf(svidtimes)
+                printf("offset: eye-tracker - video timestamp")
+                printf(start_offsets)
 
             printf()
             printf('Session %s, Recording %d' % (
                 session_name, rec_video_index + 1))
             printf()
             printf('Start Sync Offsets:')
-            printf('\tMin Offset:', start_offsets.min())
-            printf('\tMax Offset:', start_offsets.max())
-            printf('\tOffset Range:', start_offsets.max() - start_offsets.min())
-            printf('\tMean Offset:', start_offsets.mean())
-            printf('\tStdev Offset:', start_offsets.std())
+            printf('    Min Offset:', start_offsets.min())
+            printf('    Max Offset:', start_offsets.max())
+            printf('    Offset Range:', start_offsets.max() - start_offsets.min())
+            printf('    Mean Offset:', start_offsets.mean())
+            #garyfeng: median is more appropriate here due to possible extreme values.
+            printf('    Median Offset:', np.median(start_offsets))
+            printf('    Stdev Offset:', start_offsets.std())
             printf()
-            printf('End Sync Offsets:')
-            printf('\tMin Offset:', end_offsets.min())
-            printf('\tMax Offset:', end_offsets.max())
-            printf('\tOffset Range:', end_offsets.max() - end_offsets.min())
-            printf('\tMean Offset:', end_offsets.mean())
-            printf('\tStdev Offset:', end_offsets.std())
-            printf()
-            printf('Timing Translation:')
-            min_video_offset_diff = end_offsets.min() - start_offsets.min()
-            max_video_offset_diff = end_offsets.max() - start_offsets.max()
-            mean_video_offset_diff = end_offsets.mean() - start_offsets.mean()
-            mean_video_offset = (
-                                    end_offsets.mean() + start_offsets.mean() ) / 2.0
-            printf('\tMin Video Drift:', min_video_offset_diff)
-            printf('\tMax Video Drift:', max_video_offset_diff)
-            printf('\tMean Video Drift:', mean_video_offset_diff)
-            printf('\tMean Video Offset:', mean_video_offset)
+            # printf('End Sync Offsets:')
+            # printf('    Min Offset:', end_offsets.min())
+            # printf('    Max Offset:', end_offsets.max())
+            # printf('    Offset Range:', end_offsets.max() - end_offsets.min())
+            # printf('    Mean Offset:', end_offsets.mean())
+            # printf('    Stdev Offset:', end_offsets.std())
+            # printf()
+            # printf('Timing Translation:')
+            # min_video_offset_diff = end_offsets.min() - start_offsets.min()
+            # max_video_offset_diff = end_offsets.max() - start_offsets.max()
+            # mean_video_offset_diff = end_offsets.mean() - start_offsets.mean()
+            # mean_video_offset = (
+            #                         end_offsets.mean() + start_offsets.mean() ) / 2.0
+            #garyfeng: median is more appropriate here due to possible extreme values.
+            mean_video_offset =  np.median(start_offsets)
+
+            # printf('    Min Video Drift:', min_video_offset_diff)
+            # printf('    Max Video Drift:', max_video_offset_diff)
+            # printf('    Mean Video Drift:', mean_video_offset_diff)
+            printf('    Median Video Offset:', mean_video_offset)
+
 
             # Convert video frame times to event time base.
             # Drift seems to be ~ 1 frame (i.e. 33 msec @ 30 fps) over 40 minute
             # video, so not worrying about drift correction in time base right now.
             # Should keep an eye on this as more videos are tested.
-            video_frame_times[:, 1] += mean_video_offset
-            mean_offsets_per_video.append(mean_video_offset)
-            # Save corrected array data to a npz file so it can just be re-used
-            # later instead of recalculated each time session video times are
-            # needed.
-            session_rec_block_frame_events.append(video_frame_times)
-            #np.savez(os.path.join(session_folder,video_file_name+'.npz'),frame_event_times=video_frame_times)
+            if not INFO_ONLY:
+                mean_offsets_per_video.append(mean_video_offset)
+                if not USE_FIXATIONS:
+                    video_frame_times[:, 1] += mean_video_offset
+                    # Save corrected array data to a npz file so it can just be re-used
+                    # later instead of recalculated each time session video times are
+                    # needed.
+                    session_rec_block_frame_events.append(video_frame_times)
+                    #np.savez(os.path.join(session_folder,video_file_name+'.npz'),frame_event_times=video_frame_times)
 
         # Now put it all together, creating a events_frame table that holds
         # the event index info for each event that occurred within each frame
@@ -495,19 +739,23 @@ if __name__ == '__main__':
         # Get event summary info indexed by video frame and video index
         #     result_dtype = [('video_id', np.uint8),('frame_number', np.uint32), ('event_type', np.uint8),
         #            ('event_id', np.uint32), ('time', np.float32)]
-        print 'mean_offsets_per_video:',mean_offsets_per_video
-        t1 = getTime()
-        video_frame_sample_array = getSamplesPerFrame(session_folder,
-                                                  session_rec_block_frame_events)
+        if not INFO_ONLY:
+            print 'mean_offsets_per_video:',mean_offsets_per_video
+            t1 = getTime()
+            if USE_FIXATIONS:
+                video_frame_sample_array = getFixations(session_folder)
+            else:
+                video_frame_sample_array = getSamplesPerFrame(session_folder,
+                                                session_rec_block_frame_events)
 
 
 
-        t2 = getTime()
-        printf()
-        printf("getEventsPerFrame Duration:", t2 - t1)
-        printf()
+            t2 = getTime()
+            printf()
+            printf("getEventsPerFrame Duration:", t2 - t1)
+            printf()
 
-        saveVideoEventFiles(video_frame_sample_array, session_folder, mean_offsets_per_video)
+            saveVideoEventFiles(video_frame_sample_array, session_folder, mean_offsets_per_video)
 
         proc_end_time = getTime()
         printf()
