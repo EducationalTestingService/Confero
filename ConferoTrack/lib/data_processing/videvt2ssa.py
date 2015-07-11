@@ -21,7 +21,7 @@ SAVE_NPZ_FILE = True
 SAVE_SSA_FILES = True
 
 # garyfeng: Can choose to plot fixation or samples
-USE_FIXATIONS = False
+USE_FIXATIONS = True
 if USE_FIXATIONS:
     SAVE_TXT_FILE = False
     SAVE_NPZ_FILE = False
