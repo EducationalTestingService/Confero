@@ -3,9 +3,9 @@ Confero Software Suite
 
 Screen and User Event Capturing System for Windows.
 
+http://educationaltestingservice.github.io/Confero/
 
-
-
+----
 
 The Confero Software Suite consists of two python applications and a web brower based UI:
 
@@ -182,3 +182,5 @@ License
 ========
 
 GNU General Public License (GPL version 3 or any later version)
+
+Contact: Gary Feng <gary.feng@gmail.com>
