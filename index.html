@@ -1,0 +1,258 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+  <link rel="stylesheet" href="stylesheets/github-dark.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>Confero</title>
+  <meta name="description" content="Screen and Event Capturing System for Eye-tracking on Windows. ">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Confero</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Screen and Event Capturing System for Eye-tracking on Windows. </p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/EducationalTestingService/Confero/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/EducationalTestingService/Confero/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/EducationalTestingService/Confero" class="code">View Confero on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>
+<a id="confero-software-suite" class="anchor" href="#confero-software-suite" aria-hidden="true"><span class="octicon octicon-link"></span></a>Confero Software Suite</h1>
+
+<p>Screen and User Event Capturing System for Eye-tracking on Windows.</p>
+
+<p>The Confero Software Suite consists of two python applications and a web brower based UI:</p>
+
+<ul>
+<li>
+<strong>Confero Track</strong> : Performs screen capturing and data collection; running in the background on the eye tracker PC.</li>
+<li>
+<strong>Confero View</strong> : A web interface for monitoring data collected by, and controlling, <strong>Confero Track</strong>.</li>
+<li>
+<strong>Confero Server</strong> : The web server application that <strong>Confero Track</strong> and <strong>Confero View</strong> connect to. The <strong>Confero Server</strong> facilitates data exchange and control between the two other Confero applications.</li>
+</ul>
+
+<h2>
+<a id="confero-track-features" class="anchor" href="#confero-track-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Confero Track Features</h2>
+
+<ul>
+<li>Uses psychopy.iohub to record events from keyboard, mouse, eye tracker, and others.</li>
+<li>Events are available at run-time and are saved to a HDF5 based file.</li>
+<li>A screen capture process saves the state of a single screen to a video file.</li>
+<li>Computer audio is saved with the screen capture video.</li>
+<li>Remotely controlled by the <strong>Confero View</strong> application.</li>
+</ul>
+
+<h2>
+<a id="confero-view-features" class="anchor" href="#confero-view-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Confero View Features:</h2>
+
+<ul>
+<li>Web based user interface.</li>
+<li>Remotely open and close experiment sessions on <strong>Confero Track</strong>.</li>
+<li>Start and Stop recording of screen capture video and input device events, multiple times, during a single experiment session.</li>
+<li>Provides real-time display of screen capture video stream as well as the state of each input device when recording.</li>
+<li>Send text messages during data collection which are saved in the experiment data file.</li>
+<li>Overlay mouse position, gaze position, and the time since recording was last started on the screen video stream.</li>
+</ul>
+
+<h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>Important: The following installation instructions must be followed for both the
+computer that will be used to run <strong>Confero Track</strong>, as well as the computer that
+will run the <strong>Confero Server</strong> and <strong>Confero View</strong> aplications.</p>
+
+<p>The Confero software may be installed anywere on the computer. A convenient location is C:\Confero, which in most cases will allow all users on the computer to access Confero. Note that this also expose all the program files and data to all users. You may risk accidental deletions or misconfigurations. Decide your installation path according to your application. </p>
+
+<p>In the remainder of the document we refer to the Confero root directory as CONFERO_ROOT. In the above example, CONFERO_ROOT = c:\ .</p>
+
+<p>The document assumes you are installing from a distribution package (distro), in the form of a ZIP or an EXE file. </p>
+
+<ul>
+<li>unzip the distro to a temporary directory</li>
+<li>check to see if your CONFERO_ROOT directoy already exists; if so, rename or move the directory</li>
+<li>move the Confero directory to the CONFERO_ROOT path. In the above example, we move Confero to C:\, so that CONFERO_ROOT= c:\Confero</li>
+<li>Proceed with the following steps in setting up.</li>
+</ul>
+
+<h2>
+<a id="python-package-dependancies-if-needed" class="anchor" href="#python-package-dependancies-if-needed" aria-hidden="true"><span class="octicon octicon-link"></span></a>Python Package Dependancies (if needed)</h2>
+
+<p>** If you are installing from a distribution package (either as a ZIP file or an EXE file), all the dependencies should have been included. Skip this section. **</p>
+
+<p>The following python packages must be installed in the python distribution
+being used to run Confero Application Suite. All packages must
+be for Python 2.7 32-bit (even if Windows is 64bit)</p>
+
+<ul>
+<li>All dependencies needed for PsychoPy <a href="http://www.psychopy.org/installation.html#dependencies">http://www.psychopy.org/installation.html#dependencies</a>
+</li>
+<li>All dependencies needed for ioHub <a href="http://www.isolver-solutions.com/iohubdocs/iohub/installation.html#python-2-7-package-list-with-urls">http://www.isolver-solutions.com/iohubdocs/iohub/installation.html#python-2-7-package-list-with-urls</a>
+</li>
+<li>PsychoPy 1.80.01 package itself <a href="http://sourceforge.net/projects/psychpy/files/">http://sourceforge.net/projects/psychpy/files/</a>
+</li>
+<li>Tornado 3.2 <a href="http://www.lfd.uci.edu/%7Egohlke/pythonlibs/#tornado">http://www.lfd.uci.edu/~gohlke/pythonlibs/#tornado</a>
+</li>
+<li>Websocket-client <a href="https://pypi.python.org/pypi/websocket-client/">https://pypi.python.org/pypi/websocket-client/</a>
+</li>
+<li>If freetype.dll is not already available on your system, download it from here <a href="http://goo.gl/dbUjHV">http://goo.gl/dbUjHV</a> and place in your root python directory, or another folder that is in your system PATH.</li>
+</ul>
+
+<h2>
+<a id="eye-tracker-client-library-if-needed" class="anchor" href="#eye-tracker-client-library-if-needed" aria-hidden="true"><span class="octicon octicon-link"></span></a>Eye Tracker Client Library (if needed)</h2>
+
+<p>** This is only necessary if you are using an eye-tracker that is not currently included in the distribution (EyeLink or Tobii remote series) **</p>
+
+<p>If using an eye tracker, ensure any dependencies specific to the eye tracker
+being used have been installed. See the docs for the eye tracker being used
+with iohub for more details: <a href="http://www.isolver-solutions.com/iohubdocs/iohub/api_and_manual/device_details/eyetracker.html#eye-tracking-hardware-implementations">http://www.isolver-solutions.com/iohubdocs/iohub/api_and_manual/device_details/eyetracker.html#eye-tracking-hardware-implementations</a></p>
+
+<h2>
+<a id="install-these-programs-first" class="anchor" href="#install-these-programs-first" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install these programs first</h2>
+
+<p>The following programs should be installed and configured before running Confero.</p>
+
+<p><strong>Screen Capturer Recorder</strong></p>
+
+<p>The setup program is included in the <strong>dependancies</strong> folder. Use the version of program provided. You need to installation only once on a computer, but the program <em>may</em> need to be set up for <strong>each user</strong> separately on the computer. Try to see if the recorded video or the mirrored video is scrambled. If so, repeat the set up process for each user on the computer. </p>
+
+<p>To configure for a user:</p>
+
+<ol>
+<li>Log in to Windows as the User.</li>
+<li>Go to menu Start &gt;&gt; All Programs &gt;&gt; Screen Capturer Recorder &gt;&gt; configure &gt;&gt; configure by setting specific screen capture numbers. This will launch a DOS window, and it may take a few seconds to load. </li>
+<li>Follow the onscreen instruction to go through the process. Leave BLANK, not 0, for default values. The most important parameters are the size of the monitor, and which monitor to record if you have multiple monitors. To find out the specific numbers, use Control Panel &gt;&gt; Display or other programs to view the display setting.</li>
+</ol>
+
+<p><strong>Bonjour</strong></p>
+
+<p>Bonjour is used to automatically recognize and configure the IPs of the Track and View programs. Use the version provided; use either the 32bit or 64bit version depending on your Windows OS. You may need to reinstall it if you experience problems with Bonjour. No configuration is needed for Bonjour.</p>
+
+<h2>
+<a id="configure-confero" class="anchor" href="#configure-confero" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configure Confero</h2>
+
+<p>Confero may be configured to run on a single computer or two computers. Following the following procedure for a minimal setup. If you need to adjust additional parameters, consult the Confero manual. </p>
+
+<p><strong>Single computer</strong></p>
+
+<p>Set up Confero Track:</p>
+
+<ul>
+<li>go to CONFERO_ROOT\ConferoTrack\settings, open <strong>app_config.yaml</strong> in a text editor (e.g., Notepad.exe). </li>
+<li>find the line "screen_resolution: [1920, 1080]" or similar, replace the numbers with actual screen size, following the instruction above the line. </li>
+<li>Save the file. Done.</li>
+</ul>
+
+<p>Set up Confero View:</p>
+
+<ul>
+<li>go to CONFERO_ROOT\ConferoView\settings, open <strong>app_config.yaml</strong> in a text editor (e.g., Notepad.exe). </li>
+<li>find the line "screen_resolution: [1920, 1080]" or similar, replace the numbers with actual screen size, following the instruction above the line. </li>
+<li>Save the file. Done.</li>
+</ul>
+
+<p><strong>Two computers</strong></p>
+
+<ul>
+<li>Install Confero on each of the two computers following the instruction above, including dependent programs (Bonjour, etc.). </li>
+<li>On the computer that connects to the eye-tracker (the Track computer), follow the steps to set up the Track.</li>
+<li>On the other computer, do the View configuration</li>
+<li>[Optional] If you are certain that you will always use the current 2-computer set up, you may delete the <strong>View</strong> folder from the <strong>Track</strong> PC and the <strong>Track</strong> folder from the <strong>View</strong> computer, because they are not used and may cause confusions. </li>
+</ul>
+
+<h2>
+<a id="usermonitor-project-files" class="anchor" href="#usermonitor-project-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>UserMonitor Project Files</h2>
+
+<p>Download the latest version of the Confero Application Suite from it's
+github repo: <a href="https://github.com/isolver/UserMonitor/archive/master.zip">https://github.com/isolver/UserMonitor/archive/master.zip</a></p>
+
+<p>** BELOW TEXT NEEDS UPDATING**</p>
+
+<p>Follow these steps to setup Confero for the first time:</p>
+
+<ol>
+<li>Unpack the master.zip archive to a location of your choice.</li>
+<li>Rename the folder that was unpacked from usermonitor-master to UserMonitor.</li>
+<li>Open the UserMonitor folder.</li>
+<li>Unpack the bin.zip file into the current directory. After unpacking bin.zip, there should be a bin folder in the top level UserMonitor directory.</li>
+<li>Install the dshow filters used for screen capturing by running the Setup Screen Capturer Recorder v0.10.0.exe installer found in the UserMonitor/ dependancies folder.</li>
+<li>Configure the Screen Capturer Recorder filter by running: Start-&gt;All Programs-&gt;Screen Capturer Recorder-&gt;configure by setting specific screen capture numbers. For each question asked, remove any text in the textbox field and continue, other than for the capture width and height settings, which should equal the pixel resolution of the monitor that will be used for screen capturing.</li>
+<li>Edit the /source/usermonitor/iohub_config.yaml as necessary.</li>
+<li>Edit the /source/usermonitor/app_config.yaml as necessary.</li>
+</ol>
+
+<h1>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h1>
+
+<p>To start the UserMonitor Applications:</p>
+
+<h2>
+<a id="user-monitor-feedback-and-control-application" class="anchor" href="#user-monitor-feedback-and-control-application" aria-hidden="true"><span class="octicon octicon-link"></span></a>User Monitor Feedback and Control Application</h2>
+
+<p>From the computer being used to run the User Monitor Feedback and Control application, run the following python script from a command prompt: </p>
+
+<p>python.exe /source/usermonitor/webserver/start.py</p>
+
+<p>When the application starts, your web browser should automatiocally open running the User Monitor Feedback and Control Application web GUI. You can not use this application, until the data collection application has also been started (next step)</p>
+
+<h2>
+<a id="data-collection-application" class="anchor" href="#data-collection-application" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Collection Application</h2>
+
+<p>From the computer being used to run the data collection application, which is the computer the participant will be interacting with, run the following python script from a command prompt: </p>
+
+<p>python.exe /source/usermonitor/datacollection/start.py</p>
+
+<p>When the application starts the cmd window can be minimized.</p>
+
+<h2>
+<a id="collecting-data" class="anchor" href="#collecting-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collecting Data</h2>
+
+<p>To learn how to use the User Monitor Feedback and Control Application GUI to control the Data Collection application, including openning and closing participant sessions and starting / stopping recording of data, please see the Help documentation available via the User Monitor Feedback and Control Application GUI.</p>
+
+<h1>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p>GNU General Public License (GPL version 3 or any later version)</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/EducationalTestingService" class="avatar"><img src="https://avatars3.githubusercontent.com/u/4822867?v=3&amp;s=60" width="48" height="48"></a> <a href="https://github.com/EducationalTestingService">EducationalTestingService</a> maintains <a href="https://github.com/EducationalTestingService/Confero">Confero</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/EducationalTestingService/Confero/tarball/master" class="tar">tar</a><a href="https://github.com/EducationalTestingService/Confero/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
