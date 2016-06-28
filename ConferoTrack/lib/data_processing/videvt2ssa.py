@@ -396,18 +396,22 @@ def getSamplesPerFrame(session_folder, frame_times_per_session_video):
                             if(video_frame_events[frame_num]):
                                 printf("        ", video_frame_events[frame_num])
                         # garyfeng
-                        frame_num += 1
-                        if frame_num + 1 < frame_count:
-                            fstart_time = int(
-                                frame_times[frame_num][1] * 1000)
-                            fend_time = int(
-                                frame_times[frame_num + 1][1] * 1000)
-                        elif frame_num + 1 == frame_count:
-                            fend_time = fend_time + (
-                                fend_time - fstart_time)
-                            fstart_time = fend_time
-                        else:
-                            break
+                        # if the evt_time is larger than the current fend_time
+                        # we need to FF the frames until they match. 
+                        while(evt_time > fend_time):
+                            # printf("--> ", frame_num, fend_time)
+							frame_num += 1
+							if frame_num + 1 < frame_count:
+								fstart_time = int(
+									frame_times[frame_num][1] * 1000)
+								fend_time = int(
+									frame_times[frame_num + 1][1] * 1000)
+							elif frame_num + 1 == frame_count:
+								fend_time = fend_time + (
+									fend_time - fstart_time)
+								fstart_time = fend_time
+							else:
+								break
                         if evt_time < fend_time:
                             event_count += 1
                             video_frame_events[frame_num].append((
